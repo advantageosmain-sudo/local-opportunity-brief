@@ -1,0 +1,40 @@
+{
+  "slug": "demo-boutique",
+  "status": "demo",
+  "businessName": "Rosewood Gifts",
+  "contactName": "Jordan Taylor",
+  "deliveryEmail": "owner@example.com",
+  "location": {
+    "city": "DeWitt",
+    "state": "AR",
+    "radiusMiles": 35
+  },
+  "category": "gift-shop",
+  "products": [
+    "small gifts",
+    "candles",
+    "jewelry",
+    "women's accessories",
+    "locally themed items"
+  ],
+  "customers": [
+    "local women",
+    "gift buyers",
+    "teachers",
+    "mothers",
+    "visiting families"
+  ],
+  "voice": [
+    "warm",
+    "neighborly",
+    "cheerful"
+  ],
+  "exclusions": [
+    "politics",
+    "alcohol",
+    "unverified discounts"
+  ],
+  "approvedSourceFiles": [
+    "demo-events.json"
+  ]
+}

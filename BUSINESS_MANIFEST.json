@@ -1,0 +1,41 @@
+{
+  "business": {
+    "name": "Local Opportunity Brief",
+    "tagline": "Know what's happening. Know what to do next.",
+    "legal_entity_status": "not_created",
+    "operating_mode": "founding_validation",
+    "primary_customer": "Independent boutiques, gift shops, and local apparel stores in the United States"
+  },
+  "offer": {
+    "name": "Weekly Local Opportunity Brief",
+    "founding_price_usd_monthly": 49,
+    "regular_price_hypothesis_usd_monthly": 79,
+    "founding_capacity": 10,
+    "frequency": "weekly",
+    "delivery_day": "Monday",
+    "opportunities_per_report": 5,
+    "lookahead_days": 30
+  },
+  "promise": "Five verified local sales opportunities with a ready-to-use weekly action plan.",
+  "does_not_include": [
+    "Guaranteed sales or customer traffic",
+    "Customer account access",
+    "Automatic social posting",
+    "Advertising management",
+    "Legal, tax, medical, or financial advice"
+  ],
+  "owner_gate": {
+    "required_for_live_delivery": true,
+    "required_for_price_change": true,
+    "required_for_new_customer_category": true,
+    "required_for_public_launch": true,
+    "required_for_spending": true
+  },
+  "live_external_actions": {
+    "payments": false,
+    "email_delivery": false,
+    "public_launch": false,
+    "paid_data_sources": false
+  },
+  "version": "0.1.0"
+}

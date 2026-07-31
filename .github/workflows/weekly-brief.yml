@@ -1,0 +1,85 @@
+name: Generate weekly approval packet
+
+on:
+  schedule:
+    - cron: "17 14 * * 1"
+  workflow_dispatch:
+    inputs:
+      customer:
+        description: Customer slug
+        required: true
+        default: demo-boutique
+      as_of:
+        description: Report date (YYYY-MM-DD)
+        required: true
+        default: "2026-08-03"
+      approve_delivery:
+        description: Keep as NO for review-only runs. Choose APPROVE only for a verified live report.
+        type: choice
+        required: true
+        default: "NO"
+        options:
+          - "NO"
+          - "APPROVE"
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      customer: ${{ steps.inputs.outputs.customer }}
+      as_of: ${{ steps.inputs.outputs.as_of }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - id: inputs
+        shell: bash
+        env:
+          INPUT_CUSTOMER: ${{ inputs.customer }}
+          INPUT_AS_OF: ${{ inputs.as_of }}
+        run: |
+          customer="${INPUT_CUSTOMER:-demo-boutique}"
+          as_of="${INPUT_AS_OF:-$(date -u +%F)}"
+          echo "customer=${customer}" >> "$GITHUB_OUTPUT"
+          echo "as_of=${as_of}" >> "$GITHUB_OUTPUT"
+      - shell: bash
+        run: node automation/run.mjs --customer "${{ steps.inputs.outputs.customer }}" --as-of "${{ steps.inputs.outputs.as_of }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: weekly-brief-${{ steps.inputs.outputs.customer }}-${{ steps.inputs.outputs.as_of }}
+          path: automation/outbox/${{ steps.inputs.outputs.customer }}/${{ steps.inputs.outputs.as_of }}/
+          if-no-files-found: error
+
+  approve-and-deliver:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.approve_delivery == 'APPROVE' }}
+    needs: generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: outbound-delivery
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: weekly-brief-${{ needs.generate.outputs.customer }}-${{ needs.generate.outputs.as_of }}
+          path: automation/outbox/${{ needs.generate.outputs.customer }}/${{ needs.generate.outputs.as_of }}/
+      - name: Bind owner approval to the exact report
+        run: >-
+          node automation/approve.mjs
+          --report "automation/outbox/${{ needs.generate.outputs.customer }}/${{ needs.generate.outputs.as_of }}/report.json"
+          --actor "${{ github.actor }}"
+          --phrase APPROVE
+      - name: Deliver the approved report
+        env:
+          LIVE_DELIVERY: "1"
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          DELIVERY_FROM_EMAIL: ${{ vars.DELIVERY_FROM_EMAIL }}
+        run: >-
+          node automation/deliver.mjs
+          --report "automation/outbox/${{ needs.generate.outputs.customer }}/${{ needs.generate.outputs.as_of }}/report.json"
