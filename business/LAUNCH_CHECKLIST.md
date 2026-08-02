@@ -17,7 +17,7 @@ real provider test, owner configuration, outside review, or customer evidence.
 
 - [ ] At least three independent retailers review a sample.
 - [ ] At least one retailer agrees to pay $49.
-- [ ] Cancellation and refund wording is visible.
+- [x] Cancellation and refund wording is visible.
 - [ ] No testimonial is published without written permission.
 
 ## Operations
