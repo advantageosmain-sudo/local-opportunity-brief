@@ -15,7 +15,7 @@ export default function PrivacyPage() {
         <section className="page-hero shell">
           <p className="eyebrow">Privacy notice</p>
           <h1>We collect only what we need to review your request.</h1>
-          <p>Effective July 31, 2026 · Founding-validation version</p>
+          <p>Effective August 2, 2026 · Private-pilot operating version</p>
         </section>
         <article className="sample-paper" style={{ marginBottom: 100 }}>
           <h2>Information collected</h2>
@@ -44,14 +44,28 @@ export default function PrivacyPage() {
           <h2>Retention and requests</h2>
           <p>
             Founding requests that are not accepted are scheduled for deletion
-            after the validation period unless a longer period is required for
-            security or legal reasons. Contact instructions will be added before
-            public launch. Until then, this application remains in private
-            validation.
+            within 90 days of the final decision. Active customer profiles and
+            weekly reports are kept while service is active and for up to 12
+            months after cancellation. Delivery and payment-event records may be
+            kept for up to 24 months when needed for accounting, fraud, disputes,
+            or legal obligations.
+          </p>
+          <p>
+            A customer may request a copy, correction, or deletion by replying
+            to a service email. Identity must be verified before information is
+            disclosed or deleted. Records required for tax, fraud, dispute, or
+            legal reasons may be retained for the required period.
+          </p>
+          <h2>Security and payment details</h2>
+          <p>
+            Owner access is restricted, report synchronization requires a
+            protected secret, and payment webhooks require a valid provider
+            signature. Card and bank details are handled by the payment provider
+            and are not stored by this application.
           </p>
           <div className="sample-disclaimer">
-            This notice is an operating draft for private validation and must
-            receive legal and owner review before public launch.
+            This private-pilot policy is implemented operationally but still
+            requires owner and qualified legal review before public launch.
           </div>
         </article>
       </main>

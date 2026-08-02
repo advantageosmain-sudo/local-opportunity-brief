@@ -62,6 +62,7 @@ test("renders the complete five-opportunity sample", async () => {
   assert.equal(response.status, 200);
   const html = await response.text();
   assert.match(html, /Your five best local opportunities/);
+  assert.match(html, /Week of August 3, 2026/);
   assert.equal((html.match(/class="opportunity-card"/g) ?? []).length, 5);
   assert.match(html, /DEMONSTRATION DATA ONLY|demonstration uses fictional/i);
 });
@@ -88,6 +89,32 @@ test("renders the membership request and health endpoint", async () => {
     business: "Local Opportunity Brief",
     status: "ok",
     liveDelivery: false,
-    version: "0.1.0",
+    paymentsMode: "disabled",
+    version: "0.2.0",
   });
+});
+
+test("protected business endpoints fail closed without their secrets", async () => {
+  const worker = await loadWorker();
+  const reportSync = await worker.fetch(
+    new Request("http://localhost/api/internal/reports", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: "{}",
+    }),
+    workerEnv(),
+    workerContext(),
+  );
+  assert.equal(reportSync.status, 401);
+
+  const paymentWebhook = await worker.fetch(
+    new Request("http://localhost/api/webhooks/lemon-squeezy", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: "{}",
+    }),
+    workerEnv(),
+    workerContext(),
+  );
+  assert.equal(paymentWebhook.status, 503);
 });

@@ -1,5 +1,16 @@
 import { createHash } from "node:crypto";
 
+export const LOOKAHEAD_DAYS = 30;
+export const MAX_SOURCE_AGE_DAYS = 14;
+export const APPROVED_SOURCE_AUTHORITIES = new Set([
+  "official-government",
+  "official-school",
+  "official-organizer",
+  "official-destination-office",
+  "customer-first-party",
+  "reputable-local-reporting",
+]);
+
 const guaranteedPhrases = [
   "guaranteed sales",
   "guaranteed revenue",
@@ -18,7 +29,9 @@ export function scoreOpportunity(customer, opportunity, asOf) {
   const eventDate = new Date(`${opportunity.eventDate}T00:00:00Z`);
   const daysAway = Math.ceil((eventDate - asOfDate) / 86_400_000);
 
-  if (daysAway < 0 || daysAway > 90) return { eligible: false, score: 0 };
+  if (daysAway < 0 || daysAway > LOOKAHEAD_DAYS) {
+    return { eligible: false, score: 0 };
+  }
   if (opportunity.distanceMiles > customer.location.radiusMiles) {
     return { eligible: false, score: 0 };
   }
@@ -44,8 +57,7 @@ export function scoreOpportunity(customer, opportunity, asOf) {
     0,
     20 - (opportunity.distanceMiles / customer.location.radiusMiles) * 20,
   );
-  const timingScore =
-    daysAway <= 14 ? 18 : daysAway <= 30 ? 15 : daysAway <= 60 ? 10 : 5;
+  const timingScore = daysAway <= 14 ? 18 : 15;
   const score = Math.round(
     distanceScore +
       timingScore +
@@ -70,12 +82,13 @@ function productExamples(customer, opportunity) {
   );
 }
 
-export function buildRecommendation(customer, opportunity, score) {
+export function buildRecommendation(customer, opportunity, score, daysAway) {
   const products = productExamples(customer, opportunity);
   return {
     id: opportunity.id,
     title: opportunity.title,
     score,
+    daysAway,
     eventDate: opportunity.eventDate,
     prepareBy: opportunity.prepareBy,
     location: `${opportunity.city}, ${opportunity.state}`,
@@ -91,6 +104,8 @@ export function buildRecommendation(customer, opportunity, score) {
       sourceName: opportunity.sourceName,
       sourceUrl: opportunity.sourceUrl,
       checkedAt: opportunity.sourceCheckedAt,
+      authority: opportunity.sourceAuthority,
+      accessStatus: opportunity.sourceAccessStatus,
       confidence:
         opportunity.sourceQuality >= 5
           ? "high"
@@ -116,8 +131,15 @@ export function generateReport(customer, opportunities, options) {
     )
     .slice(0, 5)
     .map(({ opportunity, result }) =>
-      buildRecommendation(customer, opportunity, result.score),
+      buildRecommendation(
+        customer,
+        opportunity,
+        result.score,
+        result.daysAway,
+      ),
     );
+
+  const deliveryMode = customer.deliveryMode ?? "owner_review_only";
 
   const report = {
     schemaVersion: 1,
@@ -131,9 +153,12 @@ export function generateReport(customer, opportunities, options) {
       deliveryEmail: customer.deliveryEmail,
       location: customer.location,
       category: customer.category,
+      deliveryMode,
     },
     fixture: Boolean(options.fixture),
     status: "PENDING_APPROVAL",
+    lookaheadDays: LOOKAHEAD_DAYS,
+    deliveryEligible: deliveryMode === "customer" && !Boolean(options.fixture),
     summary: `This week's strongest opportunities emphasize timely local activity, confirmed products, and actions ${customer.businessName} can prepare without account access or unverified discounts.`,
     opportunities: ranked,
     safeguards: {
@@ -141,6 +166,7 @@ export function generateReport(customer, opportunities, options) {
       customerAccountAccess: false,
       automaticPosting: false,
       liveDelivery: false,
+      ownerApprovalRequired: true,
     },
   };
 
@@ -159,7 +185,14 @@ export function computeReportChecksum(report) {
 export function validateReport(report) {
   const errors = [];
   const warnings = [];
-  const asOfDate = new Date(`${report.asOf}T00:00:00Z`);
+  const asOfDate = parseDate(report.asOf);
+
+  if (!asOfDate) {
+    errors.push("Report as-of date must use YYYY-MM-DD.");
+  }
+  if (report.lookaheadDays !== LOOKAHEAD_DAYS) {
+    errors.push(`Report lookahead must be exactly ${LOOKAHEAD_DAYS} days.`);
+  }
 
   if (report.opportunities.length !== 5) {
     errors.push(
@@ -174,11 +207,50 @@ export function validateReport(report) {
     }
     ids.add(opportunity.id);
 
-    if (new Date(`${opportunity.eventDate}T00:00:00Z`) < asOfDate) {
-      errors.push(`Past event date: ${opportunity.id}`);
+    const eventDate = parseDate(opportunity.eventDate);
+    const prepareBy = parseDate(opportunity.prepareBy);
+    const checkedAt = parseDate(opportunity.evidence.checkedAt);
+    if (!eventDate) {
+      errors.push(`Invalid event date: ${opportunity.id}`);
+    } else if (asOfDate) {
+      const daysAway = dayDifference(asOfDate, eventDate);
+      if (daysAway < 0) errors.push(`Past event date: ${opportunity.id}`);
+      if (daysAway > LOOKAHEAD_DAYS) {
+        errors.push(
+          `Event outside the ${LOOKAHEAD_DAYS}-day promise: ${opportunity.id}`,
+        );
+      }
     }
-    if (!/^https:\/\//.test(opportunity.evidence.sourceUrl)) {
+    if (!prepareBy) {
+      errors.push(`Invalid prepare-by date: ${opportunity.id}`);
+    } else if (eventDate && prepareBy > eventDate) {
+      errors.push(`Prepare-by date is after the event: ${opportunity.id}`);
+    } else if (asOfDate && prepareBy < asOfDate) {
+      errors.push(`Prepare-by date is already past: ${opportunity.id}`);
+    }
+    if (!isHttpsUrl(opportunity.evidence.sourceUrl)) {
       errors.push(`Non-HTTPS evidence URL: ${opportunity.id}`);
+    }
+    if (!checkedAt) {
+      errors.push(`Invalid source-check date: ${opportunity.id}`);
+    } else if (asOfDate) {
+      const sourceAge = dayDifference(checkedAt, asOfDate);
+      if (sourceAge < 0) {
+        errors.push(`Source check is dated in the future: ${opportunity.id}`);
+      } else if (sourceAge > MAX_SOURCE_AGE_DAYS) {
+        errors.push(`Stale source check: ${opportunity.id}`);
+      }
+    }
+    if (!report.fixture) {
+      if (isPlaceholderUrl(opportunity.evidence.sourceUrl)) {
+        errors.push(`Placeholder evidence URL: ${opportunity.id}`);
+      }
+      if (!APPROVED_SOURCE_AUTHORITIES.has(opportunity.evidence.authority)) {
+        errors.push(`Unapproved source authority: ${opportunity.id}`);
+      }
+      if (opportunity.evidence.accessStatus !== "verified") {
+        errors.push(`Source access was not verified: ${opportunity.id}`);
+      }
     }
     if (!["high", "medium"].includes(opportunity.evidence.confidence)) {
       warnings.push(`Low-confidence evidence: ${opportunity.id}`);
@@ -198,6 +270,11 @@ export function validateReport(report) {
   }
   if (report.safeguards.liveDelivery !== false) {
     errors.push("A generated report cannot enable live delivery.");
+  }
+  const expectedDeliveryEligibility =
+    report.customer.deliveryMode === "customer" && !report.fixture;
+  if (report.deliveryEligible !== expectedDeliveryEligibility) {
+    errors.push("Report delivery eligibility does not match the customer mode.");
   }
   if (report.checksum !== computeReportChecksum(report)) {
     errors.push("Report checksum does not match the report contents.");
@@ -223,6 +300,8 @@ export function renderMarkdown(report, validation) {
     `**Week of:** ${report.weekOf}`,
     `**Location:** ${report.customer.location.city}, ${report.customer.location.state}`,
     `**Status:** ${report.status}`,
+    `**Research window:** ${report.lookaheadDays} days`,
+    `**Delivery mode:** ${report.customer.deliveryMode}`,
     `**Validation:** ${validation.passed ? "PASS" : "FAIL"}`,
     `**Checksum:** \`${report.checksum}\``,
     "",
@@ -273,4 +352,42 @@ export function renderMarkdown(report, validation) {
     "",
   );
   return `${lines.join("\n")}\n`;
+}
+
+function parseDate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return null;
+  }
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return Number.isNaN(parsed.valueOf()) || parsed.toISOString().slice(0, 10) !== value
+    ? null
+    : parsed;
+}
+
+function dayDifference(left, right) {
+  return Math.round((right.valueOf() - left.valueOf()) / 86_400_000);
+}
+
+function isHttpsUrl(value) {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function isPlaceholderUrl(value) {
+  try {
+    const hostname = new URL(value).hostname.toLowerCase();
+    return (
+      ["example.com", "example.net", "example.org"].includes(hostname) ||
+      hostname.endsWith(".example.com") ||
+      hostname.endsWith(".example.net") ||
+      hostname.endsWith(".example.org") ||
+      hostname.endsWith(".invalid") ||
+      hostname === "localhost"
+    );
+  } catch {
+    return true;
+  }
 }

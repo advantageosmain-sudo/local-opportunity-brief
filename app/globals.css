@@ -1014,8 +1014,21 @@ textarea:focus-visible {
 
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
+}
+
+.system-lock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+  padding: 15px 18px;
+  border: 1px solid #b9c9bd;
+  background: #edf4ef;
+  color: #31513c;
+  font-size: 12px;
 }
 
 .metric {
@@ -1056,6 +1069,63 @@ textarea:focus-visible {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.table-note {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.lead-actions {
+  display: grid;
+  gap: 6px;
+  min-width: 150px;
+}
+
+.action-button {
+  width: 100%;
+  min-height: 32px;
+  border: 1px solid #9eaa9f;
+  border-radius: 3px;
+  background: #fff;
+  color: var(--ink);
+  padding: 6px 9px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+  cursor: pointer;
+}
+
+.action-button:hover,
+.action-button:focus-visible {
+  border-color: var(--ink);
+  background: #f1eee7;
+}
+
+.action-button-danger {
+  border-color: #cba69d;
+  color: #7f3025;
+}
+
+.action-link {
+  display: inline-grid;
+  place-items: center;
+  background: var(--ink);
+  color: #fff;
+}
+
+.dashboard-footnote {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
 }
 
 .lead-table th,
@@ -1106,6 +1176,15 @@ textarea:focus-visible {
 }
 
 @media (max-width: 900px) {
+  .metric-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .system-lock {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .hero {
     grid-template-columns: 1fr;
     gap: 54px;
@@ -1219,6 +1298,10 @@ textarea:focus-visible {
   .footer-bottom {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .metric-grid {
+    grid-template-columns: 1fr;
   }
 
   .cta-band .shell {

@@ -2,6 +2,9 @@
 
 The business is not approved for public launch until every item passes.
 
+Checked items below are verified in the repository. Unchecked items require a
+real provider test, owner configuration, outside review, or customer evidence.
+
 ## Product
 
 - [ ] Five live reports contain no invented facts.
@@ -23,9 +26,9 @@ The business is not approved for public launch until every item passes.
 - [ ] The outbound-delivery approval environment is configured in GitHub.
 - [ ] Email delivery is tested with an owner-only address.
 - [ ] Payment checkout is tested in provider test mode.
-- [ ] Payment webhook signature validation passes.
-- [ ] Failed deliveries create an owner alert.
-- [ ] Duplicate delivery protection passes.
+- [x] Payment webhook signature validation passes in automated tests and rejects live-mode payloads.
+- [x] Failed deliveries create a diagnostic packet and a deduplicated GitHub owner alert.
+- [x] Duplicate delivery protection passes with both an atomic local claim and provider idempotency key.
 
 ## Business
 

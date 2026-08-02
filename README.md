@@ -1,84 +1,143 @@
 # Local Opportunity Brief
 
-Local Opportunity Brief is a runnable, repository-controlled subscription
-business for independent boutiques and gift shops.
+Local Opportunity Brief is a repository-controlled subscription-business system
+for independent boutiques, gift shops, and local apparel stores.
 
-It provides:
+It includes:
 
-- A public sales page
-- A complete sample weekly brief
-- A persistent founding-member intake form
-- An owner-only operations dashboard
-- A deterministic opportunity-ranking and report-generation engine
-- Evidence, relevance, date, wording, and delivery checks
-- Owner-gated outbound delivery
-- GitHub workflows for validation and weekly report runs
-- Locked business, pricing, brand, source, approval, and launch rules
+- A sales site, complete sample, founding-request form, privacy policy, and terms
+- An owner-only command dashboard backed by durable storage
+- A 30-day local-opportunity ranking and report engine
+- Live-source, date, location, wording, duplication, and customer-fit gates
+- A scheduled all-active-customer Monday run
+- Exact report synchronization from GitHub Actions to the owner dashboard
+- Owner-bound report approval and protected outbound delivery
+- Atomic and provider-level duplicate-email prevention
+- Delivery failure diagnostics and a deduplicated owner alert
+- Lemon Squeezy checkout and signed-webhook handling restricted to test mode
+- Locked launch, spending, payment, email, research, and approval rules
 
 ## Safe default state
 
-The system is fully runnable in demonstration mode. It cannot charge a customer,
-send a live email, purchase anything, or publicly launch itself in the
-checked-in state.
+The checked-in system cannot charge a customer, send a live email, purchase
+anything, or approve a public launch.
 
-Live email requires all of the following:
+Live delivery requires all of the following:
 
-1. A non-fixture report
-2. Passing validation
-3. An approval file whose checksum matches the report
-4. Owner approval
-5. `LIVE_DELIVERY=1`
-6. A configured Resend key and sender
+1. A real, non-fixture report
+2. Five passing opportunities inside the 30-day window
+3. A customer profile whose delivery mode is explicitly `customer`
+4. An approval file whose checksum still matches the report
+5. The protected GitHub `outbound-delivery` environment
+6. `LIVE_DELIVERY=1`, a Resend key, and a configured sender
 
-## Run locally
+The provider request also receives a report-specific idempotency key. A local
+atomic claim prevents two processes from sending at the same time.
+
+## Install and verify
 
 Requirements:
 
 - Node.js 22.13 or newer
 - Linux with `flock`, `curl`, and GNU `timeout`
 
-Install and verify:
-
 ```bash
 npm ci
+npm run lint
 npm test
+```
+
+The complete test suite builds the site and verifies research, report generation,
+dashboard packet integrity, duplicate delivery protection, failure diagnostics,
+test checkout links, and signed test webhooks without contacting an email or
+payment provider.
+
+## Run the demonstration
+
+```bash
 npm run business:demo
 ```
 
-Start the application:
-
-```bash
-npm run dev
-```
-
-The demonstration report is written to:
+This writes a visibly labeled fictional packet under:
 
 ```text
 automation/outbox/demo-boutique/2026-08-03/
 ```
 
-## Operate a weekly dry run
+Demo packets can never be delivered.
+
+## Run the genuine owner-only research pilot
 
 ```bash
-node automation/run.mjs --customer demo-boutique --as-of 2026-08-03
+npm run business:pilot
 ```
 
-The report always stops at `PENDING_APPROVAL`. Fixture reports are permanently
-blocked from live delivery.
+This creates a five-opportunity Olympia packet using source pages checked on
+2026-08-02. The profile is `owner_review_only`, so it cannot be emailed to a
+customer even though its evidence is real.
 
-## Important locations
+The source audit is in:
 
-- `BUSINESS_MANIFEST.json` — business source of truth
-- `business/` — pricing, brand, approvals, sources, operations, launch gate
-- `automation/customers/` — customer profiles
-- `automation/sources/` — normalized opportunity evidence
-- `automation/lib/engine.mjs` — scoring, generation, and validation
-- `automation/outbox/` — generated approval packets and delivery records
-- `.github/workflows/` — validation and weekly operating workflows
-- `app/` — public site, intake, sample, dashboard, and API routes
-- `db/` — persistent intake and report records
+```text
+business/evidence/OLYMPIA_OWNER_PILOT_2026-08-03.md
+```
 
-## Before accepting live customers
+## Run the Monday batch safely
 
-Complete every item in `business/LAUNCH_CHECKLIST.md`. Public launch, payment
-activation, live email, spending, and price changes remain owner decisions.
+```bash
+node automation/run-all.mjs --as-of 2026-08-03
+```
+
+The scheduled command processes only profiles with `status: active`. It does
+not include demo or pilot profiles and it never delivers automatically. Every
+packet stops at owner review.
+
+For a private pilot rehearsal:
+
+```bash
+npm run business:batch
+```
+
+## Generated approval packet
+
+Every successful report directory contains:
+
+- `research-validation.json`
+- `report.json`
+- `report.md`
+- `email-preview.txt`
+- `validation.json`
+- `approval.json`
+- `dashboard-sync.json`
+
+A blocked run writes `diagnostic.json`. A failed delivery writes
+`delivery-failure.json`; an unknown network outcome writes
+`delivery-uncertain.json` and blocks automatic retry.
+
+## Hosted configuration
+
+The full beginner-safe test setup is in `docs/OWNER_TEST_SETUP.md`.
+
+Important values:
+
+- `OWNER_EMAIL` — owner dashboard allowlist
+- `REPORT_SYNC_URL` and `REPORT_SYNC_SECRET` — exact report-to-dashboard link
+- `PAYMENTS_MODE=disabled|test` — no live option exists in this version
+- `LEMON_SQUEEZY_CHECKOUT_URL` and `LEMON_SQUEEZY_WEBHOOK_SECRET` — test mode only
+- `RESEND_API_KEY`, `DELIVERY_FROM_EMAIL`, and `LIVE_DELIVERY` — protected delivery only
+
+Never commit real values. `.env.example` contains names and safe defaults only.
+
+## Launch status
+
+The technical system is substantially complete, but the business is not cleared
+for public launch. See:
+
+- `business/TECHNICAL_READINESS.md`
+- `business/LAUNCH_CHECKLIST.md`
+- `business/CANCELLATION_REFUND_POLICY.md`
+- `business/DATA_RETENTION.md`
+
+Provider tests, retailer feedback, owner configuration, legal review, and public
+launch approval remain outside gates. No passing code test can silently satisfy
+those decisions.
