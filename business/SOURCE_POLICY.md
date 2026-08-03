@@ -22,6 +22,8 @@ Every factual opportunity must include:
 - Date the source was checked
 - Confidence rating
 - Explanation of why it fits the customer
+- Source authority type
+- Confirmation that the exact page was opened successfully
 
 ## Rejection rules
 
@@ -35,6 +37,9 @@ Reject a finding when:
 - The finding is copied from a competitor.
 - The subject appears on the customer's exclusion list.
 - The source prohibits the intended automated use.
+- The source was last checked more than 14 days before the report date.
+- The event falls outside the promised 30-day research window.
+- The URL is a placeholder, reserved example domain, or local development address.
 
 ## Demo-data rule
 

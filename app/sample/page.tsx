@@ -27,7 +27,7 @@ export default function SamplePage() {
         <article className="sample-paper">
           <header>
             <div className="sample-masthead">
-              <span>Week of September 14, 2026</span>
+              <span>Week of August 3, 2026</span>
               <span>Rosewood Gifts · DeWitt, Arkansas</span>
             </div>
             <h2 className="sample-title">Your five best local opportunities</h2>

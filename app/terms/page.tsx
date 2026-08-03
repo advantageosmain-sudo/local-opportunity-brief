@@ -15,7 +15,7 @@ export default function TermsPage() {
         <section className="page-hero shell">
           <p className="eyebrow">Service terms</p>
           <h1>Useful research, with the business owner in control.</h1>
-          <p>Effective July 31, 2026 · Founding-validation version</p>
+          <p>Effective August 2, 2026 · Private-pilot operating version</p>
         </section>
         <article className="sample-paper" style={{ marginBottom: 100 }}>
           <h2>Service</h2>
@@ -47,9 +47,27 @@ export default function TermsPage() {
             not create a charge. Accepted businesses receive separate checkout
             and cancellation information before paying.
           </p>
+          <h2>Price, cancellation, and refunds</h2>
+          <p>
+            The proposed founding price is $49 per month. A customer may cancel
+            before the next renewal date; future renewals stop and service
+            continues through the paid period. A customer may request a refund
+            if the first paid brief is more than seven days late or a material
+            factual error makes a delivered brief unusable, provided the request
+            is made within seven days of delivery. An accurate, on-time brief is
+            not refundable solely because it was not used or did not create sales.
+            Rights required by applicable law still apply.
+          </p>
+          <h2>Source timing</h2>
+          <p>
+            Sources are checked for the stated report date. Events and public
+            information can change after a brief is prepared, so customers must
+            reopen the linked source before publishing a promotion or making a
+            purchase based on it.
+          </p>
           <div className="sample-disclaimer">
-            These terms are an operating draft for private validation and must
-            receive legal and owner review before public launch.
+            These private-pilot terms are not activated for billing and still
+            require owner and qualified legal review before public launch.
           </div>
         </article>
       </main>

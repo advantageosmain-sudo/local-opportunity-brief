@@ -1,0 +1,42 @@
+{
+  "slug": "founder-pilot-olympia",
+  "status": "pilot",
+  "businessName": "Founder Research Pilot",
+  "contactName": "Owner review only",
+  "deliveryEmail": "owner-review-only@local.invalid",
+  "deliveryMode": "owner_review_only",
+  "location": {
+    "city": "Olympia",
+    "state": "WA",
+    "radiusMiles": 12
+  },
+  "category": "gift-shop",
+  "products": [
+    "small gifts",
+    "jewelry",
+    "women's accessories",
+    "locally themed items",
+    "family gifts",
+    "art and stationery"
+  ],
+  "customers": [
+    "local women",
+    "gift buyers",
+    "families",
+    "visiting families",
+    "arts supporters",
+    "active adults"
+  ],
+  "voice": [
+    "warm",
+    "neighborly",
+    "useful"
+  ],
+  "exclusions": [
+    "politics",
+    "unverified discounts"
+  ],
+  "approvedSourceFiles": [
+    "olympia-2026-08-03.json"
+  ]
+}

@@ -6,6 +6,10 @@ interface Env {
   ASSETS: Fetcher;
   DB: D1Database;
   OWNER_EMAIL?: string;
+  REPORT_SYNC_SECRET?: string;
+  REPORT_SYNC_URL?: string;
+  PAYMENTS_MODE?: "disabled" | "test";
+  LEMON_SQUEEZY_CHECKOUT_URL?: string;
   LEMON_SQUEEZY_WEBHOOK_SECRET?: string;
   IMAGES: {
     input(stream: ReadableStream): {

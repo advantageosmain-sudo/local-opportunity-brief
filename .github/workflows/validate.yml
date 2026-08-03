@@ -23,8 +23,10 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run business:demo
+      - run: npm run business:pilot
+      - run: npm run business:batch
       - uses: actions/upload-artifact@v4
         with:
-          name: validated-demo-brief
-          path: automation/outbox/demo-boutique/2026-08-03/
+          name: validated-business-packets
+          path: automation/outbox/
           if-no-files-found: error
