@@ -1,0 +1,43 @@
+{
+  "slug": "dewitt-boutiques-owner-pilot",
+  "status": "pilot",
+  "businessName": "DeWitt Boutique Owner Pilot",
+  "contactName": "Owner review only",
+  "deliveryEmail": "owner-review-only@local.invalid",
+  "deliveryMode": "owner_review_only",
+  "location": {
+    "city": "DeWitt",
+    "state": "AR",
+    "radiusMiles": 15
+  },
+  "category": "boutique",
+  "products": [
+    "women's clothing",
+    "women's accessories",
+    "jewelry",
+    "small gifts",
+    "locally themed items"
+  ],
+  "customers": [
+    "local women",
+    "gift buyers",
+    "families",
+    "school supporters",
+    "fair visitors",
+    "senior adults"
+  ],
+  "voice": [
+    "warm",
+    "neighborly",
+    "useful"
+  ],
+  "exclusions": [
+    "politics",
+    "unverified discounts",
+    "unlicensed logos",
+    "guaranteed sales"
+  ],
+  "approvedSourceFiles": [
+    "dewitt-2026-08-31.json"
+  ]
+}
