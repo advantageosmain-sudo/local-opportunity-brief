@@ -3,6 +3,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { runCustomer } from "./lib/run-customer.mjs";
+import { isCustomerEligibleOn } from "./lib/source-validation.mjs";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 
@@ -26,7 +27,9 @@ for (const filename of (await readdir(path.join(root, "customers"))).sort()) {
   const profile = JSON.parse(
     await readFile(path.join(root, "customers", filename), "utf8"),
   );
-  if (allowedStatuses.has(profile.status)) profiles.push(profile);
+  if (allowedStatuses.has(profile.status) && isCustomerEligibleOn(profile, asOf)) {
+    profiles.push(profile);
+  }
 }
 
 const results = [];
