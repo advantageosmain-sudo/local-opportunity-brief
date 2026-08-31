@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { generateReport, scoreOpportunity, validateReport } from "../lib/engine.mjs";
 import { runCustomer } from "../lib/run-customer.mjs";
 import {
+  isCustomerEligibleOn,
   validateCustomerProfile,
   validateSourcePack,
 } from "../lib/source-validation.mjs";
@@ -80,6 +81,16 @@ test("customer delivery mode requires a real recipient address", () => {
     validateCustomerProfile(unsafeCustomer).errors.includes(
       "Customer delivery email is missing or unsafe.",
     ),
+  );
+});
+
+test("dated pilots do not contaminate historical batch rehearsals", () => {
+  const datedPilot = { ...customer, eligibleFrom: "2026-08-31" };
+  assert.equal(isCustomerEligibleOn(datedPilot, "2026-08-03"), false);
+  assert.equal(isCustomerEligibleOn(datedPilot, "2026-08-31"), true);
+  assert.equal(
+    validateCustomerProfile({ ...datedPilot, eligibleFrom: "08/31/2026" }).passed,
+    false,
   );
 });
 
