@@ -39,5 +39,6 @@
   ],
   "approvedSourceFiles": [
     "dewitt-2026-08-31.json"
-  ]
+  ],
+  "eligibleFrom": "2026-08-31"
 }
