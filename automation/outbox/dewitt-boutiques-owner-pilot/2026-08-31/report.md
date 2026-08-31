@@ -6,7 +6,7 @@
 **Research window:** 30 days
 **Delivery mode:** owner_review_only
 **Validation:** PASS
-**Checksum:** `df168dfc7d9be2e46fe4e4f556c82f1333930d2b480ed1fb8c16613ac83c2ca2`
+**Checksum:** `b464847348e6e1454bea50cd58f4904e0f230c63b5d2d09003ff753a18a5bbe2`
 
 > OWNER REVIEW ONLY — DO NOT SEND, POST, CHARGE, SPEND, OR CLAIM AFFILIATION.
 
