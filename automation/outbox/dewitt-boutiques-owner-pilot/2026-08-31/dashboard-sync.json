@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "report": {
+    "schemaVersion": 1,
+    "reportId": "dewitt-boutiques-owner-pilot-2026-08-31",
+    "generatedAt": "2026-08-31T15:39:09.000Z",
+    "asOf": "2026-08-31",
+    "weekOf": "2026-08-31",
+    "customer": {
+      "slug": "dewitt-boutiques-owner-pilot",
+      "businessName": "DeWitt Boutique Owner Pilot",
+      "deliveryEmail": "owner-review-only@local.invalid",
+      "location": {
+        "city": "DeWitt",
+        "state": "AR",
+        "radiusMiles": 15
+      },
+      "category": "boutique",
+      "deliveryMode": "owner_review_only"
+    },
+    "fixture": false,
+    "status": "PENDING_APPROVAL",
+    "lookaheadDays": 30,
+    "deliveryEligible": false,
+    "summary": "Five first-party-verified DeWitt moments from Sept. 4–18, each paired with a small owner-confirmed-stock action. No prior use or outcome feedback exists, so this packet improves evidence freshness and action specificity without claiming improved performance.",
+    "opportunities": [
+      {
+        "id": "dewitt-senior-dragons-glen-rose-2026",
+        "title": "Senior Dragons home-game color edit",
+        "score": 100,
+        "daysAway": 4,
+        "eventDate": "2026-09-04",
+        "prepareBy": "2026-09-02",
+        "location": "DeWitt, AR",
+        "why": "The official DeWitt School District card confirms a Friday-night home game at Dragon Stadium. The retail fit is a bounded inference for shoppers who want local colors; no inventory, demand, or school affiliation is assumed.",
+        "offer": "Create one small blue-and-gold game-night edit from items Michelle confirms are already in stock. Do not use school logos, team artwork, or affiliation claims.",
+        "firstAction": "By Sept. 2, choose 4–6 blue, gold, or neutral items; confirm quantity and price; photograph them together; then hold the draft for owner approval.",
+        "caption": "Friday-night plans? We pulled together a few blue-and-gold-ready pieces for the Senior Dragons’ Sept. 4 home game. No official logos—just easy local color. Available while current stock lasts. Independent local shopping suggestion; not affiliated with DeWitt School District.",
+        "emailSubject": "Sept. 4 home game: easy blue-and-gold options",
+        "emailBody": "The Senior Dragons host Glen Rose at Dragon Stadium on Friday, Sept. 4 at 7 p.m. We prepared a small blue-and-gold color edit from current stock for anyone finishing a game-night look. No official logos or school affiliation are claimed. Please confirm availability before visiting.",
+        "guidance": "Use a warm, neighborly tone. State the date and venue accurately; do not imply endorsement, guaranteed traffic, or availability not checked by the owner.",
+        "evidence": {
+          "sourceName": "DeWitt School District — Aug. 31–Sept. 4 Dragon Athletics calendar",
+          "sourceUrl": "https://www.dewittdragons.net/live-feed?page_no=1",
+          "checkedAt": "2026-08-31",
+          "authority": "official-school",
+          "accessStatus": "verified",
+          "confidence": "high"
+        }
+      },
+      {
+        "id": "arkansas-county-fair-pageants-2026",
+        "title": "Arkansas County Fair pageant-night finishing touches",
+        "score": 100,
+        "daysAway": 12,
+        "eventDate": "2026-09-12",
+        "prepareBy": "2026-09-08",
+        "location": "DeWitt, AR",
+        "why": "The official fair schedule confirms the Sept. 12 pageants at DHS Auditorium. The retail fit is limited to optional finishing touches and gifts; participation, inventory, and demand are not assumed.",
+        "offer": "Create a last-minute finishing-touch tray from owner-confirmed jewelry, hair accessories, and small gifts. Do not imply sponsorship or pageant affiliation.",
+        "firstAction": "By Sept. 8, select 4–6 in-stock finishing-touch items, confirm prices, make one clean tabletop photo, and hold the wording for owner approval.",
+        "caption": "Fair pageant night is Saturday, Sept. 12 at 6 p.m. If you still need a simple finishing touch or a small good-luck gift, we’ve gathered a few options from current stock. Independent local shopping suggestion; not affiliated with the Arkansas County Fair.",
+        "emailSubject": "Sept. 12 fair pageants: finishing touches",
+        "emailBody": "The Arkansas County Fair Pageants are scheduled for Saturday, Sept. 12 at 6 p.m. at the DHS Auditorium. We prepared a small set of finishing touches and gift ideas from current stock. Please confirm availability before visiting; no fair affiliation is claimed.",
+        "guidance": "Keep the copy useful and optional. Do not refer to contestants, promise fit, or imply fair sponsorship.",
+        "evidence": {
+          "sourceName": "Arkansas County Fair Association — 2026 Schedule of Events",
+          "sourceUrl": "https://www.arcofair.org/_files/ugd/64cea1_b25c3571329148d394b9c17b6c6c8371.pdf",
+          "checkedAt": "2026-08-31",
+          "authority": "official-organizer",
+          "accessStatus": "verified",
+          "confidence": "high"
+        }
+      },
+      {
+        "id": "arkansas-county-fair-opening-night-2026",
+        "title": "Arkansas County Fair opening-night grab-and-go edit",
+        "score": 100,
+        "daysAway": 15,
+        "eventDate": "2026-09-15",
+        "prepareBy": "2026-09-10",
+        "location": "DeWitt, AR",
+        "why": "The official fair schedule confirms opening-night activity beginning at 5 p.m. on Sept. 15 at the DeWitt fairgrounds. The retail fit is a comfort-and-convenience inference only.",
+        "offer": "Create an opening-night comfort edit from owner-confirmed casual layers, crossbody-sized accessories, and local-theme items; do not advertise unverified specials.",
+        "firstAction": "By Sept. 10, select 4–6 in-stock fair-friendly items, verify quantities and prices, take one grouped photo, and hold the post for approval.",
+        "caption": "Arkansas County Fair opening night starts Tuesday, Sept. 15 at 5 p.m. We gathered a few comfortable, easy-to-carry picks for a fair evening—available while current stock lasts. Independent local shopping suggestion; not affiliated with the fair.",
+        "emailSubject": "Sept. 15 fair opening: comfortable local picks",
+        "emailBody": "The Arkansas County Fair opens Tuesday, Sept. 15, with evening activities beginning at 5 p.m. We prepared a small comfort-focused edit from current stock for fair-night plans. Please confirm availability before visiting; no discount or fair affiliation is claimed.",
+        "guidance": "Use the verified date and 5 p.m. start. Avoid implying that the boutique is at the fair unless Michelle separately confirms it.",
+        "evidence": {
+          "sourceName": "Arkansas County Fair Association — 2026 Schedule of Events",
+          "sourceUrl": "https://www.arcofair.org/_files/ugd/64cea1_b25c3571329148d394b9c17b6c6c8371.pdf",
+          "checkedAt": "2026-08-31",
+          "authority": "official-organizer",
+          "accessStatus": "verified",
+          "confidence": "high"
+        }
+      },
+      {
+        "id": "arkansas-county-fair-parade-2026",
+        "title": "Arkansas County Fair parade-day local edit",
+        "score": 100,
+        "daysAway": 17,
+        "eventDate": "2026-09-17",
+        "prepareBy": "2026-09-12",
+        "location": "DeWitt, AR",
+        "why": "The official fair schedule confirms the parade at Court Square on Sept. 17 at 4 p.m. The retail fit is a time-bounded grab-and-go inference for downtown visitors.",
+        "offer": "Build a compact parade-day shelf from owner-confirmed accessories, small gifts, and locally themed items. Do not claim to be an official parade vendor.",
+        "firstAction": "By Sept. 12, choose 4–6 portable in-stock items, confirm quantities and prices, make one shelf photo, and hold the copy for approval.",
+        "caption": "The Arkansas County Fair Parade steps off at Court Square Thursday, Sept. 17 at 4 p.m. We gathered a few easy grab-and-go local picks for parade afternoon. Independent local shopping suggestion; not affiliated with the parade or fair.",
+        "emailSubject": "Sept. 17 fair parade: grab-and-go local picks",
+        "emailBody": "The Arkansas County Fair Parade is scheduled for Thursday, Sept. 17 at 4 p.m. at Court Square. We prepared a small set of portable local picks from current stock. Please confirm availability before visiting; no parade or fair affiliation is claimed.",
+        "guidance": "Keep the message about timing and convenience. Do not claim parade-route placement, special hours, or inventory without owner confirmation.",
+        "evidence": {
+          "sourceName": "Arkansas County Fair Association — 2026 Schedule of Events",
+          "sourceUrl": "https://www.arcofair.org/_files/ugd/64cea1_b25c3571329148d394b9c17b6c6c8371.pdf",
+          "checkedAt": "2026-08-31",
+          "authority": "official-organizer",
+          "accessStatus": "verified",
+          "confidence": "high"
+        }
+      },
+      {
+        "id": "arkansas-county-fair-demolition-derby-2026",
+        "title": "Arkansas County Fair demolition-derby casual layer edit",
+        "score": 98,
+        "daysAway": 18,
+        "eventDate": "2026-09-18",
+        "prepareBy": "2026-09-14",
+        "location": "DeWitt, AR",
+        "why": "The official fair schedule confirms a Sept. 18 demolition derby at the fairgrounds arena. The retail fit is limited to casual layers and accessories for an evening outing.",
+        "offer": "Create a practical derby-night layer edit from owner-confirmed casual clothing and accessories. Do not imply venue presence, sponsorship, or guaranteed weather needs.",
+        "firstAction": "By Sept. 14, select 4–6 in-stock casual layers or accessories, confirm prices and quantities, photograph them, and hold the draft for approval.",
+        "caption": "Derby night is Friday, Sept. 18 at 7 p.m. at the Arkansas County Fairgrounds Arena. We pulled together a few casual layers and easy accessories for the evening—available while current stock lasts. Independent local shopping suggestion; not affiliated with the fair.",
+        "emailSubject": "Sept. 18 demolition derby: easy evening layers",
+        "emailBody": "The Arkansas County Fair Demolition Derby is scheduled for Friday, Sept. 18 at 7 p.m. at the fairgrounds arena. We prepared a small casual-layer edit from current stock. Please confirm availability before visiting; no fair affiliation is claimed.",
+        "guidance": "State the official time and venue. Do not predict weather, attendance, sales, or venue access.",
+        "evidence": {
+          "sourceName": "Arkansas County Fair Association — 2026 Schedule of Events",
+          "sourceUrl": "https://www.arcofair.org/_files/ugd/64cea1_b25c3571329148d394b9c17b6c6c8371.pdf",
+          "checkedAt": "2026-08-31",
+          "authority": "official-organizer",
+          "accessStatus": "verified",
+          "confidence": "high"
+        }
+      }
+    ],
+    "safeguards": {
+      "guaranteedResults": false,
+      "customerAccountAccess": false,
+      "automaticPosting": false,
+      "liveDelivery": false,
+      "ownerApprovalRequired": true
+    },
+    "checksum": "df168dfc7d9be2e46fe4e4f556c82f1333930d2b480ed1fb8c16613ac83c2ca2"
+  },
+  "validation": {
+    "passed": true,
+    "errors": [],
+    "warnings": [
+      "No usefulness, usage, or outcome feedback was available as of 2026-08-31; improvements are evidence-bounded, not performance claims."
+    ],
+    "checkedAt": "2026-08-31T15:39:09.000Z"
+  }
+}
