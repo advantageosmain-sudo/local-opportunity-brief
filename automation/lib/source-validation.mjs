@@ -31,6 +31,9 @@ export function validateCustomerProfile(customer) {
   if (!Number.isFinite(customer.location?.radiusMiles) || customer.location.radiusMiles <= 0) {
     errors.push("Customer radius must be a positive number.");
   }
+  if (customer.eligibleFrom !== undefined && !isDate(customer.eligibleFrom)) {
+    errors.push("Customer eligible-from date must use YYYY-MM-DD.");
+  }
   for (const field of ["products", "customers", "voice", "exclusions", "approvedSourceFiles"]) {
     if (!Array.isArray(customer[field])) errors.push(`Customer ${field} must be a list.`);
   }
@@ -39,6 +42,12 @@ export function validateCustomerProfile(customer) {
   }
 
   return { passed: errors.length === 0, errors, warnings };
+}
+
+export function isCustomerEligibleOn(customer, asOf) {
+  if (!isDate(asOf)) return false;
+  if (customer.eligibleFrom === undefined) return true;
+  return isDate(customer.eligibleFrom) && customer.eligibleFrom <= asOf;
 }
 
 export function validateSourcePack(source, { asOf }) {
