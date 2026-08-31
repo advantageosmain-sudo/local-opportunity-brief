@@ -1,0 +1,19 @@
+{
+  "customer": {
+    "passed": true,
+    "errors": [],
+    "warnings": [
+      "Owner-review-only customer: live delivery is prohibited."
+    ]
+  },
+  "sources": [
+    {
+      "sourceFile": "dewitt-2026-08-31.json",
+      "passed": true,
+      "errors": [],
+      "warnings": []
+    }
+  ],
+  "passed": true,
+  "checkedAt": "2026-08-31T15:39:09.000Z"
+}
