@@ -38,7 +38,7 @@
         "caption": "Friday-night plans? We pulled together a few blue-and-gold-ready pieces for the Senior Dragons’ Sept. 4 home game. No official logos—just easy local color. Available while current stock lasts. Independent local shopping suggestion; not affiliated with DeWitt School District.",
         "emailSubject": "Sept. 4 home game: easy blue-and-gold options",
         "emailBody": "The Senior Dragons host Glen Rose at Dragon Stadium on Friday, Sept. 4 at 7 p.m. We prepared a small blue-and-gold color edit from current stock for anyone finishing a game-night look. No official logos or school affiliation are claimed. Please confirm availability before visiting.",
-        "guidance": "Use a warm, neighborly tone. State the date and venue accurately; do not imply endorsement, guaranteed traffic, or availability not checked by the owner.",
+        "guidance": "Use a warm, neighborly tone. State the date and venue accurately; do not imply endorsement, traffic promises, or availability not checked by the owner.",
         "evidence": {
           "sourceName": "DeWitt School District — Aug. 31–Sept. 4 Dragon Athletics calendar",
           "sourceUrl": "https://www.dewittdragons.net/live-feed?page_no=1",
@@ -152,7 +152,7 @@
       "liveDelivery": false,
       "ownerApprovalRequired": true
     },
-    "checksum": "df168dfc7d9be2e46fe4e4f556c82f1333930d2b480ed1fb8c16613ac83c2ca2"
+    "checksum": "b464847348e6e1454bea50cd58f4904e0f230c63b5d2d09003ff753a18a5bbe2"
   },
   "validation": {
     "passed": true,
