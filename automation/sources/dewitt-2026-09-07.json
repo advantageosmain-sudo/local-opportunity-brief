@@ -1,0 +1,146 @@
+{
+  "fixture": false,
+  "sourceNotice": "Owner-only DeWitt boutique pilot. The first-party Arkansas County Fair Association schedule and event page were opened and checked on 2026-09-07. Recheck before later reuse because the organizer states the schedule is subject to change without notice. Inventory, pricing, discounts, affiliation, attendance, and demand are not inferred.",
+  "opportunities": [
+    {
+      "id": "arkansas-county-fair-pageants-2026",
+      "title": "Arkansas County Fair pageant-night finishing touches",
+      "eventDate": "2026-09-12",
+      "prepareBy": "2026-09-09",
+      "city": "DeWitt",
+      "state": "AR",
+      "distanceMiles": 0,
+      "sourceName": "Arkansas County Fair Association — 2026 Schedule of Events",
+      "sourceUrl": "https://www.arcofair.org/_files/ugd/64cea1_b25c3571329148d394b9c17b6c6c8371.pdf",
+      "sourceCheckedAt": "2026-09-07",
+      "sourceAuthority": "official-organizer",
+      "sourceAccessStatus": "verified",
+      "sourceQuality": 5,
+      "customerTags": [
+        "local women",
+        "families",
+        "gift buyers"
+      ],
+      "productTags": [
+        "women's accessories",
+        "jewelry",
+        "small gifts"
+      ],
+      "urgency": 5,
+      "preparationEase": 5,
+      "offerType": "pageant-night finishing-touch table using only owner-confirmed accessories, jewelry, and small gifts"
+    },
+    {
+      "id": "arkansas-county-fair-opening-night-2026",
+      "title": "Arkansas County Fair opening-night grab-and-go edit",
+      "eventDate": "2026-09-15",
+      "prepareBy": "2026-09-10",
+      "city": "DeWitt",
+      "state": "AR",
+      "distanceMiles": 0,
+      "sourceName": "Arkansas County Fair Association — 2026 Schedule of Events",
+      "sourceUrl": "https://www.arcofair.org/_files/ugd/64cea1_b25c3571329148d394b9c17b6c6c8371.pdf",
+      "sourceCheckedAt": "2026-09-07",
+      "sourceAuthority": "official-organizer",
+      "sourceAccessStatus": "verified",
+      "sourceQuality": 5,
+      "customerTags": [
+        "families",
+        "fair visitors",
+        "local women"
+      ],
+      "productTags": [
+        "women's clothing",
+        "women's accessories",
+        "locally themed items"
+      ],
+      "urgency": 5,
+      "preparationEase": 5,
+      "offerType": "comfortable fair-opening outfit and grab-and-go accessory edit using only owner-confirmed stock"
+    },
+    {
+      "id": "arkansas-county-fair-senior-citizens-day-2026",
+      "title": "Arkansas County Fair Senior Citizens Day easy-gift edit",
+      "eventDate": "2026-09-16",
+      "prepareBy": "2026-09-12",
+      "city": "DeWitt",
+      "state": "AR",
+      "distanceMiles": 0,
+      "sourceName": "Arkansas County Fair Association — 2026 Schedule of Events",
+      "sourceUrl": "https://www.arcofair.org/_files/ugd/64cea1_b25c3571329148d394b9c17b6c6c8371.pdf",
+      "sourceCheckedAt": "2026-09-07",
+      "sourceAuthority": "official-organizer",
+      "sourceAccessStatus": "verified",
+      "sourceQuality": 5,
+      "customerTags": [
+        "senior adults",
+        "gift buyers",
+        "fair visitors"
+      ],
+      "productTags": [
+        "women's accessories",
+        "jewelry",
+        "small gifts"
+      ],
+      "urgency": 4,
+      "preparationEase": 5,
+      "offerType": "respectful easy-to-browse accessory and small-gift edit using only owner-confirmed stock"
+    },
+    {
+      "id": "arkansas-county-fair-parade-2026",
+      "title": "Arkansas County Fair parade-day local edit",
+      "eventDate": "2026-09-17",
+      "prepareBy": "2026-09-12",
+      "city": "DeWitt",
+      "state": "AR",
+      "distanceMiles": 0,
+      "sourceName": "Arkansas County Fair Association — 2026 Schedule of Events",
+      "sourceUrl": "https://www.arcofair.org/_files/ugd/64cea1_b25c3571329148d394b9c17b6c6c8371.pdf",
+      "sourceCheckedAt": "2026-09-07",
+      "sourceAuthority": "official-organizer",
+      "sourceAccessStatus": "verified",
+      "sourceQuality": 5,
+      "customerTags": [
+        "families",
+        "fair visitors",
+        "gift buyers"
+      ],
+      "productTags": [
+        "women's accessories",
+        "small gifts",
+        "locally themed items"
+      ],
+      "urgency": 4,
+      "preparationEase": 5,
+      "offerType": "parade-day grab-and-go local edit using only owner-confirmed stock and no event affiliation claims"
+    },
+    {
+      "id": "arkansas-county-fair-demolition-derby-2026",
+      "title": "Arkansas County Fair demolition-derby casual layer edit",
+      "eventDate": "2026-09-18",
+      "prepareBy": "2026-09-14",
+      "city": "DeWitt",
+      "state": "AR",
+      "distanceMiles": 0,
+      "sourceName": "Arkansas County Fair Association — 2026 Schedule of Events",
+      "sourceUrl": "https://www.arcofair.org/_files/ugd/64cea1_b25c3571329148d394b9c17b6c6c8371.pdf",
+      "sourceCheckedAt": "2026-09-07",
+      "sourceAuthority": "official-organizer",
+      "sourceAccessStatus": "verified",
+      "sourceQuality": 5,
+      "customerTags": [
+        "families",
+        "fair visitors",
+        "local women"
+      ],
+      "productTags": [
+        "women's clothing",
+        "women's accessories",
+        "locally themed items"
+      ],
+      "urgency": 4,
+      "preparationEase": 4,
+      "offerType": "comfortable demolition-derby layer and accessory edit using only owner-confirmed stock"
+    }
+  ]
+}
