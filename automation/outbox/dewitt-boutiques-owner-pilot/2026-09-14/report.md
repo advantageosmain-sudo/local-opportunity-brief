@@ -1,0 +1,134 @@
+# Local Opportunity Brief — DeWitt Boutique Owner Pilot
+
+**Week of:** 2026-09-14
+**Location:** DeWitt, AR
+**Status:** PENDING_APPROVAL
+**Research window:** 30 days
+**Delivery mode:** owner_review_only
+**Validation:** PASS
+**Checksum:** `0b92567156c0038f5cbb244f5dced87d8757e813b0b5e72e1c2de8c09201805a`
+
+> OWNER REVIEW ONLY — DO NOT SEND, POST, CHARGE, SPEND, OR CLAIM AFFILIATION.
+
+## This week's direction
+
+Five first-party-verified DeWitt fair opportunities from Sept. 15–19, each with a low-prep, owner-confirmed-stock action. The expired Sept. 12 pageant was removed. With zero saved owner feedback, changes are limited to freshness, immediacy, and distinct shopping jobs.
+
+## 1. Arkansas County Fair opening-night essentials edit
+
+- **Fit score:** 100/100
+- **Event date:** 2026-09-15
+- **Prepare by:** 2026-09-14
+- **Location:** DeWitt, AR
+- **Why it fits:** The official fair schedule confirms the gate opens Tuesday, Sept. 15 at 5 p.m., with the Exhibit Building open until 10 p.m. The retail fit is a bounded comfort-and-convenience inference only.
+- **Recommended offer:** Create a same-day fair-night essentials edit from owner-confirmed casual clothing, easy-carry accessories, and locally themed items. Do not advertise unverified specials.
+- **Do this first:** Today, choose 4–6 in-stock fair-friendly items, verify quantities and prices, take one grouped photo, and hold the post for owner approval.
+
+### Ready-to-use caption
+
+Arkansas County Fair opening night starts Tuesday, Sept. 15 at 5 p.m. We gathered a few comfortable, easy-to-carry picks for a fair evening—available while current stock lasts. Independent local shopping suggestion; not affiliated with the fair.
+
+### Customer email
+
+**Subject:** Sept. 15 fair opening: comfortable local picks
+
+The Arkansas County Fair opens Tuesday, Sept. 15, with the gate opening at 5 p.m. We prepared a small comfort-focused edit from current stock for fair-night plans. Please confirm availability before visiting; no discount or fair affiliation is claimed.
+
+**Evidence:** [Arkansas County Fair Association — 2026 Schedule of Events](https://www.arcofair.org/_files/ugd/64cea1_b25c3571329148d394b9c17b6c6c8371.pdf) · checked 2026-09-14 · high confidence
+
+## 2. Arkansas County Fair Senior Citizens Day easy-gift edit
+
+- **Fit score:** 100/100
+- **Event date:** 2026-09-16
+- **Prepare by:** 2026-09-14
+- **Location:** DeWitt, AR
+- **Why it fits:** The official fair schedule confirms Senior Citizens Day on Wednesday, Sept. 16 from 9:30–11 a.m. at the fairgrounds. The retail fit is a respectful, audience-specific inference for easy-to-browse accessories and gifts.
+- **Recommended offer:** Create a simple, clearly priced accessory-and-gift tray from owner-confirmed stock. Avoid age stereotypes, health claims, or assumptions about attendees.
+- **Do this first:** Today, choose 4–6 in-stock accessories or small gifts, confirm prices and quantities, photograph them clearly, and hold the draft for owner approval.
+
+### Ready-to-use caption
+
+Planning for Senior Citizens Day at the Arkansas County Fair on Wednesday, Sept. 16 from 9:30–11 a.m.? We gathered a small, easy-to-browse selection of accessories and gifts from current stock. Independent local shopping suggestion; not affiliated with the fair.
+
+### Customer email
+
+**Subject:** Sept. 16 Senior Citizens Day: easy gift ideas
+
+Senior Citizens Day at the Arkansas County Fair is scheduled for Wednesday, Sept. 16 from 9:30–11 a.m. at the fairgrounds. We prepared a small, easy-to-browse selection of accessories and gifts from current stock. Please confirm availability before visiting; no fair affiliation is claimed.
+
+**Evidence:** [Arkansas County Fair Association — 2026 Schedule of Events](https://www.arcofair.org/_files/ugd/64cea1_b25c3571329148d394b9c17b6c6c8371.pdf) · checked 2026-09-14 · high confidence
+
+## 3. Arkansas County Fair parade-day local edit
+
+- **Fit score:** 100/100
+- **Event date:** 2026-09-17
+- **Prepare by:** 2026-09-15
+- **Location:** DeWitt, AR
+- **Why it fits:** The official fair schedule confirms the parade at Court Square on Thursday, Sept. 17 at 4 p.m. The retail fit is a time-bounded grab-and-go inference for downtown visitors.
+- **Recommended offer:** Build a compact parade-day shelf from owner-confirmed accessories, small gifts, and locally themed items. Do not claim to be an official parade vendor.
+- **Do this first:** By Sept. 15, choose 4–6 portable in-stock items, confirm quantities and prices, make one shelf photo, and hold the copy for approval.
+
+### Ready-to-use caption
+
+The Arkansas County Fair Parade steps off at Court Square Thursday, Sept. 17 at 4 p.m. We gathered a few easy grab-and-go local picks for parade afternoon. Independent local shopping suggestion; not affiliated with the parade or fair.
+
+### Customer email
+
+**Subject:** Sept. 17 fair parade: grab-and-go local picks
+
+The Arkansas County Fair Parade is scheduled for Thursday, Sept. 17 at 4 p.m. at Court Square. We prepared a small set of portable local picks from current stock. Please confirm availability before visiting; no parade or fair affiliation is claimed.
+
+**Evidence:** [Arkansas County Fair Association — 2026 Schedule of Events](https://www.arcofair.org/_files/ugd/64cea1_b25c3571329148d394b9c17b6c6c8371.pdf) · checked 2026-09-14 · high confidence
+
+## 4. Friday demolition-derby casual layer edit
+
+- **Fit score:** 98/100
+- **Event date:** 2026-09-18
+- **Prepare by:** 2026-09-16
+- **Location:** DeWitt, AR
+- **Why it fits:** The official fair schedule confirms the Friday demolition derby on Sept. 18 at 7 p.m. at the Fairgrounds Arena. The retail fit is limited to casual layers and accessories for an evening outing.
+- **Recommended offer:** Create a practical derby-night layer edit from owner-confirmed casual clothing and accessories. Do not imply venue presence, sponsorship, or specific weather needs.
+- **Do this first:** By Sept. 16, select 4–6 in-stock casual layers or accessories, confirm prices and quantities, photograph them, and hold the draft for approval.
+
+### Ready-to-use caption
+
+Friday derby night is Sept. 18 at 7 p.m. at the Arkansas County Fairgrounds Arena. We pulled together a few casual layers and easy accessories for the evening—available while current stock lasts. Independent local shopping suggestion; not affiliated with the fair.
+
+### Customer email
+
+**Subject:** Sept. 18 demolition derby: easy evening layers
+
+The Arkansas County Fair Demolition Derby is scheduled for Friday, Sept. 18 at 7 p.m. at the Fairgrounds Arena. We prepared a small casual-layer edit from current stock. Please confirm availability before visiting; no fair affiliation is claimed.
+
+**Evidence:** [Arkansas County Fair Association — 2026 Schedule of Events](https://www.arcofair.org/_files/ugd/64cea1_b25c3571329148d394b9c17b6c6c8371.pdf) · checked 2026-09-14 · high confidence
+
+## 5. Saturday fair-finale grab-and-go edit
+
+- **Fit score:** 99/100
+- **Event date:** 2026-09-19
+- **Prepare by:** 2026-09-16
+- **Location:** DeWitt, AR
+- **Why it fits:** The official fair schedule confirms the Saturday gate opens Sept. 19 at 1 p.m., with activities through the evening and a 6 p.m. derby. The retail fit is a bounded inference for portable accessories, local items, and small gifts.
+- **Recommended offer:** Create a compact Saturday fair-finale tray from owner-confirmed accessories, small gifts, and locally themed items. Do not imply fair vending or affiliation.
+- **Do this first:** By Sept. 16, choose 4–6 portable in-stock items, verify prices and quantities, photograph them together, and hold the draft for approval.
+
+### Ready-to-use caption
+
+The Arkansas County Fair’s final Saturday starts Sept. 19 at 1 p.m. We gathered a few portable accessories, local picks, and small gifts for fair-day plans—available while current stock lasts. Independent local shopping suggestion; not affiliated with the fair.
+
+### Customer email
+
+**Subject:** Sept. 19 fair finale: portable local picks
+
+The Arkansas County Fair opens Saturday, Sept. 19 at 1 p.m., with activities continuing into the evening. We prepared a compact selection of portable accessories, local picks, and small gifts from current stock. Please confirm availability before visiting; no fair affiliation is claimed.
+
+**Evidence:** [Arkansas County Fair Association — 2026 Schedule of Events](https://www.arcofair.org/_files/ugd/64cea1_b25c3571329148d394b9c17b6c6c8371.pdf) · checked 2026-09-14 · high confidence
+
+## Safeguards
+
+- No promised results or traffic claims
+- No unverified inventory, price, discount, or hours claims
+- No official logos, sponsorship, or affiliation claims
+- No customer account access or automatic posting
+- Live delivery remains disabled pending Michelle's approval
+- Recheck the organizer schedule immediately before use because it is subject to change without notice
