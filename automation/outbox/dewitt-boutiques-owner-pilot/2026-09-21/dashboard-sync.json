@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "report": {
+    "schemaVersion": 1,
+    "reportId": "dewitt-boutiques-owner-pilot-2026-09-21",
+    "generatedAt": "2026-09-21T15:49:20.000Z",
+    "asOf": "2026-09-21",
+    "weekOf": "2026-09-21",
+    "customer": {
+      "slug": "dewitt-boutiques-owner-pilot",
+      "businessName": "DeWitt Boutique Owner Pilot",
+      "deliveryEmail": "owner-review-only@local.invalid",
+      "location": {
+        "city": "DeWitt",
+        "state": "AR",
+        "radiusMiles": 15
+      },
+      "category": "boutique",
+      "deliveryMode": "owner_review_only"
+    },
+    "fixture": false,
+    "status": "PENDING_APPROVAL",
+    "lookaheadDays": 30,
+    "deliveryEligible": false,
+    "summary": "Five current, first-party-verified DeWitt school-community opportunities from Sept. 25–Oct. 13, each with a distinct owner-confirmed-stock action. Expired fair items were removed. With zero saved owner feedback, changes are limited to freshness, broader date coverage, direct event records, and stronger brand-safety guidance.",
+    "opportunities": [
+      {
+        "id": "dewitt-senior-dragons-warren-home-2026",
+        "title": "Senior Dragons versus Warren game-night edit",
+        "score": 100,
+        "daysAway": 4,
+        "eventDate": "2026-09-25",
+        "prepareBy": "2026-09-23",
+        "location": "Dragon Stadium, DeWitt, AR",
+        "why": "The official district athletics image confirms the Senior Dragons host Warren on Friday, Sept. 25 at 7 p.m. at Dragon Stadium. The boutique fit is a bounded color-and-comfort inference for local school supporters.",
+        "offer": "Create a blue-and-gold or neutral game-night edit from owner-confirmed clothing and accessories. Do not use school logos or imply team affiliation.",
+        "firstAction": "By Sept. 23, choose 4–6 in-stock game-night pieces, verify quantities and prices, take one grouped photo, and hold the post for owner approval.",
+        "caption": "Friday, Sept. 25: the Senior Dragons host Warren at 7 p.m. at Dragon Stadium. We gathered a few blue-and-gold and easy game-night picks from current stock. Independent local shopping suggestion; not affiliated with the school or team.",
+        "emailSubject": "Sept. 25 home game: easy blue-and-gold picks",
+        "emailBody": "The Senior Dragons host Warren Friday, Sept. 25 at 7 p.m. at Dragon Stadium. We prepared a small game-night edit from current stock. Please confirm availability before visiting; no school or team affiliation is claimed.",
+        "guidance": "Use colors only from owner-confirmed stock. Do not use school logos, team marks, player images, or attendance claims.",
+        "evidence": {
+          "sourceName": "DeWitt School District — Dragon Athletics calendar, Sept. 21–25, 2026",
+          "sourceUrl": "https://core-docs.s3.amazonaws.com/dewitt_school_district_ar/live_feed_image/image/30000602/large_Dragon_Athletics_Calendar__3_.png",
+          "checkedAt": "2026-09-21",
+          "authority": "official-school",
+          "accessStatus": "verified",
+          "confidence": "high"
+        }
+      },
+      {
+        "id": "dewitt-homecoming-shirt-order-deadline-2026",
+        "title": "Homecoming shirt-order deadline complementary edit",
+        "score": 100,
+        "daysAway": 17,
+        "eventDate": "2026-10-08",
+        "prepareBy": "2026-10-05",
+        "location": "DeWitt High School office, 1614 S. Grandview Drive, DeWitt, AR 72042",
+        "why": "The official DHS post says 2026 homecoming shirts go on sale Sept. 21 and orders close Thursday, Oct. 8 at noon, with forms in the school office. The boutique fit is limited to non-logo accessories that complement official shirts.",
+        "offer": "Create a non-logo blue-and-gold accessory edit from owner-confirmed jewelry and accessories. Do not reproduce the shirt art or imply a school partnership.",
+        "firstAction": "By Oct. 5, select 4–6 in-stock non-logo accessories, confirm prices and quantities, photograph them separately from school merchandise, and hold the draft for approval.",
+        "caption": "Official DHS homecoming shirt orders close Thursday, Oct. 8 at noon. If you already have your shirt handled, we gathered a few non-logo blue-and-gold accessories from current stock to finish the look. Independent local shopping suggestion; not affiliated with the school.",
+        "emailSubject": "Oct. 8 homecoming shirt deadline: complementary accessories",
+        "emailBody": "DHS says official homecoming shirt orders close Thursday, Oct. 8 at noon. We prepared a small non-logo accessory edit from current stock to complement school colors. Please confirm availability before visiting; no school partnership is claimed.",
+        "guidance": "Treat the school shirt as contextual evidence only. Do not copy artwork, sell school-branded merchandise, or suggest authorization.",
+        "evidence": {
+          "sourceName": "DeWitt High School — 2026 homecoming shirt sale notice",
+          "sourceUrl": "https://www.dewittdragons.net/o/dhs/live_feeds/13186298",
+          "checkedAt": "2026-09-21",
+          "authority": "official-school",
+          "accessStatus": "verified",
+          "confidence": "high"
+        }
+      },
+      {
+        "id": "dewitt-dhs-junior-bbq-2026",
+        "title": "DHS Junior BBQ small-gift and accessory edit",
+        "score": 99,
+        "daysAway": 18,
+        "eventDate": "2026-10-09",
+        "prepareBy": "2026-10-05",
+        "location": "DeWitt High School, 1614 S. Grandview Drive, DeWitt, AR 72042",
+        "why": "The official DHS calendar lists the Junior BBQ on Friday, Oct. 9. The listing says the time is to be announced, so the retail fit is limited to a flexible school-community grab-and-go edit.",
+        "offer": "Prepare a compact tray of owner-confirmed accessories, locally themed items, and small gifts. Do not add a start time or imply event vending.",
+        "firstAction": "By Oct. 5, choose 4–6 portable in-stock items, confirm prices and quantities, make one shelf photo, and recheck the official calendar before any use.",
+        "caption": "DHS lists the Junior BBQ for Friday, Oct. 9, with the time still to be announced. We gathered a few easy local picks from current stock for school-community plans. Independent shopping suggestion; not affiliated with or vending at the event.",
+        "emailSubject": "Oct. 9 DHS Junior BBQ: easy local picks",
+        "emailBody": "The official DHS calendar lists the Junior BBQ for Friday, Oct. 9; a time has not been published. We prepared a small grab-and-go edit from current stock. Please recheck event details and product availability before visiting.",
+        "guidance": "Do not state a time until DHS publishes one. Do not imply a booth, sponsorship, fundraiser relationship, or event affiliation.",
+        "evidence": {
+          "sourceName": "DeWitt High School Events — DHS Junior BBQ",
+          "sourceUrl": "https://www.dewittdragons.net/o/dhs/events?id=60978392",
+          "checkedAt": "2026-09-21",
+          "authority": "official-school",
+          "accessStatus": "verified",
+          "confidence": "high"
+        }
+      },
+      {
+        "id": "dewitt-battle-of-arco-football-2026",
+        "title": "Battle of ARCO home-game spirit edit",
+        "score": 100,
+        "daysAway": 18,
+        "eventDate": "2026-10-09",
+        "prepareBy": "2026-10-07",
+        "location": "DeWitt High School campus, 1614 S. Grandview Drive, DeWitt, AR 72042",
+        "why": "The official DHS calendar lists Senior Football versus Stuttgart (Battle of ARCO) on Friday, Oct. 9 from 7–8 p.m. The boutique fit is a bounded school-color and game-night inference.",
+        "offer": "Build a blue-and-gold game-night edit from owner-confirmed clothing and accessories. Avoid school logos, rivalry claims, and official-event wording.",
+        "firstAction": "By Oct. 7, choose 4–6 in-stock color-coordinated items, confirm quantities and prices, photograph them, and hold the draft for approval.",
+        "caption": "The DHS calendar lists Senior Football versus Stuttgart on Friday, Oct. 9 from 7–8 p.m. We gathered a few blue-and-gold and easy game-night picks from current stock. Independent local shopping suggestion; not affiliated with the school or event.",
+        "emailSubject": "Oct. 9 Battle of ARCO: game-night color picks",
+        "emailBody": "DHS lists Senior Football versus Stuttgart for Friday, Oct. 9 from 7–8 p.m. We prepared a small game-night color edit from current stock. Please confirm availability before visiting; no school or event affiliation is claimed.",
+        "guidance": "Use the calendar title only as context. Do not use team marks, protected graphics, outcome predictions, or rivalry language.",
+        "evidence": {
+          "sourceName": "DeWitt High School Events — Senior Football v. Stuttgart (Battle of ARCO)",
+          "sourceUrl": "https://www.dewittdragons.net/o/dhs/events?id=57190957",
+          "checkedAt": "2026-09-21",
+          "authority": "official-school",
+          "accessStatus": "verified",
+          "confidence": "high"
+        }
+      },
+      {
+        "id": "dewitt-dhs-picture-day-2026",
+        "title": "DHS Picture Day camera-ready edit",
+        "score": 96,
+        "daysAway": 22,
+        "eventDate": "2026-10-13",
+        "prepareBy": "2026-10-09",
+        "location": "DeWitt High School, 1614 S. Grandview Drive, DeWitt, AR 72042",
+        "why": "The official DHS calendar lists School Picture Day on Tuesday, Oct. 13. No time is published, so the retail fit is limited to advance outfit and accessory preparation.",
+        "offer": "Create a camera-ready edit from owner-confirmed clothing, jewelry, and simple accessories. Do not promise photographic results or assume dress requirements.",
+        "firstAction": "By Oct. 9, select 4–6 in-stock camera-ready pieces, confirm quantities and prices, photograph them in natural light, and recheck the school calendar.",
+        "caption": "DHS lists School Picture Day for Tuesday, Oct. 13. We gathered a few camera-ready clothing and accessory ideas from current stock for anyone planning ahead. Independent local shopping suggestion; not affiliated with the school or photographer.",
+        "emailSubject": "Oct. 13 Picture Day: camera-ready local picks",
+        "emailBody": "The official DHS calendar lists School Picture Day for Tuesday, Oct. 13. We prepared a small camera-ready edit from current stock for families planning ahead. Please confirm availability and school details before visiting.",
+        "guidance": "Do not claim a required dress code, photographer relationship, retakes, or guaranteed photo results. The school has not published a time.",
+        "evidence": {
+          "sourceName": "DeWitt High School Events — School Picture Day",
+          "sourceUrl": "https://www.dewittdragons.net/o/dhs/events?id=57193384",
+          "checkedAt": "2026-09-21",
+          "authority": "official-school",
+          "accessStatus": "verified",
+          "confidence": "high"
+        }
+      }
+    ],
+    "safeguards": {
+      "guaranteedResults": false,
+      "customerAccountAccess": false,
+      "automaticPosting": false,
+      "liveDelivery": false,
+      "ownerApprovalRequired": true
+    },
+    "checksum": "f3342f59f5dc7beb4f372ece08fbd86ed6e5b2b79a2b1081cac0e5389bf897de"
+  },
+  "validation": {
+    "passed": true,
+    "errors": [],
+    "warnings": [
+      "No usefulness, usage, outcome, intake, lead, or owner-activity feedback was available as of 2026-09-21; improvements are evidence-bounded, not performance claims.",
+      "The DHS Junior BBQ and Picture Day listings do not publish a time; do not add one and recheck the official calendar immediately before use.",
+      "The future DHS calendar records identify the school calendar and campus address; recheck the exact activity location before customer-facing use."
+    ],
+    "checkedAt": "2026-09-21T15:49:20.000Z"
+  }
+}
