@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "errors": [],
+  "warnings": [
+    "No usefulness, usage, outcome, intake, lead, or owner-activity feedback was available as of 2026-09-28; improvements are evidence-bounded, not performance claims.",
+    "DHS Picture Day has no published time; do not add one and recheck the official calendar immediately before use.",
+    "Future DHS calendar records identify the school calendar and campus address; recheck the exact on-campus activity location before customer-facing use."
+  ],
+  "checkedAt": "2026-09-28T15:48:55.000Z"
+}
