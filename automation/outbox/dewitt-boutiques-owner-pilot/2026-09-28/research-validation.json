@@ -1,0 +1,22 @@
+{
+  "customer": {
+    "passed": true,
+    "errors": [],
+    "warnings": [
+      "Owner-review-only customer: live delivery is prohibited."
+    ]
+  },
+  "sources": [
+    {
+      "sourceFile": "dewitt-2026-09-28.json",
+      "passed": true,
+      "errors": [],
+      "warnings": [
+        "DHS Picture Day has no published time; do not add one and recheck the official calendar immediately before use.",
+        "Future DHS calendar records identify the school calendar and campus address; recheck the exact on-campus activity location before customer-facing use."
+      ]
+    }
+  ],
+  "passed": true,
+  "checkedAt": "2026-09-28T15:48:55.000Z"
+}
