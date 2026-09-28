@@ -1,0 +1,135 @@
+# Local Opportunity Brief — DeWitt Boutique Owner Pilot
+
+**Week of:** 2026-09-28
+**Location:** DeWitt, AR
+**Status:** PENDING_APPROVAL
+**Research window:** 30 days
+**Delivery mode:** owner_review_only
+**Validation:** PASS
+**Checksum:** `2186502008c17027100d92e69c934f6b24577da664e194c6cecfb79a37579030`
+
+> OWNER REVIEW ONLY — DO NOT SEND, POST, CHARGE, SPEND, OR CLAIM AFFILIATION.
+
+## This week's direction
+
+Five current, first-party-verified DeWitt school-community opportunities from Oct. 1–23, each with a distinct owner-confirmed-stock action. The expired Sept. 25 game and the time-unpublished Junior BBQ were removed. With zero saved owner feedback, changes are limited to freshness, usable timing, broader date coverage, and stronger brand-safety guidance.
+
+## 1. Junior Dragons Star City home-game family edit
+
+- **Fit score:** 100/100
+- **Event date:** 2026-10-01
+- **Prepare by:** 2026-09-30
+- **Location:** Dragon Stadium, DeWitt, AR
+- **Why it fits:** The official district athletics image confirms the 7th-grade and Junior Dragons host Star City on Thursday, Oct. 1 at 5:30 and 7 p.m. at Dragon Stadium. The boutique fit is a bounded family game-night inference.
+- **Recommended offer:** Create a family-friendly blue-and-gold or neutral game-night edit from owner-confirmed clothing and accessories. Do not use school logos or imply team affiliation.
+- **Do this first:** By Sept. 30, choose 4–6 in-stock game-night pieces, verify quantities and prices, take one grouped photo, and hold the post for owner approval.
+
+### Ready-to-use caption
+
+The 7th-grade and Junior Dragons host Star City Thursday, Oct. 1 at 5:30 and 7 p.m. at Dragon Stadium. We gathered a few easy family game-night picks from current stock. Independent local shopping suggestion; not affiliated with the school or team.
+
+### Customer email
+
+**Subject:** Oct. 1 Junior Dragons home games: easy family picks
+
+The 7th-grade and Junior Dragons host Star City Thursday, Oct. 1 at 5:30 and 7 p.m. at Dragon Stadium. We prepared a small family game-night edit from current stock. Please confirm availability before visiting; no school or team affiliation is claimed.
+
+**Evidence:** [DeWitt School District — Dragon Athletics calendar, Sept. 28–Oct. 2, 2026](https://core-docs.s3.amazonaws.com/dewitt_school_district_ar/live_feed_image/image/30311240/large_Dragon_Athletics_Calendar__4_.png) · checked 2026-09-28 · high confidence
+
+## 2. Homecoming shirt-order deadline complementary edit
+
+- **Fit score:** 100/100
+- **Event date:** 2026-10-08
+- **Prepare by:** 2026-10-05
+- **Location:** DeWitt High School office, 1614 S. Grandview Drive, DeWitt, AR 72042
+- **Why it fits:** The official DHS post confirms 2026 homecoming shirts are on sale and orders close Thursday, Oct. 8 at noon, with forms in the school office. The boutique fit is limited to non-logo accessories that complement official shirts.
+- **Recommended offer:** Create a non-logo blue-and-gold accessory edit from owner-confirmed jewelry and accessories. Do not reproduce the shirt art or imply a school partnership.
+- **Do this first:** By Oct. 5, select 4–6 in-stock non-logo accessories, confirm prices and quantities, photograph them separately from school merchandise, and hold the draft for approval.
+
+### Ready-to-use caption
+
+Official DHS homecoming shirt orders close Thursday, Oct. 8 at noon. If you already have your shirt handled, we gathered a few non-logo blue-and-gold accessories from current stock to finish the look. Independent local shopping suggestion; not affiliated with the school.
+
+### Customer email
+
+**Subject:** Oct. 8 homecoming shirt deadline: complementary accessories
+
+DHS says official homecoming shirt orders close Thursday, Oct. 8 at noon. We prepared a small non-logo accessory edit from current stock to complement school colors. Please confirm availability before visiting; no school partnership is claimed.
+
+**Evidence:** [DeWitt High School — 2026 homecoming shirt sale notice](https://www.dewittdragons.net/o/dhs/live_feeds/13186298) · checked 2026-09-28 · high confidence
+
+## 3. Battle of ARCO home-game spirit edit
+
+- **Fit score:** 100/100
+- **Event date:** 2026-10-09
+- **Prepare by:** 2026-10-07
+- **Location:** DeWitt High School campus, 1614 S. Grandview Drive, DeWitt, AR 72042
+- **Why it fits:** The official DHS calendar confirms Senior Football versus Stuttgart (Battle of ARCO) on Friday, Oct. 9 from 7–8 p.m. The boutique fit is a bounded school-color and game-night inference.
+- **Recommended offer:** Build a blue-and-gold game-night edit from owner-confirmed clothing and accessories. Avoid school logos, rivalry claims, and official-event wording.
+- **Do this first:** By Oct. 7, choose 4–6 in-stock color-coordinated items, confirm quantities and prices, photograph them, and hold the draft for approval.
+
+### Ready-to-use caption
+
+The DHS calendar lists Senior Football versus Stuttgart on Friday, Oct. 9 from 7–8 p.m. We gathered a few blue-and-gold and easy game-night picks from current stock. Independent local shopping suggestion; not affiliated with the school or event.
+
+### Customer email
+
+**Subject:** Oct. 9 Battle of ARCO: game-night color picks
+
+DHS lists Senior Football versus Stuttgart for Friday, Oct. 9 from 7–8 p.m. We prepared a small game-night color edit from current stock. Please confirm availability before visiting; no school or event affiliation is claimed.
+
+**Evidence:** [DeWitt High School Events — Senior Football v. Stuttgart (Battle of ARCO)](https://www.dewittdragons.net/o/dhs/events?id=57190957) · checked 2026-09-28 · high confidence
+
+## 4. DHS Picture Day camera-ready edit
+
+- **Fit score:** 98/100
+- **Event date:** 2026-10-13
+- **Prepare by:** 2026-10-09
+- **Location:** DeWitt High School, 1614 S. Grandview Drive, DeWitt, AR 72042
+- **Why it fits:** The official DHS calendar confirms School Picture Day on Tuesday, Oct. 13. No time is published, so the retail fit is limited to advance outfit and accessory preparation.
+- **Recommended offer:** Create a camera-ready edit from owner-confirmed clothing, jewelry, and simple accessories. Do not promise photographic results or assume dress requirements.
+- **Do this first:** By Oct. 9, select 4–6 in-stock camera-ready pieces, confirm quantities and prices, photograph them in natural light, and recheck the school calendar.
+
+### Ready-to-use caption
+
+DHS lists School Picture Day for Tuesday, Oct. 13. We gathered a few camera-ready clothing and accessory ideas from current stock for anyone planning ahead. Independent local shopping suggestion; not affiliated with the school or photographer.
+
+### Customer email
+
+**Subject:** Oct. 13 Picture Day: camera-ready local picks
+
+The official DHS calendar lists School Picture Day for Tuesday, Oct. 13. We prepared a small camera-ready edit from current stock for families planning ahead. Please confirm availability and school details before visiting.
+
+**Evidence:** [DeWitt High School Events — School Picture Day](https://www.dewittdragons.net/o/dhs/events?id=57193384) · checked 2026-09-28 · high confidence
+
+## 5. Crossett Homecoming game-day edit
+
+- **Fit score:** 100/100
+- **Event date:** 2026-10-23
+- **Prepare by:** 2026-10-19
+- **Location:** DeWitt High School campus, 1614 S. Grandview Drive, DeWitt, AR 72042
+- **Why it fits:** The official DHS calendar confirms Senior Football versus Crossett (Homecoming) on Friday, Oct. 23 from 7–8 p.m. The boutique fit is a bounded day-to-game outfit and accessory inference.
+- **Recommended offer:** Create a Homecoming day-to-game edit from owner-confirmed clothing, jewelry, and non-logo school-color accessories. Do not imply school sponsorship or use protected marks.
+- **Do this first:** By Oct. 19, select 4–6 in-stock day-to-game pieces, verify quantities and prices, take one grouped photo, and hold the draft for approval.
+
+### Ready-to-use caption
+
+DHS lists the Crossett Homecoming game for Friday, Oct. 23 from 7–8 p.m. We gathered a few day-to-game clothing and accessory ideas from current stock. Independent local shopping suggestion; not affiliated with the school or event.
+
+### Customer email
+
+**Subject:** Oct. 23 Homecoming: day-to-game local picks
+
+The official DHS calendar lists the Crossett Homecoming game for Friday, Oct. 23 from 7–8 p.m. We prepared a small day-to-game edit from current stock. Please confirm availability before visiting; no school or event affiliation is claimed.
+
+**Evidence:** [DeWitt High School Events — Senior Football v. Crossett (Homecoming)](https://www.dewittdragons.net/o/dhs/events?id=57191155) · checked 2026-09-28 · high confidence
+
+## Safeguards
+
+- No promised results or traffic claims
+- No unverified inventory, price, promotion, or hours claims
+- No official logos, sponsorship, or affiliation claims
+- No customer account access or automatic posting
+- Live delivery remains disabled pending Michelle's approval
+- Recheck each school record immediately before use
+
