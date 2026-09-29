@@ -70,8 +70,9 @@ jobs:
         env:
           REPORT_SYNC_URL: ${{ vars.REPORT_SYNC_URL }}
           REPORT_SYNC_SECRET: ${{ secrets.REPORT_SYNC_SECRET }}
+          REPORT_SYNC_SIWC_TOKEN: ${{ secrets.REPORT_SYNC_SIWC_TOKEN }}
         run: |
-          if [[ -z "${REPORT_SYNC_URL}" || -z "${REPORT_SYNC_SECRET}" ]]; then
+          if [[ -z "${REPORT_SYNC_URL}" || -z "${REPORT_SYNC_SECRET}" || -z "${REPORT_SYNC_SIWC_TOKEN}" ]]; then
             echo "Dashboard synchronization is not configured; the approval artifact is still complete."
             exit 0
           fi
@@ -119,9 +120,10 @@ jobs:
         env:
           REPORT_SYNC_URL: ${{ vars.REPORT_SYNC_URL }}
           REPORT_SYNC_SECRET: ${{ secrets.REPORT_SYNC_SECRET }}
+          REPORT_SYNC_SIWC_TOKEN: ${{ secrets.REPORT_SYNC_SIWC_TOKEN }}
         shell: bash
         run: |
-          if [[ -n "${REPORT_SYNC_URL}" && -n "${REPORT_SYNC_SECRET}" ]]; then
+          if [[ -n "${REPORT_SYNC_URL}" && -n "${REPORT_SYNC_SECRET}" && -n "${REPORT_SYNC_SIWC_TOKEN}" ]]; then
             node automation/sync-dashboard.mjs --packet "automation/outbox/${{ needs.generate.outputs.customer }}/${{ needs.generate.outputs.as_of }}/dashboard-sync.json"
           fi
       - name: Preserve delivery diagnostics
