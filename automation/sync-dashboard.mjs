@@ -16,8 +16,9 @@ if (Boolean(packetArg) === Boolean(summaryArg)) {
 
 const endpoint = process.env.REPORT_SYNC_URL;
 const secret = process.env.REPORT_SYNC_SECRET;
-if (!endpoint || !secret) {
-  console.error("REPORT_SYNC_URL and REPORT_SYNC_SECRET are required.");
+const siwcToken = process.env.REPORT_SYNC_SIWC_TOKEN;
+if (!endpoint || !secret || !siwcToken) {
+  console.error("REPORT_SYNC_URL, REPORT_SYNC_SECRET, and REPORT_SYNC_SIWC_TOKEN are required.");
   process.exit(2);
 }
 if (new URL(endpoint).protocol !== "https:") {
@@ -48,6 +49,7 @@ for (const packetPath of packetPaths) {
     method: "POST",
     headers: {
       authorization: `Bearer ${secret}`,
+      "OAI-Sites-Authorization": `Bearer ${siwcToken}`,
       "content-type": "application/json",
     },
     body: JSON.stringify(packet),
