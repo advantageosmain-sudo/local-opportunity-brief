@@ -1,0 +1,31 @@
+name: Synchronize frozen owner-test report (no delivery)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: owner-test-sync
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact owner-test identity and checksum
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          import {createHash} from 'node:crypto';
+          const p=JSON.parse(readFileSync('evidence/owner-test-olympia-2026-10-02/dashboard-sync.json','utf8'));
+          const {checksum,...r}=p.report;
+          if(r.reportId!=='owner-test-olympia-2026-10-02'||r.customer.slug!=='owner-test-olympia'||r.customer.deliveryMode!=='owner_review_only'||checksum!=='227287886aab1c153653715f5e46d9842e988107bbdaefb854f887523c9e65da'||createHash('sha256').update(JSON.stringify(r)).digest('hex')!==checksum) throw Error('Owner-test packet identity mismatch');
+          NODE
+      - name: Synchronize the frozen owner-only packet
+        env:
+          REPORT_SYNC_URL: ${{ vars.REPORT_SYNC_URL }}
+          REPORT_SYNC_SECRET: ${{ secrets.REPORT_SYNC_SECRET }}
+        run: node automation/sync-dashboard.mjs --packet evidence/owner-test-olympia-2026-10-02/dashboard-sync.json

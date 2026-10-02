@@ -1,0 +1,57 @@
+{
+  "checked_at": "2026-10-02T06:30:59Z",
+  "canonical_commit": "1f74a7759e169643b18a69601111dfaccb1e8284",
+  "canonical_tree": "da386b4da6b4788f642ad23b53c85ff68ff72dc6",
+  "source_blobs_verified": 136,
+  "public_site": {
+    "project_id": "appgprj_6a6c611d9f3c8191a2c415eb3fd40585",
+    "source_commit": "d07f85af0ee8dd4c06f2992a1cfc6e0cb4b26530",
+    "deployment_id": "appgdep_6abf4c7bfe4081918bf396d5b03bc8a9",
+    "version_id": "appgprj_6a6c611d9f3c8191a2c415eb3fd40585~appgver_9e12e10dc2e88191a72131159ea0586f",
+    "url": "https://local-opportunity-brief.mshipe2022.chatgpt.site",
+    "deployment": "succeeded",
+    "audience": "public",
+    "access_revision": 2
+  },
+  "owner_site": {
+    "project_id": "appgprj_6a8a1c97eb8c8191a3651171296ca2ff",
+    "source_commit": "fac5019f47c99a1290ac8580d76a3243b5937f3a",
+    "deployment_id": "appgdep_6abf4ea1475081919406d207e40bde27",
+    "version_id": "appgprj_6a8a1c97eb8c8191a3651171296ca2ff~appgver_fecb62a66d108191a58b12c52951ecb3",
+    "url": "https://local-opportunity-owner.mshipe2022.chatgpt.site",
+    "deployment": "succeeded",
+    "audience": "owner-private custom",
+    "snapshot": "BLOCKED app401 Unauthorized from existing credential",
+    "owner_login": "verified via existing Michelle personal account"
+  },
+  "local_tests": {
+    "public_full": 51,
+    "owner": 5,
+    "exact_blob_build_public_route_tests": 11
+  },
+  "browser_verified": [
+    "public home without customer-site sign-in",
+    "sample five Olympia entries checked2026-10-02 with warnings",
+    "intake required fields/consents and empty form blocked",
+    "contact correct owner email",
+    "cancellation/refund page",
+    "privacy page",
+    "terms page",
+    "public dashboard denies anonymous",
+    "public dashboard authenticates Michelle and shows two historical reports/customer_count0",
+    "owner Site requires login and shows explicit app401 diagnostic"
+  ],
+  "not_verified": [
+    "valid live intake submission",
+    "mobile viewport",
+    "provider checkout",
+    "real payment/webhook",
+    "email delivery",
+    "fresh report sync",
+    "owner snapshot success"
+  ],
+  "nonbrowser_http_probe": "environment403 on all paths; browser succeeded so not attributed to application",
+  "secrets_read": false,
+  "settings_editor": "ChatGPT sign-in succeeded but exact Site editor transitions to blocked nonHTTP protocol; exact secret-menu steps not available",
+  "business_status": "BLOCKED"
+}

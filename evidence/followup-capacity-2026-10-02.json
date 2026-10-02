@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-02",
+  "baselineMain": "1f74a7759e169643b18a69601111dfaccb1e8284",
+  "capacity": {
+    "atomicReservationLimit": 10,
+    "unpaidExpiryMinutes": 30,
+    "paidFoundingPlacesRetainedAfterCancellation": true,
+    "testLiveIsolation": true,
+    "webhookAllocationAtomicWithEvent": true,
+    "legacyAndUnexpectedPaymentFreeze": true,
+    "independentActualWorkerRegressionTests": 6,
+    "providerSideEnforcement": "BLOCKED_UNVERIFIED",
+    "liveGate": "PROVIDER_CAPACITY_VERIFIED=1 remains unset"
+  },
+  "ownerPacketSync": {
+    "manualOnly": true,
+    "reportId": "owner-test-olympia-2026-10-02",
+    "checksum": "227287886aab1c153653715f5e46d9842e988107bbdaefb854f887523c9e65da",
+    "deliveryStep": false,
+    "approvalStep": false,
+    "runtimeResult": "NOT_DISPATCHED"
+  },
+  "dashboard": {"historicalInvalidReportBanner": true, "staleApprovalButtonDisabled": true},
+  "externalPaymentsOrEmailSent": false
+}

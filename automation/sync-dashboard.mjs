@@ -37,7 +37,7 @@ for (const packetPath of packetPaths) {
   const resolved = path.resolve(packetPath);
   const packet = JSON.parse(await readFile(resolved, "utf8"));
   const response = await fetch(endpoint, {
-    method: "POST",
+    method: "POST", redirect: "error",
     headers: {
       authorization: `Bearer ${secret}`,
       "content-type": "application/json",
@@ -56,7 +56,7 @@ if (summary) {
   for (const result of summary.results.filter((entry) => entry.status === "BLOCKED")) {
     const diagnostic = { id: `report-${result.customerSlug}-${summary.asOf}`.slice(0, 160), system: "reports", subjectId: result.customerSlug, code: result.reason ?? "REPORT_BLOCKED", details: result };
     const response = await fetch(new URL("/api/internal/diagnostics", endpoint), {
-      method: "POST", headers: { authorization: `Bearer ${secret}`, "content-type": "application/json" },
+      method: "POST", redirect: "error", headers: { authorization: `Bearer ${secret}`, "content-type": "application/json" },
       body: JSON.stringify(diagnostic), signal: AbortSignal.timeout(30_000),
     });
     if (!response.ok) throw new Error(`Dashboard diagnostics sync failed (${response.status}).`);

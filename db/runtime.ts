@@ -1,7 +1,9 @@
+import {foundingSchema} from '@/lib/founding-capacity.mjs';
 type RuntimeEnv = {
   DB?: D1Database;
   SURFACE?: "public" | "owner";
   LIVE_CHECKOUT_VERIFIED?: string;
+  PROVIDER_CAPACITY_VERIFIED?: string;
   RESEND_API_KEY?: string;
   DELIVERY_FROM_EMAIL?: string;
   LIVE_DELIVERY?: string;
@@ -31,6 +33,7 @@ export async function ensureDatabase() {
   }
 
   await database.batch([
+    database.prepare(foundingSchema),
     database
       .prepare(
         `CREATE TABLE IF NOT EXISTS leads (
