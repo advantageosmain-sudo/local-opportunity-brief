@@ -14,8 +14,16 @@ It includes:
 - Owner-bound report approval and protected outbound delivery
 - Atomic and provider-level duplicate-email prevention
 - Delivery failure diagnostics and a deduplicated owner alert
-- Lemon Squeezy checkout and signed-webhook handling restricted to test mode
+- Stripe-hosted subscription Checkout, signed/idempotent webhooks and Billing Portal
+- Authenticated owner-only sandbox billing controls isolated from real delivery
 - Locked launch, spending, payment, email, research, and approval rules
+
+## Stripe and email integration review
+
+See `docs/stripe-configuration.md` and `docs/email-configuration.md` for the current
+provider wiring, secure configuration plan and unverified launch gates. Code tests
+use synthetic provider boundaries; no provider end-to-end test, public deployment
+or live operation is implied.
 
 ## October 2 operational finish
 
@@ -32,8 +40,8 @@ Live delivery requires all of the following:
 2. Five passing opportunities inside the 30-day window
 3. A customer profile whose delivery mode is explicitly `customer`
 4. An approval file whose checksum still matches the report
-5. The protected GitHub `outbound-delivery` environment
-6. `LIVE_DELIVERY=1`, a Resend key, and a configured sender
+5. The existing hosted route’s durable approval and customer eligibility checks
+6. Site `LIVE_DELIVERY=1`, a Resend key, and a configured sender
 
 The provider request also receives a report-specific idempotency key. A local
 atomic claim prevents two processes from sending at the same time.
@@ -118,14 +126,16 @@ A blocked run writes `diagnostic.json`. A failed delivery writes
 
 ## Hosted configuration
 
-The full beginner-safe test setup is in `docs/OWNER_TEST_SETUP.md`.
+Current setup is in `docs/stripe-configuration.md` and `docs/email-configuration.md`.
+The original owner test setup is retained for history and is superseded where noted.
 
 Important values:
 
 - `OWNER_EMAIL` — owner dashboard allowlist
 - `REPORT_SYNC_URL` and `REPORT_SYNC_SECRET` — exact report-to-dashboard link
 - `PAYMENTS_MODE=disabled|test|live` — live additionally requires verified provider configuration and `LIVE_CHECKOUT_VERIFIED=1`
-- `LEMON_SQUEEZY_CHECKOUT_URL` and `LEMON_SQUEEZY_WEBHOOK_SECRET` — test mode only
+- `STRIPE_API_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PORTAL_CONFIGURATION_ID` and `PUBLIC_SITE_URL` — protected Site runtime configuration
+- `PAYMENTS_PROVIDER=stripe` — default; legacy Lemon Squeezy requires explicit selection
 - `RESEND_API_KEY`, `DELIVERY_FROM_EMAIL`, and `LIVE_DELIVERY` — protected delivery only
 
 Never commit real values. `.env.example` contains names and safe defaults only.
@@ -143,4 +153,5 @@ for public launch. See:
 Provider tests, retailer feedback, owner configuration, legal review, and public
 launch approval remain outside gates. No passing code test can silently satisfy
 those decisions.
+
 

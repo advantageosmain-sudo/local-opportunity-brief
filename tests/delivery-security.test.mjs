@@ -92,7 +92,7 @@ test('actual hosted delivery guards concurrency, current customer state and immu
         r = makeReport();
         await install(r);
         db.db.prepare("UPDATE customers SET subscription_id='unit-sub-cancel' WHERE id=?").run(r.customer.slug);
-        Object.assign(env, {PAYMENTS_MODE:'live', LIVE_CHECKOUT_VERIFIED:'1', LEMON_SQUEEZY_VARIANT_ID:'unit-variant', LEMON_SQUEEZY_WEBHOOK_SECRET:'unit-webhook-secret'});
+        Object.assign(env, {PAYMENTS_PROVIDER:'lemon_squeezy',PAYMENTS_MODE:'live', LIVE_CHECKOUT_VERIFIED:'1', LEMON_SQUEEZY_VARIANT_ID:'unit-variant', LEMON_SQUEEZY_WEBHOOK_SECRET:'unit-webhook-secret'});
         const signedEvent = async (eventName, attributes, type, id) => {
             const body={meta:{event_name:eventName},data:{id,type,attributes:{test_mode:false,...attributes}}};
             return call('/api/webhooks/lemon-squeezy',body,{'x-event-name':eventName,'x-signature':createHmac('sha256','unit-webhook-secret').update(JSON.stringify(body)).digest('hex')});
@@ -134,3 +134,4 @@ test('actual hosted delivery guards concurrency, current customer state and immu
         db.db.close();
     }
 });
+

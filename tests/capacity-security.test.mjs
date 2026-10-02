@@ -24,7 +24,7 @@ class D1 {
 async function setup(t) {
   const db = new D1();
   t.after(() => db.db.close());
-  const env = { DB: db, ASSETS: { fetch: async () => new Response('', { status: 404 }) }, REPORT_SYNC_SECRET: 'unit-only', PAYMENTS_MODE: 'test',
+  const env = { DB: db, ASSETS: { fetch: async () => new Response('', { status: 404 }) }, REPORT_SYNC_SECRET: 'unit-only', PAYMENTS_PROVIDER: 'lemon_squeezy', PAYMENTS_MODE: 'test',
     LEMON_SQUEEZY_CHECKOUT_URL: 'https://unit.lemonsqueezy.com/checkout/buy/unit-variant', LEMON_SQUEEZY_WEBHOOK_SECRET: 'unit-webhook', LEMON_SQUEEZY_VARIANT_ID: 'unit-variant' };
   const ctx = { waitUntil() {}, passThroughOnException() {} };
   const call = (path, body, headers = {}, method = body ? 'POST' : 'GET') => worker.fetch(new Request('https://localhost' + path, {
@@ -125,3 +125,4 @@ test('invalid provider checkout URL never consumes a founding reservation',async
  assert.equal((await call('/api/checkout',{customerId:id,checkoutToken:'unit-checkout'})).status,200);
  assert.equal(db.db.prepare('SELECT count(*) n FROM founding_reservations').get().n,1);
 });
+

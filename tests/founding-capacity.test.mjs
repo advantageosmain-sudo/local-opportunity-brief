@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
 import {foundingSchema,reserveFoundingPlace,releaseUnpaidPlace} from '../lib/founding-capacity.mjs';
-function database(){const db=new DatabaseSync(':memory:');db.exec(foundingSchema);db.exec("CREATE TABLE diagnostics(status TEXT,code TEXT);CREATE TABLE customers(id TEXT,subscription_id TEXT,payment_status TEXT);");return {db,prepare(sql){let args=[];const q={bind(...v){args=v;return q},async run(){const r=db.prepare(sql).run(...args);return {meta:{changes:Number(r.changes)}}},async first(){return db.prepare(sql).get(...args)}};return q}}}
+function database(){const db=new DatabaseSync(':memory:');db.exec(foundingSchema);db.exec("CREATE TABLE diagnostics(status TEXT,code TEXT,detail_json TEXT DEFAULT '{}');CREATE TABLE customers(id TEXT,subscription_id TEXT,payment_status TEXT);");return {db,prepare(sql){let args=[];const q={bind(...v){args=v;return q},async run(){const r=db.prepare(sql).run(...args);return {meta:{changes:Number(r.changes)}}},async first(){return db.prepare(sql).get(...args)}};return q}}}
 test('ten concurrent reservations, duplicate stable expiry, eleventh denied, expiry frees unpaid',async()=>{
  const d=database(),now=new Date('2026-10-02T06:00:00Z');
  const results=await Promise.all(Array.from({length:11},(_,i)=>reserveFoundingPlace(d,'c'+i,'test',now)));
@@ -19,3 +19,4 @@ test('cancel unpaid releases capacity; paid founder retained after cancellation;
  await releaseUnpaidPlace(d,'c1','live');assert.ok(await reserveFoundingPlace(d,'c10','live',now));
  assert.ok(await reserveFoundingPlace(d,'c0','test',now));
 });
+

@@ -1,5 +1,7 @@
 # Owner test setup — zero to a protected rehearsal
 
+> Current Stripe and Resend configuration: see [stripe-configuration.md](stripe-configuration.md) and [email-configuration.md](email-configuration.md). They supersede the legacy Lemon Squeezy, provider-key placement and outbound GitHub environment instructions below. Preserve the working report-sync configuration.
+
 Do not switch any provider to live mode. Do not use a real customer email or
 real card details during this setup.
 
@@ -79,3 +81,4 @@ Do not make the Site public, activate a live store, enable live email, purchase 
 domain, spend money, or accept a customer payment until every unchecked item in
 `business/LAUNCH_CHECKLIST.md` has evidence and the owner separately approves
 public launch.
+
