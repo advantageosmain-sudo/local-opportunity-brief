@@ -1,6 +1,6 @@
 {
   "scope": "Code and evidence repair only; isolated local synthetic tests; no deployment or provider operations",
-  "checked_at": "2026-10-02T12:08:25.723588+00:00",
+  "checked_at": "2026-10-02T12:15:39.127055+00:00",
   "repository": "advantageosmain-sudo/local-opportunity-brief",
   "original_pr": 7,
   "original_head": "21895e2a5fe9f575648ac99a7613b45d30818fde",
@@ -49,17 +49,18 @@
     "tests": {
       "command": "npm test",
       "status": "PASS",
-      "passed": 148,
+      "passed": 149,
       "failed": 0
     },
     "targeted_tests": {
-      "passed": 15,
+      "passed": 16,
       "failed": 0
     },
     "regression_reproduction": {
       "original_code_failures": [
         "noncanonical checkout path",
-        "dashboard QA counts and controls"
+        "dashboard QA counts and controls",
+        "structurally damaged profile crashes entire automation export"
       ],
       "status": "REPRODUCED_BEFORE_FIX_PASS_AFTER"
     },
@@ -96,7 +97,7 @@
       ]
     },
     "diff_check": "PASS",
-    "github_actions": "Validate business system passed on initial repair head be2772db79bd823ff5c86dc0332a06f500e04945 (run 37004310865); final consumer updates await rerun at this local receipt. Final exact-head result is in PR #8 checks."
+    "github_actions": "Validate business system passed on preceding repair head 38053faea072f67dd33a61620c56835b3c0c6bf1 (run 37004945505); structural-profile update awaits rerun at this local receipt. Final exact-head result is tracked in PR #8 checks."
   },
   "preserved_gates": {
     "PAYMENTS_MODE": "disabled",
@@ -114,13 +115,23 @@
     "spending": false,
     "merge": false
   },
-  "review_disposition": "Five inherited gaps and Copilot consumer-consistency finding repaired or truthfully reclassified; owner review required. No merge approval implied. Standalone typecheck still has six existing Cloudflare-global errors, reduced from nine baseline errors.",
-  "review_followup": {
-    "pr": 8,
-    "reviewed_head": "be2772db79bd823ff5c86dc0332a06f500e04945",
-    "thread_id": "PRRT_kwDOTpKP-c6oU9d9",
-    "finding": "Apply QA identity filtering consistently across internal API consumers",
-    "disposition": "FIXED_AWAITING_EXACT_HEAD_REREVIEW",
-    "repair": "Reuse shared QA classification; parse damaged profiles safely for the snapshot; filter QA and invalid JSON before automation mapping; honor identity in direct delivery; exercise all paths in the built Worker regression."
-  }
+  "review_disposition": "Five inherited gaps and both Copilot follow-up findings repaired or truthfully reclassified; owner review required. No merge approval implied. Standalone typecheck still has six existing Cloudflare-global errors, reduced from nine baseline errors.",
+  "review_followups": [
+    {
+      "pr": 8,
+      "reviewed_head": "be2772db79bd823ff5c86dc0332a06f500e04945",
+      "thread_id": "PRRT_kwDOTpKP-c6oU9d9",
+      "finding": "Apply QA identity filtering consistently across internal API consumers",
+      "disposition": "FIXED; latest exact-head rereview is tracked in PR #8",
+      "repair": "Reuse shared QA classification; parse damaged profiles safely for the snapshot; filter QA and invalid JSON before automation mapping; honor identity in direct delivery; exercise all paths in the built Worker regression."
+    },
+    {
+      "pr": 8,
+      "reviewed_head": "38053faea072f67dd33a61620c56835b3c0c6bf1",
+      "thread_id": "PRRT_kwDOTpKP-c6oVFLF",
+      "finding": "Validate required profile fields before splitting products",
+      "disposition": "FIXED; latest exact-head rereview is tracked in PR #8",
+      "repair": "Validate consumed string fields and numeric radius, reject empty token lists, and omit invalid source-registry JSON/shape before mapping. Built Worker regression with parseable damaged profiles reproduces HTTP500 before the repair, then returns only the valid customer with HTTP200."
+    }
+  ]
 }
