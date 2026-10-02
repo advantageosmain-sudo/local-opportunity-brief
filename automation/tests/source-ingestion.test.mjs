@@ -74,6 +74,23 @@ test("ICS recurrence, missing evidence, cancellation, floating and DST-ambiguous
   ]) assert.equal(parseIcs(ics(lines), config)[0].error, code);
 });
 
+test("ICS rejects TZID parameters combined with UTC Z timestamps", async () => {
+  const timedLines = eventLines.map((line) => line.startsWith("DTSTART") ? "DTSTART:20261010T180000Z" : line.startsWith("DTEND") ? "DTEND:20261010T190000Z" : line);
+  for (const field of ["DTSTART", "DTEND", "DTSTAMP"]) {
+    for (const tzid of ["America/Los_Angeles", "America/Chicago", ""]) {
+      const lines = timedLines.map((line) => line.startsWith(`${field}:`) ? line.replace(`${field}:`, `${field};TZID=${tzid}:`) : line);
+      assert.equal(parseIcs(ics(lines), config)[0].error, "ICS_UTC_WITH_TZID_INVALID", `${field} with TZID=${tzid}`);
+    }
+  }
+  const badStart = timedLines.map((line) => line.startsWith("DTSTART:") ? line.replace("DTSTART:", "DTSTART;TZID=America/Los_Angeles:") : line);
+  const result = await ingestConfiguredSources(config, { now, fetchSource: mockFetch(ics(badStart)) });
+  assert.equal(result.status, "BLOCKED");
+  assert.equal(result.candidateCount, 0);
+  assert.equal(result.diagnostics[0].code, "ICS_UTC_WITH_TZID_INVALID");
+  const validLocal = timedLines.map((line) => line.startsWith("DTSTART:") || line.startsWith("DTEND:") ? line.replace(":", ";TZID=America/Los_Angeles:").replace(/Z$/, "") : line);
+  assert.equal(parseIcs(ics(validLocal), config)[0].eventDateTime, "2026-10-11T01:00:00.000Z");
+});
+
 test("UTC timestamps use market-local event date rather than UTC day", () => {
   const lines = eventLines.filter((line) => !line.startsWith("DTEND")).map((line) => line.startsWith("DTSTART") ? "DTSTART:20261011T010000Z" : line);
   const event = parseIcs(ics(lines), config)[0]; assert.equal(event.eventDate, "2026-10-10"); assert.equal(event.eventDateTime, "2026-10-11T01:00:00.000Z");
