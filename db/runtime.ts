@@ -1,5 +1,12 @@
+import {stripeSchema} from '@/lib/stripe-payments.mjs';
 import {foundingSchema} from '@/lib/founding-capacity.mjs';
 type RuntimeEnv = {
+  PAYMENTS_PROVIDER?: "stripe" | "lemon_squeezy";
+  PUBLIC_SITE_URL?: string;
+  STRIPE_API_KEY?: string;
+  STRIPE_PRICE_ID?: string;
+  STRIPE_WEBHOOK_SECRET?: string;
+  STRIPE_PORTAL_CONFIGURATION_ID?: string;
   DB?: D1Database;
   SURFACE?: "public" | "owner";
   LIVE_CHECKOUT_VERIFIED?: string;
@@ -34,6 +41,7 @@ export async function ensureDatabase() {
 
   await database.batch([
     database.prepare(foundingSchema),
+    ...stripeSchema.map(schema => database.prepare(schema)),
     database
       .prepare(
         `CREATE TABLE IF NOT EXISTS leads (
@@ -172,3 +180,4 @@ export async function ensureDatabase() {
   ]);
   return database;
 }
+

@@ -9,7 +9,7 @@ class D1 {
 }
 const {default:worker}=await import('../dist/server/index.js');
 const db=new D1();
-const env={DB:db,ASSETS:{fetch:async()=>new Response('',{status:404})},OWNER_EMAIL:'owner@example.com',REPORT_SYNC_SECRET:'test-only-sync',PAYMENTS_MODE:'test',LEMON_SQUEEZY_WEBHOOK_SECRET:'test-only-webhook',LEMON_SQUEEZY_VARIANT_ID:'v1'};
+const env={DB:db,ASSETS:{fetch:async()=>new Response('',{status:404})},OWNER_EMAIL:'owner@example.com',REPORT_SYNC_SECRET:'test-only-sync',PAYMENTS_PROVIDER:'lemon_squeezy',PAYMENTS_MODE:'test',LEMON_SQUEEZY_WEBHOOK_SECRET:'test-only-webhook',LEMON_SQUEEZY_VARIANT_ID:'v1'};
 const ctx={waitUntil(){},passThroughOnException(){}};
 const call=(path,body,headers={})=>worker.fetch(new Request(`https://localhost${path}`,{method:body?'POST':'GET',headers:{'content-type':'application/json',...headers},...(body?{body:JSON.stringify(body)}:{})}),env,ctx);
 test('hosted intake validates, deduplicates and maps customer/market',async()=>{
@@ -53,3 +53,4 @@ test('owner-only synthetic QA intake shares validation without real consent or c
  const {customerDeliveryGate}=await import('../lib/customer-lifecycle.mjs');assert.equal(customerDeliveryGate({...row,status:'active',payment_status:'active'}).allowed,false);
  assert.equal((await (await call('/api/internal/automation/customers',null,{authorization:'Bearer test-only-sync'})).json()).customers.some(x=>x.customerId===row.id),false);
 });
+

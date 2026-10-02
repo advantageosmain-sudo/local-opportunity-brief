@@ -3,6 +3,7 @@ import { ensureDatabase, getRuntimeEnv } from "@/db/runtime";
 import { parseSubscriptionWebhook, verifyLemonSqueezySignature } from "@/lib/lemon-squeezy.mjs";
 export async function POST(request: Request) {
   const env=getRuntimeEnv();
+  if(env.PAYMENTS_PROVIDER!=='lemon_squeezy') return Response.json({error:'Legacy payment provider disabled.'},{status:503});
   if (!['test','live'].includes(env.PAYMENTS_MODE??'') || !env.LEMON_SQUEEZY_WEBHOOK_SECRET || (env.PAYMENTS_MODE==='live' && env.LIVE_CHECKOUT_VERIFIED!=='1')) return Response.json({error:'Payments are not enabled.'},{status:503});
   const raw=await request.text();
   if (!raw || raw.length>1000000) return Response.json({error:'Invalid payload.'},{status:400});
@@ -40,3 +41,4 @@ export async function POST(request: Request) {
     return Response.json({status:'ACCEPTED',testMode:event.testMode});
   } catch { return Response.json({error:'Payment event could not be recorded.'},{status:503}); }
 }
+

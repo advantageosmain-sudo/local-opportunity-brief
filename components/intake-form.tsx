@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 type FormState =
   | { kind: "idle"; message: "" }
@@ -8,55 +8,145 @@ type FormState =
   | { kind: "success"; message: string }
   | { kind: "error"; message: string };
 
+type CheckoutCapability = { customerId: string; checkoutToken: string };
+
+function checkoutCapability(value: unknown): CheckoutCapability | null {
+  if (!value || typeof value !== "object") return null;
+  const saved = value as Partial<CheckoutCapability>;
+  if (typeof saved.customerId !== "string" || !/^[a-f0-9]{64}$/.test(saved.customerId) ||
+      typeof saved.checkoutToken !== "string" || !saved.checkoutToken || saved.checkoutToken.length > 256) return null;
+  return { customerId: saved.customerId, checkoutToken: saved.checkoutToken };
+}
+
+function subscribeToReturn(callback: () => void) {
+  window.addEventListener("popstate", callback);
+  window.addEventListener("pageshow", callback);
+  return () => {
+    window.removeEventListener("popstate", callback);
+    window.removeEventListener("pageshow", callback);
+  };
+}
+
+function checkoutReturn() {
+  return new URLSearchParams(window.location.search).get("checkout") === "complete";
+}
+
 export function IntakeForm() {
   const [state, setState] = useState<FormState>({ kind: "idle", message: "" });
+  const [checkout, setCheckout] = useState<CheckoutCapability | null>(null);
+  const inFlight = useRef(false);
+  const requestSequence = useRef(0);
+  const returnedFromCheckout = useSyncExternalStore(subscribeToReturn, checkoutReturn, () => false);
 
-  const [checkout, setCheckout] = useState<{customerId:string;checkoutToken:string}|null>(null);
-  function restoreCheckout(){try{const raw=sessionStorage.getItem("lob-checkout");if(raw){const saved=JSON.parse(raw);if(typeof saved.customerId==="string"&&typeof saved.checkoutToken==="string"){setCheckout(saved);return;}}setState({kind:"error",message:"No checkout request is saved in this browser tab. Submit your business details below or contact support."});}catch{setState({kind:"error",message:"Saved checkout could not be restored. Contact support."});}}
-  async function continueCheckout(){
-    if(!checkout)return;
-    setState({kind:"sending",message:"Checking coverage and checkout availability…"});
-    try{const response=await fetch("/api/checkout",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(checkout)});const result=await response.json();if(!response.ok)throw new Error(result.error||"Checkout is not available yet.");if(typeof result.url!=="string")throw new Error("No checkout link is available yet.");const url=new URL(result.url);if(url.protocol!=="https:")throw new Error("Checkout address is invalid.");window.location.assign(url.href);}catch(error){setState({kind:"error",message:error instanceof Error?error.message:"Checkout is unavailable. Nothing was charged."});}
+  useEffect(() => {
+    function leave() { requestSequence.current += 1; }
+    function resume(event: PageTransitionEvent) {
+      if (event.persisted) {
+        leave();
+        inFlight.current = false;
+        setState({ kind: "idle", message: "" });
+      }
+    }
+    window.addEventListener("pageshow", resume);
+    window.addEventListener("pagehide", leave);
+    return () => {
+      leave();
+      window.removeEventListener("pageshow", resume);
+      window.removeEventListener("pagehide", leave);
+    };
+  }, []);
+
+  function restoreCheckout() {
+    if (inFlight.current) return;
+    try {
+      const raw = sessionStorage.getItem("lob-checkout");
+      const capability = raw ? checkoutCapability(JSON.parse(raw)) : null;
+      if (capability) {
+        setCheckout(capability);
+        setState({ kind: "success", message: "Your saved request is restored." });
+        return;
+      }
+      setState({ kind: "error", message: "No checkout request is saved in this browser tab. Submit your business details below or contact support." });
+    } catch {
+      setState({ kind: "error", message: "Saved checkout could not be restored. Contact support." });
+    }
   }
+
+  async function openBilling(action: "checkout" | "portal") {
+    if (!checkout || inFlight.current) return;
+    inFlight.current = true;
+    const requestId = ++requestSequence.current;
+    setState({ kind: "sending", message: action === "checkout" ? "Checking coverage and checkout availability…" : "Opening billing management…" });
+    let redirected = false;
+    try {
+      const endpoint = action === "checkout" ? "/api/checkout" : "/api/billing/portal";
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(checkout),
+      });
+      const result = await response.json();
+      if (requestSequence.current !== requestId) return;
+      if (!response.ok) throw new Error(typeof result.error === "string" ? result.error : "Billing is unavailable.");
+      if (typeof result.url !== "string") throw new Error("No billing link is available yet.");
+      const url = new URL(result.url);
+      const expectedHost = action === "checkout" ? "checkout.stripe.com" : "billing.stripe.com";
+      if (url.protocol !== "https:" || url.hostname !== expectedHost || url.port || url.username || url.password) throw new Error("Billing address is invalid.");
+      window.location.assign(url.href);
+      redirected = true;
+    } catch (error) {
+      if (requestSequence.current !== requestId) return;
+      setState({ kind: "error", message: error instanceof Error ? error.message : "Billing could not be opened." });
+    } finally {
+      if (requestSequence.current === requestId && !redirected) inFlight.current = false;
+    }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (inFlight.current) return;
+    inFlight.current = true;
+    const requestId = ++requestSequence.current;
     const form = event.currentTarget;
     setState({ kind: "sending", message: "Saving your business profile…" });
 
-    const payload = { ...Object.fromEntries(new FormData(form).entries()), submissionId: crypto.randomUUID() };
     try {
+      const payload = { ...Object.fromEntries(new FormData(form).entries()), submissionId: crypto.randomUUID() };
       const response = await fetch("/api/intake", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const result = (await response.json()) as { error?: string; message?: string; customerId?:string; checkoutToken?:string };
+      const result = (await response.json()) as { error?: string; message?: string; customerId?: string; checkoutToken?: string };
+      if (requestSequence.current !== requestId) return;
       if (!response.ok) {
         throw new Error(result.error ?? "We could not save your information.");
       }
-      if(result.customerId&&result.checkoutToken){const capability={customerId:result.customerId,checkoutToken:result.checkoutToken};setCheckout(capability);try{sessionStorage.setItem("lob-checkout",JSON.stringify(capability));}catch{}}
+      const capability = checkoutCapability(result);
+      if (capability) {
+        setCheckout(capability);
+        try { sessionStorage.setItem("lob-checkout", JSON.stringify(capability)); } catch {}
+      }
       form.reset();
-      setState({
-        kind: "success",
-        message:
-          result.message ??
-          "Your founding membership request has been received.",
-      });
+      setState({ kind: "success", message: result.message ?? "Your founding membership request has been received." });
     } catch (error) {
-      setState({
-        kind: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "We could not save your information. Please try again.",
-      });
+      if (requestSequence.current !== requestId) return;
+      setState({ kind: "error", message: error instanceof Error ? error.message : "We could not save your information. Please try again." });
+    } finally {
+      if (requestSequence.current === requestId) inFlight.current = false;
     }
   }
 
   return (
     <form className="intake-form" onSubmit={submit}>
-      {!checkout&&<button type="button" className="button button-secondary" onClick={restoreCheckout}>Resume a saved request in this tab</button>}
-      {checkout&&<div className="form-section"><h2>Your saved request</h2><p>Continue when local coverage is confirmed. Checkout remains blocked until the service and payment provider are ready.</p><button type="button" className="button button-secondary" disabled={state.kind==="sending"} onClick={continueCheckout}>Continue to checkout</button></div>}
+      {returnedFromCheckout && <p className="form-status" role="status">You returned from checkout. Payment confirmation is pending a verified Stripe webhook. This page does not confirm payment or start service.</p>}
+      {!checkout && <button type="button" className="button button-secondary" disabled={state.kind === "sending"} onClick={restoreCheckout}>Resume a saved request in this tab</button>}
+      {checkout && <div className="form-section">
+        <h2>Your saved request</h2>
+        <p>Continue when local coverage is confirmed. Checkout remains blocked until the service and payment provider are ready. Billing management is available after a billing account exists.</p>
+        <button type="button" className="button button-secondary" disabled={state.kind === "sending"} onClick={() => openBilling("checkout")}>Continue to checkout</button>
+        <button type="button" className="button button-secondary" disabled={state.kind === "sending"} onClick={() => openBilling("portal")}>Manage billing</button>
+      </div>}
       <div className="form-section">
         <h2>Contact details</h2>
         <p>We use this information only to review and respond to your request.</p>
@@ -224,7 +314,7 @@ export function IntakeForm() {
           disabled={state.kind === "sending"}
         >
           {state.kind === "sending"
-            ? "Saving…"
+            ? "Please wait…"
             : "Submit founding membership request"}
         </button>
         {state.kind !== "idle" ? (
@@ -245,4 +335,5 @@ export function IntakeForm() {
     </form>
   );
 }
+
 

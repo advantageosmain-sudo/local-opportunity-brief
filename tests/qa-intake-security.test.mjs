@@ -23,7 +23,7 @@ class D1 {
 test('QA intake cannot collide with public identities or inherit real legal consent', async t => {
   const db = new D1(); t.after(() => db.db.close());
   const env = { DB: db, ASSETS: { fetch: async () => new Response('', { status: 404 }) }, OWNER_EMAIL: 'owner@example.com', REPORT_SYNC_SECRET: 'unit-sync',
-    PAYMENTS_MODE: 'test', LEMON_SQUEEZY_CHECKOUT_URL: 'https://unit.lemonsqueezy.com/checkout/buy/unit-variant' };
+    PAYMENTS_PROVIDER: 'lemon_squeezy', PAYMENTS_MODE: 'test', LEMON_SQUEEZY_CHECKOUT_URL: 'https://unit.lemonsqueezy.com/checkout/buy/unit-variant' };
   const ctx = { waitUntil() {}, passThroughOnException() {} };
   const call = (path, body, headers = {}) => worker.fetch(new Request('https://localhost' + path, {
     method: body ? 'POST' : 'GET', headers: { 'content-type': 'application/json', ...headers }, ...(body ? { body: JSON.stringify(body) } : {}),
@@ -67,3 +67,4 @@ test('QA intake cannot collide with public identities or inherit real legal cons
   db.db.prepare('UPDATE customers SET profile_json=? WHERE id=?').run(JSON.stringify({ ...profile, isTest: false }), row.id);
   assert.equal((await call('/api/owner/qa-intake', payload, owner)).status, 409);
 });
+

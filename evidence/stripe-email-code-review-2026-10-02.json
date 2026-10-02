@@ -1,0 +1,32 @@
+{
+  "scope": "Reviewable code only; no deployment, provider changes, secrets, payments or emails",
+  "baseCommit": "1e7013bb659815f45d63fcc51b51a23897894c32",
+  "nodeVersion": "24.19.0",
+  "verifiedAt": "2026-10-02T08:54:00Z",
+  "checks": {
+    "npmRunLint": "passed",
+    "npmTest": {"passed": 144, "failed": 0, "includesArtifactBuild": true},
+    "businessDemo": "passed, synthetic report only",
+    "businessPilot": "passed, historical frozen owner artifact only",
+    "activeCustomerDryRun": "passed, zero eligible customers and no delivery",
+    "frozenOctoberOwnerReport": "passed, five opportunities, owner review required, no delivery",
+    "diffCheck": "passed",
+    "independentStripeSafetyReview": "reported defects fixed; focused 28/28 passed; no remaining high-confidence material defect",
+    "typescript": "blocked by 9 pre-existing missing Cloudflare globals/implicit-any errors; identical diagnostics reproduced on baseline"
+  },
+  "providerVerification": {
+    "stripeCheckoutToWebhook": "not run",
+    "stripePortalAndCancellation": "not run",
+    "restrictedKeyPermissions": "not verified",
+    "resendProviderReceipt": "not run",
+    "ownerInboxDelivery": "not run",
+    "liveCustomerDelivery": "not run",
+    "deployedBrowserOrMobileQA": "not run"
+  },
+  "preservedGates": ["PAYMENTS_MODE=disabled", "LIVE_DELIVERY=0", "LIVE_CHECKOUT_VERIFIED=0", "PROVIDER_CAPACITY_VERIFIED=0", "exact owner report approval", "working report-sync configuration", "existing cancellation suppression policy"],
+  "notes": [
+    "Provider-bound tests use fake clients or signed synthetic raw events, not a configured Stripe account.",
+    "Real provider configuration and rehearsals require separate owner authorization and secure key entry.",
+    "No merge, deployment or launch authorized by this evidence."
+  ]
+}
