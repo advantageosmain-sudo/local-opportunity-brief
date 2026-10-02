@@ -1,0 +1,233 @@
+{
+  "scope": "Live Site verification after exact canonical deployment; local tests never substitute for provider evidence",
+  "checks": [
+    {
+      "stage": 1,
+      "name": "Public website loads",
+      "method": "Signed-out HTTP GET customer root; expect200, content",
+      "status": "PASS",
+      "evidence": "Public browser home loaded before sign-in; public deployment appgdep_6abf52f82de0819192f9d95f0634f635"
+    },
+    {
+      "stage": 2,
+      "name": "Sample report loads",
+      "method": "GET/sample; five opportunities, checked2026-10-02, restrictions",
+      "status": "PASS",
+      "evidence": "Browser sample rendered five checked Olympia opportunities, date2026-10-02"
+    },
+    {
+      "stage": 3,
+      "name": "Valid intake",
+      "method": "Owner-labeled valid test profile; inspect durable record via owner dashboard",
+      "status": "PASS",
+      "evidence": "Live owner-only synthetic QA record qa-7756c0b278365a5f4055dbf082a25b1cc3b3d8f0f18fce475ffc743a0ce30496 HTTP201; duplicate200 same ID; dashboard Customers0/QA1/Olympia market",
+      "qualification": "Synthetic owner QA uses shared validation/storage; no real contract, customer consent, payment, or delivery"
+    },
+    {
+      "stage": 4,
+      "name": "Invalid intake",
+      "method": "Invalid email/ZIP/consent JSON must400; no record",
+      "status": "PASS",
+      "evidence": "Browser tab67 invalid email/ZIP and missing consent rejected2026-10-02T06:53:32Z; dedicated authenticated QA server rejected ZZ state HTTP400"
+    },
+    {
+      "stage": 5,
+      "name": "Test checkout opens",
+      "method": "Real provider test URL; blocked if provider not configured",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 6,
+      "name": "Test payment",
+      "method": "Provider test receipt only; no real charge",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 7,
+      "name": "Signed webhook",
+      "method": "Actual provider test signed event plus event receipt",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 8,
+      "name": "Duplicate webhook",
+      "method": "Exact event redelivery deduplicated",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 9,
+      "name": "Customer created",
+      "method": "Inspect test record after intake/payment",
+      "status": "PASS",
+      "evidence": "Live owner-only synthetic QA record qa-7756c0b278365a5f4055dbf082a25b1cc3b3d8f0f18fce475ffc743a0ce30496 HTTP201; duplicate200 same ID; dashboard Customers0/QA1/Olympia market",
+      "qualification": "Synthetic owner QA uses shared validation/storage; no real contract, customer consent, payment, or delivery"
+    },
+    {
+      "stage": 10,
+      "name": "Intake mapping",
+      "method": "Profile fields/consents match test input",
+      "status": "BLOCKED",
+      "evidence": "Name/location visible in owner dashboard; full profile mapping verified local Worker test, not full live DB readback"
+    },
+    {
+      "stage": 11,
+      "name": "Market profile",
+      "method": "Validated market_id and source pack",
+      "status": "PASS",
+      "evidence": "Live owner-only synthetic QA record qa-7756c0b278365a5f4055dbf082a25b1cc3b3d8f0f18fce475ffc743a0ce30496 HTTP201; duplicate200 same ID; dashboard Customers0/QA1/Olympia market",
+      "qualification": "Synthetic owner QA uses shared validation/storage; no real contract, customer consent, payment, or delivery"
+    },
+    {
+      "stage": 12,
+      "name": "Sources loaded",
+      "method": "Five fresh original URLs and checked dates",
+      "status": "PASS",
+      "evidence": "Canonical source pack and business/evidence/OLYMPIA_OWNER_TEST_2026-10-02.validation.json",
+      "qualification": "Artifact-level verification; full customer flow remains blocked"
+    },
+    {
+      "stage": 13,
+      "name": "Source validation",
+      "method": "Persisted validation artifact",
+      "status": "PASS",
+      "evidence": "business/evidence/OLYMPIA_OWNER_TEST_2026-10-02.validation.json",
+      "qualification": "Artifact-level verification; full customer flow remains blocked"
+    },
+    {
+      "stage": 14,
+      "name": "Five opportunities",
+      "method": "Exact report JSON count5",
+      "status": "PASS",
+      "evidence": "Frozen report checksum227287886aab1c153653715f5e46d9842e988107bbdaefb854f887523c9e65da, five opportunities",
+      "qualification": "Artifact-level verification; full customer flow remains blocked"
+    },
+    {
+      "stage": 15,
+      "name": "Report validation",
+      "method": "Checksum-bound pass receipt",
+      "status": "PASS",
+      "evidence": "Validation artifact and GitHub run36975142853 checksum guard PASS",
+      "qualification": "Artifact-level verification; full customer flow remains blocked"
+    },
+    {
+      "stage": 16,
+      "name": "Dashboard report",
+      "method": "Private owner snapshot readback",
+      "status": "FAIL",
+      "evidence": "Fresh report sync run36975142853 failed HTTP401; private owner snapshot also app401"
+    },
+    {
+      "stage": 17,
+      "name": "First report held",
+      "method": "Pending owner review; no send",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 18,
+      "name": "Owner approval",
+      "method": "Actual owner action binds exact checksum, not simulated approval",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 19,
+      "name": "Owner-only email",
+      "method": "Real provider accepted/delivered receipt",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 20,
+      "name": "Delivery receipt",
+      "method": "Durable message_id/report checksum",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 21,
+      "name": "Duplicate delivery",
+      "method": "Second attempt blocked/unknown lock honored",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 22,
+      "name": "Pause",
+      "method": "Owner test customer pause persisted",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 23,
+      "name": "Paused schedule skip",
+      "method": "Workflow receipt excluded test paused customer",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 24,
+      "name": "Resume",
+      "method": "Owner resume persisted",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 25,
+      "name": "Cancellation",
+      "method": "Provider test cancellation event records state",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 26,
+      "name": "Canceled skip",
+      "method": "Workflow suppresses future delivery",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 27,
+      "name": "Payment failure",
+      "method": "Provider test failure visible diagnostic",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 28,
+      "name": "Report failure",
+      "method": "Controlled invalid-source test blocks with diagnostic",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    },
+    {
+      "stage": 29,
+      "name": "Sync failure",
+      "method": "Controlled unauthorized request rejected; no data leak; diagnostic",
+      "status": "PASS",
+      "evidence": "GitHub run36975142853 app401; owner Site displays explicit credential401 failure"
+    },
+    {
+      "stage": 30,
+      "name": "Recovery",
+      "method": "Corrected controlled flow passes without duplicates",
+      "status": "BLOCKED",
+      "evidence": "No completed live end-to-end evidence; provider configuration or report sync blocked"
+    }
+  ],
+  "security_checks": [
+    "Owner Site remains custom owner-only",
+    "Anonymous/dashboard denies data",
+    "Forged identity header does not authenticate through Sites ingress",
+    "Anonymous/internal/operations401",
+    "No secret in public HTML",
+    "Contact/policy/navigation valid",
+    "Mobile visual layout NOT VERIFIED: only desktop viewport checked; CSS breakpoints inspected"
+  ],
+  "status": "Partial executed evidence; PASS labels identify scope explicitly, not live business completion",
+  "checked_at": "2026-10-02T07:07:45Z"
+}

@@ -7,6 +7,9 @@ export async function POST(request:Request) {
  if(!env.LEMON_SQUEEZY_CHECKOUT_URL||!['test','live'].includes(env.PAYMENTS_MODE??'')||(env.PAYMENTS_MODE==='live'&&(env.LIVE_CHECKOUT_VERIFIED!=='1'||env.PROVIDER_CAPACITY_VERIFIED!=='1'))) return Response.json({error:'Checkout awaits provider verification. No payment has been taken.'},{status:503});
  let p;try{p=await request.json();}catch{return Response.json({error:'Invalid request'},{status:400});}
  if(!/^[a-f0-9]{64}$/.test(p.customerId??'')) return Response.json({error:'Complete intake first.'},{status:400});
+ let url:URL;
+ try {url=new URL(buildTestCheckoutUrl(env.LEMON_SQUEEZY_CHECKOUT_URL,p.customerId));url.searchParams.set('checkout[custom][checkout_token]',p.checkoutToken??'');}
+ catch {return Response.json({error:'Checkout provider URL is invalid. No place was reserved and no payment was taken.'},{status:503});}
  const db=await ensureDatabase();
  const c=await db.prepare('SELECT c.id,c.profile_json,m.status AS market_status FROM customers c JOIN markets m ON c.market_id=m.id WHERE c.id=?').bind(p.customerId).first<{id:string;profile_json:string;market_status:string}>();
  if(!c||!secureStringEqual(JSON.parse(c.profile_json).checkoutToken,p.checkoutToken??'')) return Response.json({error:'Checkout session invalid.'},{status:403});
@@ -20,8 +23,6 @@ export async function POST(request:Request) {
  const reservation=await reserveFoundingPlace(db,c.id,env.PAYMENTS_MODE!);
  if(!reservation) return Response.json({error:'Founding memberships are currently full.'},{status:409});
  if(reservation.state==='paid') return Response.json({error:'This customer already holds a founding membership.'},{status:409});
- const url=new URL(buildTestCheckoutUrl(env.LEMON_SQUEEZY_CHECKOUT_URL,c.id));
- url.searchParams.set('checkout[custom][checkout_token]',p.checkoutToken);
  return Response.json({url:url.toString(),mode:env.PAYMENTS_MODE,reservationExpiresAt:reservation.expiresAt});
 }
 

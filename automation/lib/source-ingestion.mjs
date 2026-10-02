@@ -127,6 +127,7 @@ function icsDate(property, timeZone, { timestampOnly = false } = {}) {
     return { date, dateTime: null, allDay: true };
   }
   if (!/^\d{8}T\d{6}Z?$/.test(value) || (property.params.VALUE && property.params.VALUE !== "DATE-TIME")) fail("ICS_DATE_AMBIGUOUS_OR_UNSUPPORTED");
+  if (value.endsWith("Z") && Object.hasOwn(property.params, "TZID")) fail("ICS_UTC_WITH_TZID_INVALID");
   const iso = `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}T${value.slice(9, 11)}:${value.slice(11, 13)}:${value.slice(13, 15)}`;
   isoTimestamp(`${iso}Z`);
   let date;

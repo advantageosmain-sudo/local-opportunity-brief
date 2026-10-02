@@ -114,3 +114,14 @@ for (const existing of [false, true]) test(`a capacity audit alert before ${exis
   assert.equal(response.status, 409, 'A committed audit freeze must be checked inside the reservation write');
   assert.equal(db.db.prepare('SELECT count(*) n FROM founding_reservations').get().n, existing ? 1 : 0);
 });
+test('invalid provider checkout URL never consumes a founding reservation',async t=>{
+ const {db,env,call,customer}=await setup(t);const id='f'.repeat(64);customer(id);
+ for(const url of ['malformed','https://other.example/checkout/buy/x','https://unit.lemonsqueezy.com/wrong','http://unit.lemonsqueezy.com/checkout/buy/x']){
+  env.LEMON_SQUEEZY_CHECKOUT_URL=url;
+  assert.equal((await call('/api/checkout',{customerId:id,checkoutToken:'unit-checkout'})).status,503);
+  assert.equal(db.db.prepare('SELECT count(*) n FROM founding_reservations').get().n,0);
+ }
+ env.LEMON_SQUEEZY_CHECKOUT_URL='https://unit.lemonsqueezy.com/checkout/buy/unit-variant';
+ assert.equal((await call('/api/checkout',{customerId:id,checkoutToken:'unit-checkout'})).status,200);
+ assert.equal(db.db.prepare('SELECT count(*) n FROM founding_reservations').get().n,1);
+});
