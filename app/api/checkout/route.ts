@@ -10,6 +10,7 @@ export async function POST(request:Request) {
  const db=await ensureDatabase();
  const c=await db.prepare('SELECT c.id,c.profile_json,m.status AS market_status FROM customers c JOIN markets m ON c.market_id=m.id WHERE c.id=?').bind(p.customerId).first<{id:string;profile_json:string;market_status:string}>();
  if(!c||!secureStringEqual(JSON.parse(c.profile_json).checkoutToken,p.checkoutToken??'')) return Response.json({error:'Checkout session invalid.'},{status:403});
+ if(JSON.parse(c.profile_json).isTest) return Response.json({error:'Synthetic QA records cannot check out.'},{status:409});
  if(c.market_status!=='verified') return Response.json({error:'Local source coverage needs review before checkout.'},{status:409});
  const capacityAlert=await db.prepare("SELECT id FROM diagnostics WHERE status='open' AND code IN ('UNRESERVED_PAYMENT_REVIEW_REQUIRED','EXPIRED_RESERVATION_PAYMENT_REVIEW_REQUIRED') LIMIT 1").first();
  if(capacityAlert) return Response.json({error:'Founding payment capacity needs reconciliation before checkout.'},{status:409});

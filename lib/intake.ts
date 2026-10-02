@@ -20,9 +20,9 @@ export type IntakePayload = {
   deliveryPreferences: string;
   billingEmail: string;
   publicLinks: string[];
-  deliveryConsent: true;
-  termsAccepted: true;
-  noGuaranteeAccepted: true;
+  deliveryConsent: boolean;
+  termsAccepted: boolean;
+  noGuaranteeAccepted: boolean;
 };
 
 const allowedCategories = new Set([
@@ -36,7 +36,7 @@ function value(input: unknown, maxLength: number) {
   return typeof input === "string" ? input.trim().slice(0, maxLength) : "";
 }
 
-export function validateIntake(input: unknown):
+export function validateIntake(input: unknown, options: {qa?: boolean} = {}):
   | { ok: true; data: IntakePayload }
   | { ok: false; error: string } {
   if (!input || typeof input !== "object") {
@@ -69,7 +69,7 @@ export function validateIntake(input: unknown):
   if (!/^\d{5}(?:-\d{4})?$/.test(zip)) return { ok: false, error: "Enter a valid US ZIP code." };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(billingEmail)) return { ok: false, error: "Enter a valid billing email." };
   if (publicLinks.length > 15 || publicLinks.some(x => { try { return new URL(x).protocol !== "https:"; } catch { return true; } })) return { ok: false, error: "Use up to 15 HTTPS social links." };
-  if ([payload.deliveryConsent, payload.termsAccepted, payload.noGuaranteeAccepted].some(x => x !== "yes" && x !== true)) return { ok: false, error: "Accept report delivery, terms and the no-guarantee notice." };
+  if (!options.qa && [payload.deliveryConsent, payload.termsAccepted, payload.noGuaranteeAccepted].some(x => x !== "yes" && x !== true)) return { ok: false, error: "Accept report delivery, terms and the no-guarantee notice." };
   const consent = value(payload.consent, 8);
 
   if (!contactName || !businessName || !city || !products || !customers || !voice) {
@@ -87,7 +87,7 @@ export function validateIntake(input: unknown):
   if (![15, 25, 35, 50].includes(localRadius)) {
     return { ok: false, error: "Select one of the available local distances." };
   }
-  if (consent !== "yes") {
+  if (!options.qa && consent !== "yes") {
     return { ok: false, error: "Please agree to the privacy notice." };
   }
   if (website) {
@@ -116,7 +116,7 @@ export function validateIntake(input: unknown):
       state,
       voice,
       institutions: value(payload.institutions, 1500), currentPromotions: value(payload.currentPromotions, 1500), deliveryDay: "Monday", deliveryPreferences: value(payload.deliveryPreferences, 500),
-      website, zip, billingEmail, publicLinks, deliveryConsent: true, termsAccepted: true, noGuaranteeAccepted: true,
+      website, zip, billingEmail, publicLinks, deliveryConsent: !options.qa, termsAccepted: !options.qa, noGuaranteeAccepted: !options.qa,
     },
   };
 }
