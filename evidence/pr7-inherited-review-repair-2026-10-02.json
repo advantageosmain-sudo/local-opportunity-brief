@@ -1,6 +1,6 @@
 {
   "scope": "Code and evidence repair only; isolated local synthetic tests; no deployment or provider operations",
-  "checked_at": "2026-10-02T12:01:30.442924+00:00",
+  "checked_at": "2026-10-02T12:08:25.723588+00:00",
   "repository": "advantageosmain-sudo/local-opportunity-brief",
   "original_pr": 7,
   "original_head": "21895e2a5fe9f575648ac99a7613b45d30818fde",
@@ -19,7 +19,7 @@
     {
       "finding": "Damaged QA profiles counted as customers",
       "disposition": "FIXED",
-      "proof": "Independent qa- identity, test_ payment and profile markers; built dashboard verifies counts, subscriptions and control isolation with damaged/null/missing-flag profiles"
+      "proof": "Independent qa- identity, test_ payment and profile markers shared by the built dashboard, owner operations snapshot, automation export and direct delivery gate. Regression fixtures verify counts, safe redaction, export and delivery isolation with damaged/null/missing-flag and repaired unflagged profiles."
     },
     {
       "finding": "Public QA flag probes lack valid consents",
@@ -75,15 +75,18 @@
     },
     "typecheck": {
       "command": "tsc --noEmit --incremental false",
-      "status": "FAIL_BASELINE_UNCHANGED",
+      "status": "FAIL_PREEXISTING_ERRORS_REDUCED",
       "baseline_error_count": 9,
-      "repair_error_count": 9,
-      "diagnostics_identical": true,
-      "diagnostics_sha256": "eb41397ddc66c2996e781b692bea69120def79b857f5bfc392605a3a96d4675f",
-      "errors": [
+      "repair_error_count": 6,
+      "new_errors": 0,
+      "remaining_diagnostics_match_baseline": true,
+      "resolved_baseline_errors": [
         "app/api/internal/automation/customers/route.ts(7,35): error TS7006: Parameter 'c' implicitly has an 'any' type.",
         "app/api/internal/operations/route.ts(12,282): error TS7006: Parameter 'c' implicitly has an 'any' type.",
-        "app/api/internal/operations/route.ts(12,416): error TS7006: Parameter 'c' implicitly has an 'any' type.",
+        "app/api/internal/operations/route.ts(12,416): error TS7006: Parameter 'c' implicitly has an 'any' type."
+      ],
+      "diagnostics_sha256": "3482576e499409c0c70eb91ea60d799b0eb3fc6be565521cce0a3433e983e5cf",
+      "errors": [
         "app/dashboard/actions.ts(197,13): error TS2552: Cannot find name 'D1Database'. Did you mean 'IDBDatabase'?",
         "db/runtime.ts(10,8): error TS2552: Cannot find name 'D1Database'. Did you mean 'IDBDatabase'?",
         "site-surfaces/owner/worker/index.ts(6,11): error TS2304: Cannot find name 'Fetcher'.",
@@ -93,7 +96,7 @@
       ]
     },
     "diff_check": "PASS",
-    "github_actions": "Pending exact repair-head run at the time of this local receipt; final result is recorded in the follow-up PR checks."
+    "github_actions": "Validate business system passed on initial repair head be2772db79bd823ff5c86dc0332a06f500e04945 (run 37004310865); final consumer updates await rerun at this local receipt. Final exact-head result is in PR #8 checks."
   },
   "preserved_gates": {
     "PAYMENTS_MODE": "disabled",
@@ -111,5 +114,13 @@
     "spending": false,
     "merge": false
   },
-  "review_disposition": "Five inherited gaps repaired or truthfully reclassified; review required. No merge approval implied. Full standalone typecheck remains blocked by the nine existing errors."
+  "review_disposition": "Five inherited gaps and Copilot consumer-consistency finding repaired or truthfully reclassified; owner review required. No merge approval implied. Standalone typecheck still has six existing Cloudflare-global errors, reduced from nine baseline errors.",
+  "review_followup": {
+    "pr": 8,
+    "reviewed_head": "be2772db79bd823ff5c86dc0332a06f500e04945",
+    "thread_id": "PRRT_kwDOTpKP-c6oU9d9",
+    "finding": "Apply QA identity filtering consistently across internal API consumers",
+    "disposition": "FIXED_AWAITING_EXACT_HEAD_REREVIEW",
+    "repair": "Reuse shared QA classification; parse damaged profiles safely for the snapshot; filter QA and invalid JSON before automation mapping; honor identity in direct delivery; exercise all paths in the built Worker regression."
+  }
 }

@@ -2,6 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
+import { customerDeliveryGate } from '../lib/customer-lifecycle.mjs';
 const { default: worker } = await import('../dist/server/index.js');
 
 class D1 {
@@ -25,14 +26,17 @@ test('dashboard excludes damaged QA identities and test payment states from cust
   const ctx = { waitUntil() {}, passThroughOnException() {} };
   await worker.fetch(new Request('https://localhost/api/internal/operations', { headers: { authorization: 'Bearer unit-only' } }), env, ctx);
   const realId = 'a'.repeat(64);
+  const realProfile = JSON.stringify({ isTest: false, checkoutToken: 'unit-secret-capability', deliveryConsent: true,
+    city: 'Olympia', state: 'WA', localRadius: 35, products: 'gifts', customers: 'adults', voice: 'factual', exclusions: '' });
   const rows = [
-    [realId, '{"isTest":false}', 'active', 'REAL CUSTOMER'],
+    [realId, realProfile, 'active', 'REAL CUSTOMER'],
     ['qa-' + 'b'.repeat(64), '{broken', 'active', 'QA DAMAGED JSON'],
     ['qa-' + 'c'.repeat(64), '{}', 'active', 'QA MISSING FLAG'],
     ['qa-' + 'd'.repeat(64), 'null', 'active', 'QA NULL PROFILE'],
     ['e'.repeat(64), '{"isTest":false}', 'test_qa', 'QA PAYMENT MARKER'],
     ['f'.repeat(64), '{broken', 'test_active', 'QA TEST SUBSCRIPTION'],
     ['g'.repeat(64), '{"isTest":true}', 'active', 'QA PROFILE MARKER'],
+    ['qa-' + 'h'.repeat(64), realProfile, 'active', 'QA REPAIRED UNFLAGGED PROFILE'],
   ];
   for (const [id, profile, payment, name] of rows) {
     db.db.prepare("INSERT INTO customers(id,email,business_name,profile_json,market_id,payment_status,onboarding_status,status) VALUES(?,?,?,?,?,?,'complete','active')")
@@ -43,10 +47,24 @@ test('dashboard excludes damaged QA identities and test payment states from cust
   const html = (await response.text()).replace(/<!--[\s\S]*?-->/g, '');
   assert.match(html, /<h2>Customers · 1<\/h2>/);
   assert.match(html, /Active subscriptions: 1/);
-  assert.match(html, /<h2>Owner-only QA records · 6<\/h2>/);
+  assert.match(html, /<h2>Owner-only QA records · 7<\/h2>/);
   for (const [id, , , name] of rows.slice(1)) {
     assert.ok(html.includes(name), name);
     assert.doesNotMatch(html, new RegExp(`name="customerId"[^>]*value="${id}"`), `${name} must not expose real-customer controls`);
   }
   assert.match(html, new RegExp(`name="customerId"[^>]*value="${realId}"`));
+  const snapshot = await worker.fetch(new Request('https://localhost/api/internal/operations', { headers: { authorization: 'Bearer unit-only' } }), env, ctx);
+  assert.equal(snapshot.status, 200, 'damaged QA JSON must not break the owner snapshot');
+  const snapshotText = await snapshot.text();
+  assert.doesNotMatch(snapshotText, /checkoutToken|unit-secret-capability/);
+  const summary = JSON.parse(snapshotText).summary;
+  assert.equal(summary.customerCount, 1);
+  assert.equal(summary.activeSubscriptions, 1);
+  const exported = await worker.fetch(new Request('https://localhost/api/internal/automation/customers', { headers: { authorization: 'Bearer unit-only' } }), env, ctx);
+  assert.equal(exported.status, 200, 'QA JSON must not fail SQL or enter automation');
+  assert.deepEqual((await exported.json()).customers.map(c => c.customerId), [realId]);
+  const repairedQa = db.db.prepare('SELECT * FROM customers WHERE id=?').get('qa-' + 'h'.repeat(64));
+  const gate = customerDeliveryGate(repairedQa, { marketApproved: true, reportApproved: true, reportValid: true });
+  assert.equal(gate.allowed, false, 'direct delivery must honor QA identity even when flags are lost');
+  assert.ok(gate.errors.includes('QA_CUSTOMER_NOT_DELIVERABLE'));
 });
