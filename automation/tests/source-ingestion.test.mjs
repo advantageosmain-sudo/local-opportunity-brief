@@ -110,3 +110,45 @@ test("RSS ingestion reuses registry envelope but cannot fabricate geography, fit
   const candidate = result.sourcePacks[0].opportunities[0];
   assert.equal(candidate.proposedCity, "Olympia"); assert.equal(candidate.city, undefined); assert.equal(candidate.customerTags, undefined); assert.equal(candidate.prepareBy, undefined); assert.equal(candidate.sourceQuality, undefined); assert.equal(candidate.ownerApprovalRequired, true);
 });
+
+test("mocked CLI writes review-only artifacts end-to-end and refuses to overwrite them", async (t) => {
+  const { mkdtemp, writeFile, readFile, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const path = await import("node:path");
+  const { fileURLToPath } = await import("node:url");
+  const { execFile } = await import("node:child_process");
+  const { promisify } = await import("node:util");
+  const root = await mkdtemp(path.join(tmpdir(), "lob-ingestion-cli-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const configFile = path.join(root, "config.json"); const bootstrap = path.join(root, "mock-network.mjs"); const output = path.join(root, "output");
+  await writeFile(configFile, JSON.stringify(config));
+  const instant = new Date();
+  const stamp = instant.toISOString().slice(0, 19).replace(/[-:]/g, "") + "Z";
+  const nextWeek = new Date(instant.valueOf() + 7 * 86_400_000).toISOString().slice(0, 10).replaceAll("-", "");
+  const body = ics(eventLines.filter((line) => !line.startsWith("DTEND")).map((line) => line.startsWith("DTSTAMP") ? `DTSTAMP:${stamp}` : line.startsWith("DTSTART") ? `DTSTART;VALUE=DATE:${nextWeek}` : line));
+  await writeFile(bootstrap, `
+import https from 'node:https';
+import dns from 'node:dns/promises';
+import {syncBuiltinESMExports} from 'node:module';
+import {EventEmitter} from 'node:events';
+import {PassThrough} from 'node:stream';
+dns.lookup = async () => [{address:'8.8.8.8',family:4}];
+https.request = (_url,_options,callback) => {
+ const request=new EventEmitter();request.setTimeout=()=>request;request.destroy=()=>request;
+ request.end=()=>queueMicrotask(()=>{const response=new PassThrough();response.statusCode=200;response.headers={'content-type':'text/calendar'};callback(response);response.end(${JSON.stringify(body)});});
+ return request;
+};
+syncBuiltinESMExports();
+`);
+  const cli = fileURLToPath(new URL("../ingest-sources.mjs", import.meta.url));
+  const args = ["--import", bootstrap, cli, "--config", configFile, "--out-dir", output];
+  const { stdout } = await promisify(execFile)(process.execPath, args);
+  assert.equal(JSON.parse(stdout).candidateCount, 1);
+  const filename = path.join(output, "registry-candidates.json"); const before = await readFile(filename, "utf8");
+  const packet = JSON.parse(before);
+  assert.equal(packet.ownerApprovalRequired, true); assert.equal(packet.liveDelivery, false);
+  assert.equal(packet.sourcePacks[0].opportunities[0].sourceAccessStatus, "pending-owner-validation");
+  await readFile(path.join(output, "ingestion-diagnostics.json"));
+  await assert.rejects(promisify(execFile)(process.execPath, args));
+  assert.equal(await readFile(filename, "utf8"), before);
+});
