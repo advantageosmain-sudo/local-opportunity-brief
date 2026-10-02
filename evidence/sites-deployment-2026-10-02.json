@@ -1,17 +1,18 @@
 {
-  "checked_at": "2026-10-02T06:30:59Z",
-  "canonical_commit": "1f74a7759e169643b18a69601111dfaccb1e8284",
-  "canonical_tree": "da386b4da6b4788f642ad23b53c85ff68ff72dc6",
-  "source_blobs_verified": 136,
+  "checked_at": "2026-10-02T06:47:59Z",
+  "canonical_commit": "2b69795352f207d283aacaa7cd73cc249f0d3482",
+  "canonical_tree": "c25bcbee5ce5a675ba795fc5ab3675ac2862e418",
+  "source_blobs_verified": 147,
   "public_site": {
     "project_id": "appgprj_6a6c611d9f3c8191a2c415eb3fd40585",
-    "source_commit": "d07f85af0ee8dd4c06f2992a1cfc6e0cb4b26530",
-    "deployment_id": "appgdep_6abf4c7bfe4081918bf396d5b03bc8a9",
-    "version_id": "appgprj_6a6c611d9f3c8191a2c415eb3fd40585~appgver_9e12e10dc2e88191a72131159ea0586f",
+    "source_commit": "3eac0e62eca43d78241abd484b0878a18e91650c",
+    "deployment_id": "appgdep_6abf52f82de0819192f9d95f0634f635",
+    "version_id": "appgprj_6a6c611d9f3c8191a2c415eb3fd40585~appgver_715d8079681881919f6060a189de230d",
     "url": "https://local-opportunity-brief.mshipe2022.chatgpt.site",
     "deployment": "succeeded",
     "audience": "public",
-    "access_revision": 2
+    "access_revision": 2,
+    "version": 11
   },
   "owner_site": {
     "project_id": "appgprj_6a8a1c97eb8c8191a3651171296ca2ff",
@@ -25,7 +26,7 @@
     "owner_login": "verified via existing Michelle personal account"
   },
   "local_tests": {
-    "public_full": 51,
+    "public_full": 70,
     "owner": 5,
     "exact_blob_build_public_route_tests": 11
   },
@@ -39,7 +40,8 @@
     "terms page",
     "public dashboard denies anonymous",
     "public dashboard authenticates Michelle and shows two historical reports/customer_count0",
-    "owner Site requires login and shows explicit app401 diagnostic"
+    "owner Site requires login and shows explicit app401 diagnostic",
+    "historical reports explicitly cannot approve for current delivery after follow-up deploy"
   ],
   "not_verified": [
     "valid live intake submission",
@@ -53,5 +55,32 @@
   "nonbrowser_http_probe": "environment403 on all paths; browser succeeded so not attributed to application",
   "secrets_read": false,
   "settings_editor": "ChatGPT sign-in succeeded but exact Site editor transitions to blocked nonHTTP protocol; exact secret-menu steps not available",
-  "business_status": "BLOCKED"
+  "business_status": "BLOCKED",
+  "report_sync": {
+    "run_id": 36975142853,
+    "url": "https://github.com/advantageosmain-sudo/local-opportunity-brief/actions/runs/36975142853",
+    "commit": "2b69795352f207d283aacaa7cd73cc249f0d3482",
+    "result": "FAILURE",
+    "identity_checksum_step": "PASS",
+    "sync_status": 401,
+    "attempts": 1,
+    "email_sent": false,
+    "approval_clicked": false
+  },
+  "additional_live_checks": {
+    "checked_at": "2026-10-02T06:53:32Z",
+    "invalid_email": "PASS browser input.validity.valid false; no submission",
+    "invalid_zip": "PASS browser validation Please match the requested format",
+    "missing_consent": "PASS submit focused unchecked consent; Please check this box if you want to proceed",
+    "viewport": {
+      "width": 1180,
+      "height": 757,
+      "document_client_width": 1165,
+      "document_scroll_width": 1165,
+      "horizontal_overflow": false
+    },
+    "mobile": "BLOCKED: documented cloud browser API exposes no viewport resize or emulation; no supported Browser capability. CSS breakpoints900/680/600 checked, not a mobile visual pass",
+    "valid_qa_intake": "PENDING dedicated authenticated no-contract test mode under development; public form explicit contract was not accepted",
+    "test_record_created": false
+  }
 }

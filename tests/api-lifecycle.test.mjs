@@ -33,3 +33,23 @@ test('actual signed webhook handles invoice failures, duplicate and sticky cance
  assert.equal((await (await call('/api/webhooks/lemon-squeezy',p,headers)).json()).status,'DUPLICATE_IGNORED');
  assert.equal((await call('/api/webhooks/lemon-squeezy',p)).status,401);
 });
+test('owner-only synthetic QA intake shares validation without real consent or commerce',async()=>{
+ const p={contactName:'OWNER QA TEST',businessName:'OWNER QA TEST Boutique',email:'owner@example.com',city:'Olympia',state:'WA',zip:'98501',category:'boutique',products:'gifts',customers:'families',voice:'friendly',localRadius:'35',qaAcknowledged:'yes'};
+ // Identity headers simulate the platform boundary in this isolated Worker harness only.
+ const owner={'oai-authenticated-user-email':'owner@example.com'};
+ assert.equal((await call('/api/owner/qa-intake',p)).status,403);
+ assert.equal((await call('/api/owner/qa-intake',p,{'oai-authenticated-user-email':'other@example.com'})).status,403);
+ assert.equal((await call('/api/owner/qa-intake',p,{...owner,origin:'https://attacker.example'})).status,403);
+ assert.equal((await call('/api/intake',p)).status,400);
+ assert.equal((await call('/api/owner/qa-intake',{...p,zip:'bad'},owner)).status,400);
+ assert.equal((await call('/api/owner/qa-intake',{...p,email:'someone@example.com'},owner)).status,400);
+ const before=db.db.prepare('SELECT count(*) n FROM customers').get().n;
+ const beforeCount=(await (await call('/api/internal/operations',null,{authorization:'Bearer test-only-sync'})).json()).summary.customerCount;
+ const first=await call('/api/owner/qa-intake',p,owner);assert.equal(first.status,201);const result=await first.json();assert.equal(result.checkoutToken,undefined);assert.equal(result.isTest,true);assert.match(result.customerId,/^qa-[a-f0-9]{64}$/);
+ const row=db.db.prepare('SELECT * FROM customers WHERE id=?').get(result.customerId),profile=JSON.parse(row.profile_json);
+ assert.equal(profile.termsAccepted,false);assert.equal(profile.deliveryConsent,false);assert.equal(profile.legalConsentRecorded,false);assert.equal(profile.checkoutToken,undefined);assert.equal(row.payment_status,'test_qa');assert.equal(row.status,'test');assert.match(row.market_id,/^qa-/);
+ const repeat=await call('/api/owner/qa-intake',p,owner);assert.equal(repeat.status,200);assert.equal((await repeat.json()).duplicate,true);assert.equal(db.db.prepare('SELECT count(*) n FROM customers').get().n,before+1);
+ const snapshot=await (await call('/api/internal/operations',null,{authorization:'Bearer test-only-sync'})).json();assert.equal(snapshot.summary.customerCount,beforeCount);
+ const {customerDeliveryGate}=await import('../lib/customer-lifecycle.mjs');assert.equal(customerDeliveryGate({...row,status:'active',payment_status:'active'}).allowed,false);
+ assert.equal((await (await call('/api/internal/automation/customers',null,{authorization:'Bearer test-only-sync'})).json()).customers.some(x=>x.customerId===row.id),false);
+});
