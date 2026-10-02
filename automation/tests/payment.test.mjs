@@ -58,6 +58,20 @@ test("webhook signature validation accepts exact bytes and rejects tampering", a
   assert.equal(await verifyLemonSqueezySignature(`${payload} `, signature, secret), false);
 });
 
+test("checkout links require a single canonical buy target", () => {
+  const leadId = "123e4567-e89b-12d3-a456-426614174000";
+  for (const path of [
+    "/checkout/", "/checkout/foo", "/checkout/buy", "/checkout/buy/",
+    "/checkout/buy/target/extra", "/checkout/buy/%2Ftarget",
+  ]) {
+    assert.throws(() => buildTestCheckoutUrl(`https://unit.lemonsqueezy.com${path}`, leadId), /Checkout URL/);
+  }
+  const url = new URL(buildTestCheckoutUrl("https://unit.lemonsqueezy.com/checkout/buy/unit-variant?checkout%5Bemail%5D=unit%40example.com", leadId));
+  assert.equal(url.pathname, "/checkout/buy/unit-variant");
+  assert.equal(url.searchParams.get("checkout[email]"), "unit@example.com");
+  assert.equal(url.searchParams.get("checkout[custom][lead_id]"), leadId);
+});
+
 test("only signed test-mode payment events are parsed", () => {
   const parsed = parseTestWebhook(payload, "order_created");
   assert.equal(parsed.eventName, "order_created");

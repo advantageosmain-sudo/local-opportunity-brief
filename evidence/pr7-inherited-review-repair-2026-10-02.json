@@ -1,0 +1,115 @@
+{
+  "scope": "Code and evidence repair only; isolated local synthetic tests; no deployment or provider operations",
+  "checked_at": "2026-10-02T12:01:30.442924+00:00",
+  "repository": "advantageosmain-sudo/local-opportunity-brief",
+  "original_pr": 7,
+  "original_head": "21895e2a5fe9f575648ac99a7613b45d30818fde",
+  "original_pr_disposition": {
+    "state": "MERGED_BEFORE_REQUEST",
+    "merged_at": "2026-10-02T11:50:31Z",
+    "merge_commit": "963daa5ea05798d93d87787d0ee4199815ce2c9a"
+  },
+  "repair_branch": "build/stripe-email-sandbox-20261002",
+  "findings": [
+    {
+      "finding": "Noncanonical Lemon Squeezy checkout path",
+      "disposition": "FIXED",
+      "proof": "Canonical single /checkout/buy/<target> validation; direct URL and built Worker no-reservation regressions"
+    },
+    {
+      "finding": "Damaged QA profiles counted as customers",
+      "disposition": "FIXED",
+      "proof": "Independent qa- identity, test_ payment and profile markers; built dashboard verifies counts, subscriptions and control isolation with damaged/null/missing-flag profiles"
+    },
+    {
+      "finding": "Public QA flag probes lack valid consents",
+      "disposition": "FIXED",
+      "proof": "All four required consent fields supplied; exact QA guard error and zero table writes asserted; unflagged valid request is the positive control"
+    },
+    {
+      "finding": "Older deployment cited as post-deployment verification",
+      "disposition": "CORRECTED_WITH_VERIFICATION_BLOCKED",
+      "proof": "Final recorded target appgdep_6abf57d82b748191ba16f6dc92498b18 identified; earlier observation preserved as historical; exact final deployment verification unproven, stage 1 BLOCKED"
+    },
+    {
+      "finding": "Customer-created stage passes on Customers0/QA1",
+      "disposition": "CORRECTED_WITH_CUSTOMER_STAGE_BLOCKED",
+      "proof": "Stage 9 BLOCKED; historical synthetic QA creation retained separately; no intake-plus-payment customer claimed"
+    }
+  ],
+  "verification": {
+    "lint": {
+      "command": "npm run lint",
+      "status": "PASS"
+    },
+    "build": {
+      "command": "npm run build; also executed by npm test",
+      "status": "PASS"
+    },
+    "tests": {
+      "command": "npm test",
+      "status": "PASS",
+      "passed": 148,
+      "failed": 0
+    },
+    "targeted_tests": {
+      "passed": 15,
+      "failed": 0
+    },
+    "regression_reproduction": {
+      "original_code_failures": [
+        "noncanonical checkout path",
+        "dashboard QA counts and controls"
+      ],
+      "status": "REPRODUCED_BEFORE_FIX_PASS_AFTER"
+    },
+    "business_checks": {
+      "status": "PASS",
+      "commands": [
+        "npm run business:demo",
+        "npm run business:pilot",
+        "node automation/run-all.mjs",
+        "node automation/run.mjs --customer owner-test-olympia --as-of 2026-10-02"
+      ],
+      "live_delivery": false
+    },
+    "typecheck": {
+      "command": "tsc --noEmit --incremental false",
+      "status": "FAIL_BASELINE_UNCHANGED",
+      "baseline_error_count": 9,
+      "repair_error_count": 9,
+      "diagnostics_identical": true,
+      "diagnostics_sha256": "eb41397ddc66c2996e781b692bea69120def79b857f5bfc392605a3a96d4675f",
+      "errors": [
+        "app/api/internal/automation/customers/route.ts(7,35): error TS7006: Parameter 'c' implicitly has an 'any' type.",
+        "app/api/internal/operations/route.ts(12,282): error TS7006: Parameter 'c' implicitly has an 'any' type.",
+        "app/api/internal/operations/route.ts(12,416): error TS7006: Parameter 'c' implicitly has an 'any' type.",
+        "app/dashboard/actions.ts(197,13): error TS2552: Cannot find name 'D1Database'. Did you mean 'IDBDatabase'?",
+        "db/runtime.ts(10,8): error TS2552: Cannot find name 'D1Database'. Did you mean 'IDBDatabase'?",
+        "site-surfaces/owner/worker/index.ts(6,11): error TS2304: Cannot find name 'Fetcher'.",
+        "site-surfaces/owner/worker/index.ts(10,7): error TS2552: Cannot find name 'D1Database'. Did you mean 'IDBDatabase'?",
+        "worker/index.ts(6,11): error TS2304: Cannot find name 'Fetcher'.",
+        "worker/index.ts(7,7): error TS2552: Cannot find name 'D1Database'. Did you mean 'IDBDatabase'?"
+      ]
+    },
+    "diff_check": "PASS",
+    "github_actions": "Pending exact repair-head run at the time of this local receipt; final result is recorded in the follow-up PR checks."
+  },
+  "preserved_gates": {
+    "PAYMENTS_MODE": "disabled",
+    "LIVE_DELIVERY": "0",
+    "LIVE_CHECKOUT_VERIFIED": "0",
+    "PROVIDER_CAPACITY_VERIFIED": "0",
+    "provider_configuration_docs_changed": false
+  },
+  "external_actions": {
+    "provider_credentials_configured": false,
+    "deployment": false,
+    "checkout_activated": false,
+    "payment": false,
+    "email": false,
+    "spending": false,
+    "merge": false
+  },
+  "review_disposition": "Five inherited gaps repaired or truthfully reclassified; review required. No merge approval implied. Full standalone typecheck remains blocked by the nine existing errors."
+}

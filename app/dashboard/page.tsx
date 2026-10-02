@@ -1,4 +1,5 @@
 import {validateCurrentReportPacket} from '@/lib/report-sync.mjs';
+import { isQaCustomer } from '@/lib/dashboard-policy.mjs';
 import { getChatGPTUser, chatGPTSignInPath } from '@/app/chatgpt-auth';
 import { ensureDatabase, getRuntimeEnv } from '@/db/runtime';
 import { setReportDecision, setCustomerStatus, approveMarketSources, setReviewPolicy } from './actions';
@@ -9,7 +10,7 @@ export default async function Dashboard() {
  if(!user||!owner||user.email.toLowerCase()!==owner) return <main><h1>Owner access required</h1><a href={chatGPTSignInPath('/dashboard')}>Sign in with your owner account</a></main>;
  const db=await ensureDatabase();
  const customers=(await db.prepare('SELECT * FROM customers ORDER BY created_at DESC LIMIT 1000').all()).results as Record<string,string>[];
- const qaCustomers=customers.filter(c=>{try{return JSON.parse(c.profile_json).isTest===true}catch{return false}});
+ const qaCustomers=customers.filter(isQaCustomer);
  const realCustomers=customers.filter(c=>!qaCustomers.includes(c));
  const reports=(await db.prepare('SELECT * FROM reports ORDER BY created_at DESC LIMIT 100').all()).results as Record<string,string>[];
  const reportValidity=new Map(await Promise.all(reports.map(async row=>{try{return [row.id,(await validateCurrentReportPacket(JSON.parse(row.report_json))).passed] as const}catch{return [row.id,false] as const}})));
