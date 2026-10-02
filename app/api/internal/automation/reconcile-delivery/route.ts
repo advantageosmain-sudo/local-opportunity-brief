@@ -5,48 +5,98 @@ const deliveredEvents = new Set(['delivered', 'opened', 'clicked']);
 const failedEvents = new Set(['bounced', 'complained', 'failed', 'suppressed']);
 const pendingEvents = new Set(['queued', 'scheduled', 'sent', 'delivery_delayed']);
 
+// Four sequential reads, including their bodies, plus three pacing intervals:
+// at most 21.8s of provider wait, leaving 8.2s of the caller's 30s for DB/runtime.
+const receiptBatchSize = 4;
+const receiptTimeoutMs = 5_000;
+const receiptSpacingMs = 600;
+
+type ReceiptReadback = { result: { id?: unknown; last_event?: unknown } | null; code?: never } | { code: string; result?: never };
+
+async function readProviderReceipt(messageId: string, apiKey: string): Promise<ReceiptReadback> {
+  const controller = new AbortController();
+  let readingBody = false;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    // Race the whole operation, not just headers. A stalled body (or a fetch
+    // implementation that ignores abort) cannot keep this route waiting.
+    return await Promise.race([
+      (async (): Promise<ReceiptReadback> => {
+        const response = await fetch(`https://api.resend.com/emails/${encodeURIComponent(messageId)}`, {
+          headers: { authorization: `Bearer ${apiKey}` },
+          signal: controller.signal,
+          redirect: 'error',
+        });
+        controller.signal.throwIfAborted();
+        if (!response.ok) return { code: `PROVIDER_RECEIPT_HTTP_${response.status}` };
+        readingBody = true;
+        return { result: await response.json() };
+      })(),
+      new Promise<never>((_, reject) => {
+        timeout = setTimeout(() => {
+          reject(new Error('Provider receipt deadline exceeded'));
+          controller.abort();
+        }, receiptTimeoutMs);
+      }),
+    ]);
+  } catch {
+    return { code: readingBody ? 'PROVIDER_RECEIPT_INVALID_JSON' : 'PROVIDER_RECEIPT_REQUEST_FAILED' };
+  } finally {
+    clearTimeout(timeout);
+    controller.abort();
+  }
+}
+
 export async function POST(request: Request) {
   if (!isAutomationRequest(request)) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   const env = getRuntimeEnv();
   if (!env.RESEND_API_KEY) return Response.json({ error: 'Provider unavailable' }, { status: 503 });
   // Receipt readback must remain possible after LIVE_DELIVERY stops new sends.
   const db = await ensureDatabase();
-  const rows = (await db.prepare("SELECT * FROM delivery_attempts WHERE status IN ('accepted','delivered') AND created_at >= datetime('now','-30 days') ORDER BY CASE status WHEN 'accepted' THEN 0 ELSE 1 END, updated_at ASC LIMIT 50").all()).results as Record<string, string>[];
+  // Order by last check across both statuses. Prioritizing all accepted rows
+  // would let permanent failures monopolize the batch and hide later bounces.
+  const rows = (await db.prepare(`SELECT * FROM delivery_attempts WHERE status IN ('accepted','delivered') AND created_at >= datetime('now','-30 days') ORDER BY julianday(updated_at) ASC, CASE status WHEN 'accepted' THEN 0 ELSE 1 END, id ASC LIMIT ${receiptBatchSize}`).all()).results as Record<string, string>[];
   let checked = 0;
   let confirmed = 0;
   let failed = 0;
+  let firstFailureCode: string | undefined;
 
   const readbackFailure = async (row: Record<string, string>, code: string) => {
     // Never persist or return provider bodies, headers, credentials or recipients.
-    await db.prepare(`INSERT INTO diagnostics(id,system,subject_id,code) VALUES(?,'email',?,?)
-      ON CONFLICT(id) DO UPDATE SET code=excluded.code,status='open',updated_at=CURRENT_TIMESTAMP`)
-      .bind(`reconcile-${row.report_id}`, row.report_id, code).run();
-    return Response.json({ error: 'Provider receipt could not be verified.', code, checked, confirmed, failed }, { status: 502 });
+    // Rotate failures without clearing accepted/unknown send locks or inventing
+    // a delivery outcome. Each selected row gets one chance in this pass.
+    await db.batch([
+      db.prepare(`INSERT INTO diagnostics(id,system,subject_id,code) VALUES(?,'email',?,?)
+        ON CONFLICT(id) DO UPDATE SET code=excluded.code,status='open',updated_at=CURRENT_TIMESTAMP`)
+        .bind(`reconcile-${row.report_id}`, row.report_id, code),
+      db.prepare('UPDATE delivery_attempts SET updated_at=? WHERE id=?').bind(new Date().toISOString(), row.id),
+    ]);
+    firstFailureCode ??= code;
   };
 
   for (const row of rows) {
-    if (!row.provider_message_id) return readbackFailure(row, 'PROVIDER_MESSAGE_ID_MISSING');
-    checked++;
-    let response: Response;
-    try {
-      response = await fetch(`https://api.resend.com/emails/${encodeURIComponent(row.provider_message_id)}`, {
-        headers: { authorization: `Bearer ${env.RESEND_API_KEY}` },
-        signal: AbortSignal.timeout(10_000),
-        redirect: 'error',
-      });
-    } catch {
-      return readbackFailure(row, 'PROVIDER_RECEIPT_REQUEST_FAILED');
+    if (!row.provider_message_id) {
+      await readbackFailure(row, 'PROVIDER_MESSAGE_ID_MISSING');
+      continue;
     }
-    // Authentication failures, throttling and outages must not produce a green
-    // reconciliation run. Stop this pass without retrying or clearing send locks.
-    if (!response.ok) return readbackFailure(row, `PROVIDER_RECEIPT_HTTP_${response.status}`);
-    let result: { id?: unknown; last_event?: unknown } | null;
-    try { result = await response.json(); }
-    catch { return readbackFailure(row, 'PROVIDER_RECEIPT_INVALID_JSON'); }
-    if (!result || result.id !== row.provider_message_id) return readbackFailure(row, 'PROVIDER_RECEIPT_ID_MISMATCH');
+    // Stay below the provider's default two-request/second limit within this
+    // invocation; shared-key traffic from other invocations can still get 429s.
+    if (checked > 0) await new Promise(resolve => setTimeout(resolve, receiptSpacingMs));
+    checked++;
+    const readback = await readProviderReceipt(row.provider_message_id, env.RESEND_API_KEY);
+    if (readback.code) {
+      await readbackFailure(row, readback.code);
+      continue;
+    }
+    const result = readback.result;
+    if (!result || result.id !== row.provider_message_id) {
+      await readbackFailure(row, 'PROVIDER_RECEIPT_ID_MISMATCH');
+      continue;
+    }
     const event = result.last_event;
     if (typeof event !== 'string' || ![...deliveredEvents, ...failedEvents, ...pendingEvents, 'canceled'].includes(event)) {
-      return readbackFailure(row, 'PROVIDER_RECEIPT_STATUS_INVALID');
+      await readbackFailure(row, 'PROVIDER_RECEIPT_STATUS_INVALID');
+      continue;
     }
 
     const now = new Date().toISOString();
@@ -75,6 +125,8 @@ export async function POST(request: Request) {
     }
     await db.prepare("UPDATE diagnostics SET status='resolved',updated_at=CURRENT_TIMESTAMP WHERE id=? AND status='open'").bind(`reconcile-${row.report_id}`).run();
   }
+  // Partial progress is durable, but any unverified receipt still fails the run
+  // visibly and preserves the existing safe one-row error response contract.
+  if (firstFailureCode) return Response.json({ error: 'Provider receipt could not be verified.', code: firstFailureCode, checked, confirmed, failed }, { status: 502 });
   return Response.json({ checked, confirmed, failed });
 }
-
