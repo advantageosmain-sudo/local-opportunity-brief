@@ -63,6 +63,7 @@ test("checkout links require a single canonical buy target", () => {
   for (const path of [
     "/checkout/", "/checkout/foo", "/checkout/buy", "/checkout/buy/",
     "/checkout/buy/target/extra", "/checkout/buy/%2Ftarget",
+    "/Checkout/buy/target", "/checkout/BUY/target",
   ]) {
     assert.throws(() => buildTestCheckoutUrl(`https://unit.lemonsqueezy.com${path}`, leadId), /Checkout URL/);
   }
