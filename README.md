@@ -133,7 +133,7 @@ Important values:
 
 - `OWNER_EMAIL` — owner dashboard allowlist
 - `REPORT_SYNC_URL` and `REPORT_SYNC_SECRET` — exact report-to-dashboard link
-- `PAYMENTS_MODE=disabled|test|live` — live additionally requires verified provider configuration and `LIVE_CHECKOUT_VERIFIED=1`
+- `PAYMENTS_MODE=disabled|test|live` — live additionally requires verified provider configuration, `LIVE_CHECKOUT_VERIFIED=1` and `PROVIDER_CAPACITY_VERIFIED=1`; both gates stay unset/0 until independently verified and owner-approved
 - `STRIPE_API_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PORTAL_CONFIGURATION_ID` and `PUBLIC_SITE_URL` — protected Site runtime configuration
 - `PAYMENTS_PROVIDER=stripe` — default; legacy Lemon Squeezy requires explicit selection
 - `RESEND_API_KEY`, `DELIVERY_FROM_EMAIL`, and `LIVE_DELIVERY` — protected delivery only

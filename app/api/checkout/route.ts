@@ -5,7 +5,9 @@ import {secureStringEqual} from '@/lib/security.mjs';
 import {buildTestCheckoutUrl} from '@/lib/lemon-squeezy.mjs';
 export async function POST(request:Request) {
  const env=getRuntimeEnv();
- if((env.PAYMENTS_PROVIDER??'stripe')==='stripe') return stripeCheckoutRequest(request);
+ const provider=env.PAYMENTS_PROVIDER??'stripe';
+ if(provider==='stripe') return stripeCheckoutRequest(request);
+ if(provider!=='lemon_squeezy') return Response.json({error:'Unsupported payment provider. Checkout is disabled.'},{status:503});
  if(!env.LEMON_SQUEEZY_CHECKOUT_URL||!['test','live'].includes(env.PAYMENTS_MODE??'')||(env.PAYMENTS_MODE==='live'&&(env.LIVE_CHECKOUT_VERIFIED!=='1'||env.PROVIDER_CAPACITY_VERIFIED!=='1'))) return Response.json({error:'Checkout awaits provider verification. No payment has been taken.'},{status:503});
  let p;try{p=await request.json();}catch{return Response.json({error:'Invalid request'},{status:400});}
  if(!/^[a-f0-9]{64}$/.test(p.customerId??'')) return Response.json({error:'Complete intake first.'},{status:400});
@@ -30,7 +32,9 @@ export async function POST(request:Request) {
 
 // Releases only an unpaid local reservation. This is not subscription cancellation.
 export async function DELETE(request:Request) {
- if((getRuntimeEnv().PAYMENTS_PROVIDER??'stripe')==='stripe') return Response.json({error:'Stripe checkout places remain reserved until provider-confirmed expiry. Closing a page does not cancel billing.'},{status:409});
+ const provider=getRuntimeEnv().PAYMENTS_PROVIDER??'stripe';
+ if(provider!=='stripe' && provider!=='lemon_squeezy') return Response.json({error:'Unsupported payment provider. Checkout is disabled.'},{status:503});
+ if(provider==='stripe') return Response.json({error:'Stripe checkout places remain reserved until provider-confirmed expiry. Closing a page does not cancel billing.'},{status:409});
  const mode=getRuntimeEnv().PAYMENTS_MODE;
  if(!mode||!['test','live'].includes(mode)) return Response.json({error:'Checkout disabled.'},{status:503});
  let p;try{p=await request.json();}catch{return Response.json({error:'Invalid request'},{status:400});}

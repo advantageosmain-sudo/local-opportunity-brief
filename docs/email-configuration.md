@@ -129,8 +129,14 @@ establishes launch approval.
 
 - Provider readback HTTP errors, transport timeouts, malformed JSON, mismatched
   message IDs and invalid event status create safe dashboard diagnostics and
-  return a failing response. The existing hourly workflow then opens one
-  deduplicated GitHub issue for the unresolved reconciliation failure.
+  return HTTP 502 after the bounded pass. A missing stored provider message ID
+  does the same without making a provider request. Each failed row's check
+  timestamp rotates without changing its send lock, and later rows still get
+  checked. Successful receipts in a partially failed pass remain durable; the
+  response reports the first safe error code and aggregate checked, confirmed
+  and failed-delivery counts. Provider bodies, headers and recipient details
+  never enter those diagnostics or responses. The existing hourly workflow then
+  opens one deduplicated GitHub issue for the unresolved reconciliation failure.
 - A confirmed suppressed, bounced, complained or failed customer email blocks
   later customer delivery and creates a dashboard diagnostic. A canceled
   provider message is terminal without declaring its recipient unsafe.
@@ -140,6 +146,18 @@ establishes launch approval.
 - Claimed/unknown sends are never cleared or resent by the receipt worker.
   Inspect the provider and reconcile them explicitly; do not delete locks.
 - The hourly query covers accepted and delivered sends from the prior 30 days,
-  at most 50 per invocation. It is not a signed real-time webhook consumer.
+  at most four per invocation, ordered by oldest check across both statuses.
+  Valid pending receipts and read failures both rotate to the back, so repeated
+  failures cannot monopolize the batch or block delivered-message bounce checks.
+  A later successful read resolves that row's readback diagnostic. Larger queues
+  take multiple invocations; this is not a signed real-time webhook consumer.
+- Provider reads are sequential, with 600 ms between requests and a five-second
+  deadline spanning both fetch and response-body parsing. An explicit timeout
+  race returns even if a fetch/body ignores abort. Four stalled reads plus three
+  pacing intervals consume at most 21.8 seconds of provider wait/pacing, leaving
+  8.2 seconds against the automation caller's 30-second timeout. This assumes
+  timely runtime scheduling and excludes database/platform overhead; it is not
+  an unconditional end-to-end response-time guarantee. Pacing limits this pass
+  to less than two requests per second, but concurrent callers or other shared-key
+  traffic can still cause throttling. There are no within-pass retries.
 - API acceptance is never treated as confirmed delivery.
-
