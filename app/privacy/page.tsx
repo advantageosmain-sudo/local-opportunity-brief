@@ -15,13 +15,13 @@ export default function PrivacyPage() {
         <section className="page-hero shell">
           <p className="eyebrow">Privacy notice</p>
           <h1>We collect only what we need to review your request.</h1>
-          <p>Effective August 2, 2026 · Private-pilot operating version</p>
+          <p>Effective October 2, 2026</p>
         </section>
         <article className="sample-paper" style={{ marginBottom: 100 }}>
           <h2>Information collected</h2>
           <p>
             The founding request asks for your name, business email, business
-            name, website, location, products, typical customers, preferred
+            name, website, social links, city, state, ZIP code, delivery preferences, billing email if different, products, typical customers, preferred
             voice, exclusions, and optional notes.
           </p>
           <h2>How it is used</h2>
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
           <h2>Retention and requests</h2>
           <p>
             Founding requests that are not accepted are scheduled for deletion
-            within 90 days of the final decision. Active customer profiles and
+            within 90 days of the final decision through the service’s reviewed retention process. Active customer profiles and
             weekly reports are kept while service is active and for up to 12
             months after cancellation. Delivery and payment-event records may be
             kept for up to 24 months when needed for accounting, fraud, disputes,
@@ -64,8 +64,7 @@ export default function PrivacyPage() {
             and are not stored by this application.
           </p>
           <div className="sample-disclaimer">
-            This private-pilot policy is implemented operationally but still
-            requires owner and qualified legal review before public launch.
+            For privacy questions or a verified access, correction, or deletion request, contact mshipe2022@gmail.com.
           </div>
         </article>
       </main>
@@ -73,3 +72,4 @@ export default function PrivacyPage() {
     </>
   );
 }
+

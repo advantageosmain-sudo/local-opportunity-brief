@@ -1,10 +1,18 @@
 type RuntimeEnv = {
   DB?: D1Database;
+  SURFACE?: "public" | "owner";
+  LIVE_CHECKOUT_VERIFIED?: string;
+  RESEND_API_KEY?: string;
+  DELIVERY_FROM_EMAIL?: string;
+  LIVE_DELIVERY?: string;
   OWNER_EMAIL?: string;
   REPORT_SYNC_SECRET?: string;
+  OPERATOR_SYNC_SECRET?: string;
   REPORT_SYNC_URL?: string;
-  PAYMENTS_MODE?: "disabled" | "test";
+  LEARNING_SYNC_URL?: string;
+  PAYMENTS_MODE?: "disabled" | "test" | "live";
   LEMON_SQUEEZY_CHECKOUT_URL?: string;
+  LEMON_SQUEEZY_VARIANT_ID?: string;
   LEMON_SQUEEZY_WEBHOOK_SECRET?: string;
 };
 
@@ -86,7 +94,78 @@ export async function ensureDatabase() {
       .prepare(
         "CREATE UNIQUE INDEX IF NOT EXISTS payment_events_external_id_idx ON payment_events(provider, external_id)",
       ),
+    database
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS opportunity_feedback (
+          id TEXT PRIMARY KEY,
+          report_id TEXT NOT NULL,
+          customer_slug TEXT NOT NULL,
+          opportunity_id TEXT NOT NULL,
+          rating INTEGER NOT NULL,
+          used INTEGER NOT NULL DEFAULT 0,
+          outcome TEXT NOT NULL DEFAULT 'not_tried',
+          notes TEXT NOT NULL DEFAULT '',
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`,
+      ),
+    database
+      .prepare(
+        "CREATE UNIQUE INDEX IF NOT EXISTS opportunity_feedback_report_opportunity_idx ON opportunity_feedback(report_id, opportunity_id)",
+      ),
+    database
+      .prepare(
+        "CREATE INDEX IF NOT EXISTS opportunity_feedback_customer_idx ON opportunity_feedback(customer_slug)",
+      ),
+    database
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS audit_events (
+          id TEXT PRIMARY KEY,
+          event_type TEXT NOT NULL,
+          subject_id TEXT NOT NULL,
+          actor_email TEXT NOT NULL,
+          detail_json TEXT NOT NULL DEFAULT '{}',
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`,
+      ),
+    database
+      .prepare(
+        "CREATE INDEX IF NOT EXISTS audit_events_created_at_idx ON audit_events(created_at)",
+      ),
+    database
+      .prepare(
+        "CREATE INDEX IF NOT EXISTS audit_events_subject_idx ON audit_events(subject_id)",
+      ),
   ]);
 
+  await database.batch([
+    database.prepare(`CREATE TABLE IF NOT EXISTS customers (
+      id TEXT PRIMARY KEY, lead_id TEXT UNIQUE, email TEXT NOT NULL,
+      business_name TEXT NOT NULL, profile_json TEXT NOT NULL DEFAULT '{}',
+      market_id TEXT NOT NULL, payment_customer_id TEXT, subscription_id TEXT UNIQUE,
+      payment_status TEXT NOT NULL DEFAULT 'unpaid', onboarding_status TEXT NOT NULL DEFAULT 'intake_pending',
+      status TEXT NOT NULL DEFAULT 'onboarding', delivery_status TEXT NOT NULL DEFAULT 'pending',
+      require_every_review INTEGER NOT NULL DEFAULT 1, first_delivered_at TEXT,
+      payment_updated_at TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`),
+    database.prepare(`CREATE TABLE IF NOT EXISTS markets (
+      id TEXT PRIMARY KEY, city TEXT NOT NULL, state TEXT NOT NULL, zip TEXT NOT NULL,
+      source_registry_json TEXT NOT NULL DEFAULT '[]', first_approved_at TEXT,
+      status TEXT NOT NULL DEFAULT 'source_discovery_required')`),
+    database.prepare(`CREATE TABLE IF NOT EXISTS report_decisions (
+      report_id TEXT NOT NULL, checksum TEXT NOT NULL, decision TEXT NOT NULL,
+      actor_email TEXT NOT NULL, decided_at TEXT NOT NULL, notes TEXT NOT NULL DEFAULT '',
+      PRIMARY KEY(report_id, checksum))`),
+    database.prepare(`CREATE TABLE IF NOT EXISTS diagnostics (
+      id TEXT PRIMARY KEY, system TEXT NOT NULL, subject_id TEXT NOT NULL, code TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'open', detail_json TEXT NOT NULL DEFAULT '{}',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`),
+    database.prepare(`CREATE TABLE IF NOT EXISTS delivery_attempts (
+      id TEXT PRIMARY KEY, report_id TEXT UNIQUE NOT NULL, checksum TEXT NOT NULL,
+      status TEXT NOT NULL, provider_message_id TEXT, recipient TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`),
+    database.prepare(`CREATE TABLE IF NOT EXISTS intake_limits (
+      bucket TEXT PRIMARY KEY, attempts INTEGER NOT NULL DEFAULT 0)`)
+  ]);
   return database;
 }

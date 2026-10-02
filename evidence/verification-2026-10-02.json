@@ -1,0 +1,12 @@
+{
+  "scope": "Local controlled verification; no real payments or customer email",
+  "tests": {"command": "npm test", "passed": 46, "failed": 0},
+  "lint": "PASS",
+  "build": "PASS",
+  "diffCheck": "PASS",
+  "independentReview": {
+    "actualWorkerSqliteMockProvider": "PASS",
+    "cases": ["concurrent send one provider call", "late cancellation before claim", "paused and canceled suppression", "owner revision veto", "unknown outcome persistent lock", "malformed sync rejection", "immutable concurrent sync", "invoice cannot revive canceled subscription", "owner-only receipt cannot unlock customer delivery"]
+  },
+  "unverified": ["real provider checkout", "real payment webhook", "real sender verification", "owner email acceptance and delivery", "deployed owner access control", "automatic discovery for arbitrary US market", "provider-enforced founding capacity"]
+}

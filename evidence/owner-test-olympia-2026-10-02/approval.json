@@ -1,0 +1,14 @@
+{
+  "reportId": "owner-test-olympia-2026-10-02",
+  "checksum": "227287886aab1c153653715f5e46d9842e988107bbdaefb854f887523c9e65da",
+  "decision": "APPROVED",
+  "decidedBy": "Michelle",
+  "decidedAt": "2026-10-02",
+  "notes": "Approve this exact report through the owner dashboard; automation cannot approve on the owner\u2019s behalf.",
+  "scope": "owner-only email test to configured owner email; not customer delivery",
+  "provenance": {
+    "requestMessageId": "Sentinel_7490366d1ca48191a99c0409c0716960",
+    "replyMessageId": "Sentinel_9745e93990fc8191a252a9ad9867386f",
+    "reply": "yes"
+  }
+}

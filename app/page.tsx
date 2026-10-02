@@ -1,6 +1,7 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { sampleOpportunities } from "@/lib/sample-report";
+import sample from "@/business/evidence/public-sample-olympia-2026-10-02.json";
+const sampleOpportunities=sample.opportunities;
 
 export default function Home() {
   return (
@@ -33,12 +34,12 @@ export default function Home() {
 
           <aside className="brief-preview" aria-label="Sample opportunity brief">
             <div className="brief-preview-top">
-              <span>Monday brief</span>
+              <span>Illustrative sample</span>
               <span>5 opportunities</span>
             </div>
-            <p className="brief-business">Rosewood Gifts · DeWitt, Arkansas</p>
-            <div className="brief-score">92</div>
-            <p className="brief-score-label">Best opportunity this week</p>
+            <p className="brief-business">Example gift shop · Olympia, Washington</p>
+            <div className="brief-score">01</div>
+            <p className="brief-score-label">Sample priority · checked Oct 2, 2026</p>
             <h2>{sampleOpportunities[0].title}</h2>
             <p>{sampleOpportunities[0].why}</p>
             <div className="mini-action">
@@ -49,7 +50,7 @@ export default function Home() {
           </aside>
         </section>
 
-        <section className="signal-strip">
+        <section className="section shell" id="how-it-works"><p className="eyebrow">How it works</p><h2>From your location to your next useful action.</h2><ol className="anatomy-list"><li>Join and tell us about your United States business.</li><li>We check local sources and select five relevant opportunities.</li><li>Your first report receives owner quality review before delivery.</li><li>Future briefs arrive weekly while your subscription is active.</li></ol><p>Intake takes about five minutes. We confirm source coverage and your first delivery date before billing begins.</p></section><section className="signal-strip">
           <div className="shell signal-grid">
             <div>
               <strong>5</strong>
@@ -171,7 +172,7 @@ export default function Home() {
               <span>/month</span>
             </div>
             <ul>
-              <li>Four weekly briefs each month</li>
+              <li>A brief each week, including five-Monday months</li>
               <li>Five verified opportunities per brief</li>
               <li>Captions and customer email copy</li>
               <li>Thirty-day local opportunity watch</li>
@@ -190,6 +191,11 @@ export default function Home() {
             <h2>Frequently asked questions</h2>
           </div>
           <div className="faq-list">
+            <details><summary>Which locations are supported?</summary><p>United States locations are assessed individually for reliable public source coverage. We confirm coverage before accepting a paid membership.</p></details>
+            <details><summary>What if event details are missing or change?</summary><p>We show source check dates, confidence, and unpublished details explicitly. An unverified event is excluded; a report with fewer than five verified opportunities is held for correction. Recheck original sources before acting.</p></details>
+            <details><summary>Can I use school or event logos?</summary><p>A report does not grant trademark, artwork, or endorsement rights. Obtain permission before using protected logos, names in a misleading way, or licensed designs.</p></details>
+            <details><summary>How do delivery, cancellation, and refunds work?</summary><p>Briefs arrive by email. You can request cancellation before renewal through support. See the cancellation and refund policy for service and timing details.</p></details>
+            <details><summary>How is my information used?</summary><p>Your business profile helps tailor reports and manage your subscription. We do not sell it. The privacy notice explains service providers, retention, and deletion requests.</p></details>
             <details>
               <summary>Do you post to my social media?</summary>
               <p>
@@ -240,3 +246,4 @@ export default function Home() {
     </>
   );
 }
+

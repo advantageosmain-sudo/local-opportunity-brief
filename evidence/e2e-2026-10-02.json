@@ -1,0 +1,188 @@
+{
+  "status": "BLOCKED",
+  "checkedAt": "2026-10-02T05:42:00Z",
+  "testEvidence": "npm test + independent actual Worker SQLite regression; external providers not authenticated",
+  "stages": [
+    {
+      "stage": 1,
+      "name": "Public website loads",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 2,
+      "name": "Sample report loads",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 3,
+      "name": "Valid intake",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 4,
+      "name": "Invalid intake rejected",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 5,
+      "name": "Provider test checkout opens",
+      "status": "BLOCKED",
+      "scope": "live deployed/provider verification pending"
+    },
+    {
+      "stage": 6,
+      "name": "Provider test payment succeeds",
+      "status": "BLOCKED",
+      "scope": "live deployed/provider verification pending"
+    },
+    {
+      "stage": 7,
+      "name": "Signed webhook accepted",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 8,
+      "name": "Duplicate webhook ignored",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 9,
+      "name": "Customer created",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 10,
+      "name": "Intake mapped",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 11,
+      "name": "Market profile created",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 12,
+      "name": "Sources discovered or loaded",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 13,
+      "name": "Five opportunities generated",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 14,
+      "name": "Report validation",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 15,
+      "name": "Owner dashboard sync",
+      "status": "BLOCKED",
+      "scope": "live deployed/provider verification pending"
+    },
+    {
+      "stage": 16,
+      "name": "First report review hold",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 17,
+      "name": "Exact approval binding",
+      "status": "BLOCKED",
+      "scope": "implementation present; full controlled stage not yet verified"
+    },
+    {
+      "stage": 18,
+      "name": "Owner email delivery",
+      "status": "BLOCKED",
+      "scope": "live deployed/provider verification pending"
+    },
+    {
+      "stage": 19,
+      "name": "Provider receipt",
+      "status": "BLOCKED",
+      "scope": "live deployed/provider verification pending"
+    },
+    {
+      "stage": 20,
+      "name": "Duplicate delivery blocked",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 21,
+      "name": "Pause",
+      "status": "BLOCKED",
+      "scope": "implementation present; full controlled stage not yet verified"
+    },
+    {
+      "stage": 22,
+      "name": "Scheduled pause exclusion",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 23,
+      "name": "Resume",
+      "status": "BLOCKED",
+      "scope": "implementation present; full controlled stage not yet verified"
+    },
+    {
+      "stage": 24,
+      "name": "Cancellation state",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 25,
+      "name": "Canceled exclusion",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 26,
+      "name": "Payment failure diagnostic",
+      "status": "BLOCKED",
+      "scope": "implementation present; full controlled stage not yet verified"
+    },
+    {
+      "stage": 27,
+      "name": "Report diagnostic",
+      "status": "PASS",
+      "scope": "local controlled tests; provider mocked where applicable"
+    },
+    {
+      "stage": 28,
+      "name": "Dashboard sync failure diagnostic",
+      "status": "BLOCKED",
+      "scope": "implementation present; full controlled stage not yet verified"
+    },
+    {
+      "stage": 29,
+      "name": "Recovery",
+      "status": "BLOCKED",
+      "scope": "live deployed/provider verification pending"
+    },
+    {
+      "stage": 30,
+      "name": "Public live checkout",
+      "status": "BLOCKED",
+      "scope": "live deployed/provider verification pending"
+    }
+  ],
+  "note": "Local PASS never establishes live provider checkout, email, payment or deployed authentication."
+}

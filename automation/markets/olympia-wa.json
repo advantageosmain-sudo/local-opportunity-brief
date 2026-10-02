@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "marketId": "olympia-wa",
+  "location": {
+    "city": "Olympia",
+    "state": "WA",
+    "radiusMiles": 12
+  },
+  "geographyMode": "city_match",
+  "geographyNotice": "Owner TEST uses same-city matching, not a store-address distance measurement. A real customer needs an address/radius check before delivery.",
+  "approvedSourceFiles": [
+    "olympia-2026-10-02.json"
+  ]
+}

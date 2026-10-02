@@ -1,0 +1,58 @@
+{
+  "checked_at": "2026-10-02T05:31:18Z",
+  "method": "Authenticated GitHub cloud-browser visible Settings readback; Sites connector metadata/source opening",
+  "repository": "advantageosmain-sudo/local-opportunity-brief",
+  "repository_secret_names": [
+    "REPORT_SYNC_SECRET",
+    "REPORT_SYNC_SIWC_TOKEN"
+  ],
+  "secret_values_read": false,
+  "repository_variables": {
+    "REPORT_SYNC_URL": "https://local-opportunity-brief.mshipe2022.chatgpt.site/api/internal/reports"
+  },
+  "environments": [
+    "copilot"
+  ],
+  "environment_secrets_or_variables_shown": false,
+  "classic_branch_protection": false,
+  "rulesets": [],
+  "ruleset_enforcement_notice": "Private repository rulesets require GitHub Team organization",
+  "actions": {
+    "enabled": "all",
+    "default_token_permissions": "read contents and packages",
+    "create_approve_pull_requests": false,
+    "full_sha_required": false,
+    "artifact_log_retention_days": 90
+  },
+  "settings_changed": false,
+  "sites": {
+    "owner": {
+      "project_id": "appgprj_6a8a1c97eb8c8191a3651171296ca2ff",
+      "version": 2,
+      "source_commit": "a3681d15b90745d7c5556a2043c97e7f1d2c6ed1",
+      "access": "owner-only custom",
+      "d1": null,
+      "runtime_secret_names": [
+        "REPORT_SYNC_SECRET"
+      ]
+    },
+    "customer": {
+      "project_id": "appgprj_6a6c611d9f3c8191a2c415eb3fd40585",
+      "version": 9,
+      "source_commit": "766d9adb1627a664d8c88e2a4268be51034c662a",
+      "access": "owner-only custom",
+      "d1": "DB",
+      "custom_domains": [],
+      "runtime_secret_names": [
+        "REPORT_SYNC_SECRET",
+        "OPERATOR_SYNC_SECRET"
+      ],
+      "runtime_values": {
+        "OWNER_EMAIL": "mshipe2022@gmail.com",
+        "PAYMENTS_MODE": "disabled",
+        "LIVE_DELIVERY": "0",
+        "RESEARCH_PROVIDER": "fixture"
+      }
+    }
+  }
+}

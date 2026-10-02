@@ -2,159 +2,113 @@ name: Generate weekly approval packet
 
 on:
   schedule:
+    # 09:17 America/Chicago: CDT is UTC-5, CST is UTC-6. Runtime guard selects
+    # one expression using Monday's local offset, including DST transitions.
     - cron: "17 14 * * 1"
+    - cron: "17 15 * * 1"
   workflow_dispatch:
     inputs:
       customer:
-        description: Customer slug, or all active customers
+        description: Hosted eligible customer slug, or all
         required: true
         default: all
       as_of:
-        description: Report date (YYYY-MM-DD); leave blank to use today
+        description: Report date (YYYY-MM-DD); blank uses America/Chicago today
         required: false
         default: ""
-      approve_delivery:
-        description: Keep as NO for review-only runs. APPROVE works for one verified customer only.
-        type: choice
+      process_delivery:
+        description: Request durable hosted delivery; never bypasses owner approval
+        type: boolean
         required: true
-        default: "NO"
-        options:
-          - "NO"
-          - "APPROVE"
+        default: false
 
 permissions:
   contents: read
   issues: write
 
+concurrency:
+  group: weekly-brief
+  cancel-in-progress: false
+
 jobs:
   generate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    outputs:
-      customer: ${{ steps.inputs.outputs.customer }}
-      as_of: ${{ steps.inputs.outputs.as_of }}
-      mode: ${{ steps.inputs.outputs.mode }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: npm
-      - run: npm ci
-      - id: inputs
-        shell: bash
+      - name: Guard the Chicago weekly schedule
+        id: clock
+        env:
+          SCHEDULED_CRON: ${{ github.event.schedule }}
+        run: node automation/schedule.mjs
+      - name: Validate run inputs
+        id: inputs
+        if: steps.clock.outputs.enabled == 'true'
         env:
           INPUT_CUSTOMER: ${{ inputs.customer }}
           INPUT_AS_OF: ${{ inputs.as_of }}
+          CHICAGO_DATE: ${{ steps.clock.outputs.as_of }}
+        shell: bash
         run: |
           customer="${INPUT_CUSTOMER:-all}"
-          as_of="${INPUT_AS_OF:-$(date -u +%F)}"
-          if [[ "${customer}" == "all" ]]; then
-            mode="batch"
-          else
-            mode="single"
-          fi
-          echo "customer=${customer}" >> "$GITHUB_OUTPUT"
-          echo "as_of=${as_of}" >> "$GITHUB_OUTPUT"
-          echo "mode=${mode}" >> "$GITHUB_OUTPUT"
-      - name: Generate owner approval packet
-        shell: bash
-        run: |
-          if [[ "${{ steps.inputs.outputs.mode }}" == "batch" ]]; then
-            node automation/run-all.mjs --as-of "${{ steps.inputs.outputs.as_of }}"
-          else
-            node automation/run.mjs --customer "${{ steps.inputs.outputs.customer }}" --as-of "${{ steps.inputs.outputs.as_of }}"
-          fi
-      - name: Synchronize reports to the owner dashboard when configured
-        shell: bash
+          as_of="${INPUT_AS_OF:-$CHICAGO_DATE}"
+          [[ "$customer" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || exit 2
+          [[ "$as_of" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || exit 2
+          echo "customer=$customer" >> "$GITHUB_OUTPUT"
+          echo "as_of=$as_of" >> "$GITHUB_OUTPUT"
+      - name: Generate eligible hosted customer packets
+        id: generate
+        if: steps.clock.outputs.enabled == 'true'
         env:
+          CUSTOMER: ${{ steps.inputs.outputs.customer }}
+          AS_OF: ${{ steps.inputs.outputs.as_of }}
           REPORT_SYNC_URL: ${{ vars.REPORT_SYNC_URL }}
           REPORT_SYNC_SECRET: ${{ secrets.REPORT_SYNC_SECRET }}
-        run: |
-          if [[ -z "${REPORT_SYNC_URL}" || -z "${REPORT_SYNC_SECRET}" ]]; then
-            echo "Dashboard synchronization is not configured; the approval artifact is still complete."
-            exit 0
-          fi
-          if [[ "${{ steps.inputs.outputs.mode }}" == "batch" ]]; then
-            node automation/sync-dashboard.mjs --summary "automation/outbox/run-summary-${{ steps.inputs.outputs.as_of }}.json"
-          else
-            node automation/sync-dashboard.mjs --packet "automation/outbox/${{ steps.inputs.outputs.customer }}/${{ steps.inputs.outputs.as_of }}/dashboard-sync.json"
-          fi
-      - uses: actions/upload-artifact@v4
-        with:
-          name: weekly-brief-${{ steps.inputs.outputs.customer }}-${{ steps.inputs.outputs.as_of }}
-          path: automation/outbox/
-          if-no-files-found: error
-
-  approve-and-deliver:
-    if: >-
-      ${{ github.event_name == 'workflow_dispatch' &&
-          inputs.approve_delivery == 'APPROVE' &&
-          needs.generate.outputs.mode == 'single' }}
-    needs: generate
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    environment: outbound-delivery
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: weekly-brief-${{ needs.generate.outputs.customer }}-${{ needs.generate.outputs.as_of }}
-          path: automation/outbox/
-      - name: Bind owner approval to the exact report
-        run: >-
-          node automation/approve.mjs
-          --report "automation/outbox/${{ needs.generate.outputs.customer }}/${{ needs.generate.outputs.as_of }}/report.json"
-          --actor "${{ github.actor }}"
-          --phrase APPROVE
-      - name: Deliver the approved report
+        run: node automation/run-all.mjs --hosted --customer "$CUSTOMER" --as-of "$AS_OF"
+      - name: Synchronize completed reports and blocked diagnostics
+        if: always() && steps.clock.outputs.enabled == 'true' && steps.inputs.outcome == 'success'
         env:
-          LIVE_DELIVERY: "1"
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          DELIVERY_FROM_EMAIL: ${{ vars.DELIVERY_FROM_EMAIL }}
-        run: >-
-          node automation/deliver.mjs
-          --report "automation/outbox/${{ needs.generate.outputs.customer }}/${{ needs.generate.outputs.as_of }}/report.json"
-      - name: Synchronize the delivery receipt when configured
-        env:
+          AS_OF: ${{ steps.inputs.outputs.as_of }}
           REPORT_SYNC_URL: ${{ vars.REPORT_SYNC_URL }}
           REPORT_SYNC_SECRET: ${{ secrets.REPORT_SYNC_SECRET }}
-        shell: bash
-        run: |
-          if [[ -n "${REPORT_SYNC_URL}" && -n "${REPORT_SYNC_SECRET}" ]]; then
-            node automation/sync-dashboard.mjs --packet "automation/outbox/${{ needs.generate.outputs.customer }}/${{ needs.generate.outputs.as_of }}/dashboard-sync.json"
-          fi
-      - name: Preserve delivery diagnostics
-        if: ${{ failure() }}
+        run: node automation/sync-dashboard.mjs --summary "automation/outbox/run-summary-$AS_OF.json"
+      - name: Request approval-gated durable delivery
+        if: >-
+          success() && steps.clock.outputs.enabled == 'true' &&
+          ((github.event_name == 'workflow_dispatch' && inputs.process_delivery) ||
+           (github.event_name == 'schedule' && vars.WEEKLY_DELIVERY_ENABLED == 'true'))
+        env:
+          AS_OF: ${{ steps.inputs.outputs.as_of }}
+          REPORT_SYNC_URL: ${{ vars.REPORT_SYNC_URL }}
+          REPORT_SYNC_SECRET: ${{ secrets.REPORT_SYNC_SECRET }}
+        run: node automation/deliver.mjs --summary "automation/outbox/run-summary-$AS_OF.json"
+      - name: Preserve report and diagnostic evidence
+        if: always() && steps.clock.outputs.enabled == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: delivery-diagnostic-${{ needs.generate.outputs.customer }}-${{ needs.generate.outputs.as_of }}
-          path: automation/outbox/${{ needs.generate.outputs.customer }}/${{ needs.generate.outputs.as_of }}/
+          name: weekly-brief-${{ github.run_id }}-${{ github.run_attempt }}
+          path: automation/outbox/
           if-no-files-found: warn
-      - name: Alert the owner in GitHub
-        if: ${{ failure() }}
+          retention-days: 30
+      - name: Alert the owner once per report date
+        if: failure() && steps.clock.outputs.enabled == 'true'
         uses: actions/github-script@v7
+        env:
+          AS_OF: ${{ steps.inputs.outputs.as_of }}
+          CUSTOMER: ${{ steps.inputs.outputs.customer }}
         with:
           script: |
-            const title = `Delivery blocked: ${{ needs.generate.outputs.customer }} ${{ needs.generate.outputs.as_of }}`;
-            const body = [
-              "The protected delivery job stopped and did not complete successfully.",
-              "",
-              `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-              "",
-              "Open the attached delivery diagnostic artifact before retrying. Do not present this report as delivered unless a delivery receipt exists."
-            ].join("\n");
-            const { data: openIssues } = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: "open",
-              per_page: 100
+            const marker = `<!-- lob-weekly:${process.env.CUSTOMER}:${process.env.AS_OF} -->`;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo, state: "all", per_page: 100
             });
-            if (!openIssues.some((issue) => issue.title === title)) {
+            if (!issues.some(issue => !issue.pull_request && issue.body?.includes(marker))) {
               await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title,
-                body
+                ...context.repo,
+                title: `Weekly report needs attention: ${process.env.CUSTOMER} ${process.env.AS_OF}`,
+                body: `${marker}\nThe report or hosted delivery job stopped. Check the owner dashboard and preserved diagnostic artifact. Provider acceptance alone is not confirmed delivery. Never clear an uncertain send lock without provider reconciliation.\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
               });
             }

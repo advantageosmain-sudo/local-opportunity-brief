@@ -1,9 +1,10 @@
+import { isDeliverableEmail } from "./customer-policy.mjs";
 import {
   APPROVED_SOURCE_AUTHORITIES,
   MAX_SOURCE_AGE_DAYS,
 } from "./engine.mjs";
 
-const CUSTOMER_STATUSES = new Set(["active", "pilot", "demo", "inactive"]);
+const CUSTOMER_STATUSES = new Set(["active", "pilot", "demo", "inactive", "paused", "canceled", "cancelled", "unpaid"]);
 const DELIVERY_MODES = new Set(["customer", "owner_review_only"]);
 
 export function validateCustomerProfile(customer) {
@@ -31,9 +32,10 @@ export function validateCustomerProfile(customer) {
   if (!Number.isFinite(customer.location?.radiusMiles) || customer.location.radiusMiles <= 0) {
     errors.push("Customer radius must be a positive number.");
   }
-  for (const field of ["products", "customers", "voice", "exclusions", "approvedSourceFiles"]) {
+  for (const field of ["products", "customers", "voice", "exclusions"]) {
     if (!Array.isArray(customer[field])) errors.push(`Customer ${field} must be a list.`);
   }
+  if (!Array.isArray(customer.approvedSourceFiles) && !customer.marketProfileFile) errors.push("Customer must name approved source files or a market profile.");
   if (customer.deliveryMode !== "customer") {
     warnings.push("Owner-review-only customer: live delivery is prohibited.");
   }
@@ -72,11 +74,14 @@ export function validateSourcePack(source, { asOf }) {
         errors.push(`Missing ${field}: ${id}`);
       }
     }
-    if (!Number.isFinite(opportunity.distanceMiles) || opportunity.distanceMiles < 0) {
+    if (opportunity.geographyMode !== "city_match" && (!Number.isFinite(opportunity.distanceMiles) || opportunity.distanceMiles < 0)) {
       errors.push(`Invalid distance: ${id}`);
     }
     if (!Number.isInteger(opportunity.sourceQuality) || opportunity.sourceQuality < 1 || opportunity.sourceQuality > 5) {
       errors.push(`Invalid source quality: ${id}`);
+    }
+    for (const field of ["urgency", "preparationEase"]) {
+      if (!Number.isInteger(opportunity[field]) || opportunity[field] < 1 || opportunity[field] > 5) errors.push(`Invalid ${field}: ${id}`);
     }
     if (!isDate(opportunity.eventDate) || !isDate(opportunity.prepareBy)) {
       errors.push(`Invalid event or preparation date: ${id}`);
@@ -139,16 +144,3 @@ function isRealHttpsUrl(value) {
   }
 }
 
-function isDeliverableEmail(value) {
-  if (typeof value !== "string" || value.length > 254) return false;
-  const match = value.trim().toLowerCase().match(/^[^\s@]+@([^\s@]+)$/);
-  if (!match) return false;
-  const domain = match[1];
-  return (
-    domain.includes(".") &&
-    !["example.com", "example.net", "example.org", "localhost"].includes(domain) &&
-    !domain.endsWith(".invalid") &&
-    !domain.endsWith(".test") &&
-    !domain.endsWith(".localhost")
-  );
-}

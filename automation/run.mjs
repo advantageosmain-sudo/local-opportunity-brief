@@ -1,4 +1,5 @@
 import process from "node:process";
+import { chicagoDate } from "./lib/schedule.mjs";
 import { runCustomer } from "./lib/run-customer.mjs";
 
 function arg(name, fallback = "") {
@@ -7,7 +8,7 @@ function arg(name, fallback = "") {
 }
 
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  return chicagoDate();
 }
 
 const result = await runCustomer({
@@ -16,3 +17,4 @@ const result = await runCustomer({
 });
 console.log(JSON.stringify(result, null, 2));
 if (result.status === "BLOCKED") process.exitCode = 1;
+

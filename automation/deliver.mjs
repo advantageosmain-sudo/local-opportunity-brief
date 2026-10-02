@@ -1,32 +1,15 @@
-import process from "node:process";
-import { deliverApprovedReport, DeliveryError } from "./lib/delivery.mjs";
-
-function arg(name) {
-  const index = process.argv.indexOf(name);
-  return index >= 0 ? process.argv[index + 1] : "";
-}
-
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { requestHostedDelivery } from "./lib/hosted-client.mjs";
+function arg(name) { const index = process.argv.indexOf(name); return index >= 0 ? process.argv[index + 1] : ""; }
 const reportPath = arg("--report");
-if (!reportPath) {
-  console.error("Usage: node automation/deliver.mjs --report <report.json>");
-  process.exit(2);
+const summaryPath = arg("--summary");
+if (Boolean(reportPath) === Boolean(summaryPath)) throw new Error("Provide exactly one of --report or --summary.");
+const packets = reportPath ? [reportPath] : JSON.parse(await readFile(summaryPath, "utf8")).dashboardPackets.map((file) => path.join(path.dirname(file), "report.json"));
+const results = [];
+for (const filename of packets) {
+  const report = JSON.parse(await readFile(filename, "utf8"));
+  try { results.push({ reportId: report.reportId, ...await requestHostedDelivery({ report }) }); }
+  catch (error) { results.push({ reportId: report.reportId, status: "BLOCKED", reason: error.message }); process.exitCode = 1; }
 }
-
-try {
-  const receipt = await deliverApprovedReport({ reportPath });
-  console.log(JSON.stringify(receipt, null, 2));
-} catch (error) {
-  const reason = error instanceof DeliveryError ? error.code : "DELIVERY_FAILED";
-  console.error(
-    JSON.stringify(
-      {
-        status: "BLOCKED",
-        reason,
-        details: error instanceof DeliveryError ? error.details : {},
-      },
-      null,
-      2,
-    ),
-  );
-  process.exitCode = 1;
-}
+console.log(JSON.stringify({ results }, null, 2));

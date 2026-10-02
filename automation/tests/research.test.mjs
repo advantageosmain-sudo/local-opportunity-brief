@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, mkdtemp, mkdir, cp, rm } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -83,9 +84,16 @@ test("customer delivery mode requires a real recipient address", () => {
   );
 });
 
-test("pilot rehearsal creates a complete owner packet and remains undeliverable", async () => {
+test("pilot rehearsal creates a complete owner packet and remains undeliverable", async (t) => {
+  const isolatedRoot = await mkdtemp(path.join(os.tmpdir(), "lob-research-"));
+  t.after(() => rm(isolatedRoot, { recursive: true, force: true }));
+  await mkdir(path.join(isolatedRoot, "customers"));
+  await mkdir(path.join(isolatedRoot, "sources"));
+  await cp(path.join(root, "customers/founder-pilot-olympia.json"), path.join(isolatedRoot, "customers/founder-pilot-olympia.json"));
+  await cp(path.join(root, "sources/olympia-2026-08-03.json"), path.join(isolatedRoot, "sources/olympia-2026-08-03.json"));
   const result = await runCustomer({
     customerSlug: "founder-pilot-olympia",
+    root: isolatedRoot,
     asOf: "2026-08-03",
   });
   assert.equal(result.status, "READY_FOR_OWNER_REVIEW");
@@ -103,3 +111,4 @@ test("pilot rehearsal creates a complete owner packet and remains undeliverable"
     await readFile(path.join(result.outputDir, filename));
   }
 });
+

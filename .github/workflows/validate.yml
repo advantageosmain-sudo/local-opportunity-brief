@@ -24,9 +24,13 @@ jobs:
       - run: npm test
       - run: npm run business:demo
       - run: npm run business:pilot
-      - run: npm run business:batch
+      - name: Verify active-customer dry-run selection
+        run: node automation/run-all.mjs
+      - name: Validate frozen October owner research
+        run: node automation/run.mjs --customer owner-test-olympia --as-of 2026-10-02
       - uses: actions/upload-artifact@v4
         with:
           name: validated-business-packets
           path: automation/outbox/
           if-no-files-found: error
+

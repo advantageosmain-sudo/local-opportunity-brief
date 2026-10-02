@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "reviewLabel": "OWNER TEST — UNSENT",
+  "checkedAt": "2026-10-02T05:35:00Z",
+  "asOf": "2026-10-02",
+  "reportId": "owner-test-olympia-2026-10-02",
+  "reportChecksumAlgorithm": "Engine SHA-256 over JSON.stringify(report with checksum removed)",
+  "reportChecksum": "227287886aab1c153653715f5e46d9842e988107bbdaefb854f887523c9e65da",
+  "outcome": "READY_FOR_OWNER_REVIEW",
+  "approvalDecision": "PENDING",
+  "liveDelivery": false,
+  "deliveryEligible": false,
+  "payingCustomer": false,
+  "geographicVerification": "city_match only; no store address supplied and no measured radius assertion",
+  "profileVerification": "Illustrative boutique/gift-shop product categories. Actual inventory, prices, hours and demand unverified. Recommendations require owner checks.",
+  "publicationDateTreatment": "No publication/update date displayed on selected primary pages; sourcePublishedAt=null. Source-check date is distinct from source publication date.",
+  "retrievalCaveat": "Exact original-source pages were opened and read through web research. Tool can return cached content; no claim of a contemporaneous origin HTTP 200 response or organizer contact. Re-open original pages before delivery/use.",
+  "opportunityCount": 5,
+  "uniqueIds": 5,
+  "window": "2026-10-02 through 2026-11-01; all first dates Oct 2–31",
+  "firstPartyProof": [
+    {
+      "id": "olympia-arts-walk-2026-10",
+      "url": "https://www.artswalkoly.com/events/2026/arts-walk-activity-area",
+      "sourceAuthority": "official-government",
+      "accessResult": "Original page opened successfully and event-specific content read",
+      "sourceCheckedAt": "2026-10-02",
+      "sourcePublishedAt": null,
+      "sourcePublicationStatus": "not-displayed",
+      "eventDate": "2026-10-02",
+      "eventDateEnd": "2026-10-03",
+      "eventTime": "Friday Oct 2, 5–10 pm; Saturday Oct 3, noon–6 pm Pacific. Individual venues may differ.",
+      "venue": "Downtown Olympia, four blocks extending from Washington St SE and 5th Ave SE",
+      "finding": "The City-run event page explicitly lists Oct 2–3, 2026, its street-closure location, and Friday 5–10 pm / Saturday noon–6 pm. The event calendar says participating venues may keep different hours. Neither page displays a publication/update date. Event facts have high confidence; additional shop visits or purchases are not established.",
+      "corroboratingOriginalUrls": [
+        "https://www.artswalkoly.com/events"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "olympia-sup-witches-2026-10-10",
+      "url": "https://runsignup.com/Race/WA/Olympia/SUPWitchesOfOlympiaFestival",
+      "sourceAuthority": "official-organizer",
+      "accessResult": "Original page opened successfully and event-specific content read",
+      "sourceCheckedAt": "2026-10-02",
+      "sourcePublishedAt": null,
+      "sourcePublicationStatus": "not-displayed",
+      "eventDate": "2026-10-10",
+      "eventDateEnd": null,
+      "eventTime": "Festival 10 am–3 pm Pacific; scheduled paddle 11 am–1 pm. Recheck the organizer for any change.",
+      "venue": "Swantown Marina, North Point Parking Lot, Olympia. Use the organizer’s venue map; street-address listings conflict.",
+      "finding": "The original organizer page and event partner Capital City Pride both confirm Oct 10, 2026 at Swantown Marina North Point, festival 10 am–3 pm. The organizer’s retrieved versions disagree on paddle availability; related ticket pages also show inconsistent street addresses. These do not change the common venue/date, but availability and exact arrival directions are deliberately unclaimed. No publication/update date is displayed.",
+      "corroboratingOriginalUrls": [
+        "https://www.capitalcitypride.net/annual-events",
+        "https://runsignup.com/TicketEvent/SUPWitchesOfOlympiaFestival"
+      ],
+      "confidence": "medium"
+    },
+    {
+      "id": "olympia-orca-recovery-2026-10-17",
+      "url": "https://www.wetsciencecenter.org/events/orca-recovery-day/",
+      "sourceAuthority": "official-organizer",
+      "accessResult": "Original page opened successfully and event-specific content read",
+      "sourceCheckedAt": "2026-10-02",
+      "sourcePublishedAt": null,
+      "sourcePublicationStatus": "not-displayed",
+      "eventDate": "2026-10-17",
+      "eventDateEnd": null,
+      "eventTime": "10 am–4 pm Pacific",
+      "venue": "WET Science Center, 500 Adams St NE, Olympia, WA 98501",
+      "finding": "The host’s exact event page confirms Oct 17, 2026, 10 am–4 pm and the 500 Adams St NE venue. The published program includes orca-habitat learning and an orca craft. Publication/update date is not displayed. Retail relevance is an editorial inference, not a claim by the science center.",
+      "corroboratingOriginalUrls": [
+        "https://www.wetsciencecenter.org/events-calendar/",
+        "https://www.wetsciencecenter.org/"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "olympia-wolves-in-wild-2026-10-24",
+      "url": "https://www.wetsciencecenter.org/events/wolves-in-the-wild/",
+      "sourceAuthority": "official-organizer",
+      "accessResult": "Original page opened successfully and event-specific content read",
+      "sourceCheckedAt": "2026-10-02",
+      "sourcePublishedAt": null,
+      "sourcePublicationStatus": "not-displayed",
+      "eventDate": "2026-10-24",
+      "eventDateEnd": null,
+      "eventTime": "Activities 10 am–4 pm Pacific; Wolf Haven staff presentation at 2 pm",
+      "venue": "WET Science Center, 500 Adams St NE, Olympia, WA 98501",
+      "finding": "The host’s exact page lists Oct 24, 2026, 10 am–4 pm, the Olympia venue, and a Wolf Haven staff presentation at 2 pm. Wolf Haven’s own events page independently lists the same date and 2 pm presentation. Neither page displays a publication/update date. This is a different program one week after Orca Recovery Day, not a duplicated listing.",
+      "corroboratingOriginalUrls": [
+        "https://www.wolfhaven.org/events",
+        "https://www.wetsciencecenter.org/events-calendar/"
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "olympia-market-season-shift-2026-10-31",
+      "url": "https://www.olympiafarmersmarket.com/hours",
+      "sourceAuthority": "official-organizer",
+      "accessResult": "Original page opened successfully and event-specific content read",
+      "sourceCheckedAt": "2026-10-02",
+      "sourcePublishedAt": null,
+      "sourcePublicationStatus": "not-displayed",
+      "eventDate": "2026-10-31",
+      "eventDateEnd": "2026-11-01",
+      "eventTime": "Market hours 10 am–3 pm Pacific; high season ends Oct 31 and Saturday/Sunday holiday season begins Nov 1",
+      "venue": "Olympia Farmers Market, 700 Capitol Way N, Olympia, WA 98501",
+      "finding": "The market’s official hours page explicitly gives Oct 31, 2026 as the last high-season day and Nov 1, 2026 as the first holiday-season day; hours are 10 am–3 pm and November/December regular days are Saturday and Sunday. This is a schedule transition, not a special festival or a market closure. No publication/update date is displayed.",
+      "corroboratingOriginalUrls": [
+        "https://www.olympiafarmersmarket.com/"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "rejectedOrRestrictedCandidates": [
+    {
+      "candidate": "Olympia Weavers Guild show repeated throughout October in third-party calendar",
+      "decision": "Rejected repeated dates; not included",
+      "reason": "Guild calendar and Show & Sale page agree only Oct 2–3. Third-party recurring October entries conflict.",
+      "originalUrls": [
+        "https://olympiaweaversguild.org/calendar/?calendar_month=oct&calendar_yr=2026",
+        "https://olympiaweaversguild.org/show-and-sale/"
+      ]
+    },
+    {
+      "candidate": "Hands On Children’s Museum Boo Bash",
+      "decision": "Not included",
+      "reason": "Museum original website could not be opened through available web retrieval. Destination listings alone not used to replace missing organizer verification.",
+      "originalUrls": [
+        "https://www.hocm.org/"
+      ]
+    },
+    {
+      "candidate": "Music at the Market, Endless Sound Cellars Oct 17",
+      "decision": "Not included",
+      "reason": "Search located an organizer listing, but exact-page open returned cache miss; search snippet alone not treated as an opened source.",
+      "originalUrls": [
+        "https://www.endlesssoundcellars.com/upcoming-events/blind-tasting-feb-2026-td7pf-6wbs7"
+      ]
+    },
+    {
+      "candidate": "SUP Witches availability and exact street address",
+      "decision": "Restricted, not asserted",
+      "reason": "Original source retrieved versions differ on paddle availability and related organizer ticket page has conflicting street addresses. Stable venue name/date/festival hours corroborated by event partner. No participation, ticket, vendor-space or specific address claim."
+    }
+  ],
+  "customerMessageStatus": "Every social caption and customer email is a draft. None sent or posted.",
+  "publicSamplePrivacy": "Public SAMPLE contains no owner email, personal name, real shop identity, payment data or real-customer claim.",
+  "historyPreservation": "New Oct 2 filenames only; no prior DeWitt or August Olympia source pack overwritten."
+}

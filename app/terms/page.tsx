@@ -4,7 +4,7 @@ import { Header } from "@/components/header";
 
 export const metadata: Metadata = {
   title: "Service terms",
-  description: "Founding-validation terms for Local Opportunity Brief.",
+  description: "Service terms for Local Opportunity Brief.",
 };
 
 export default function TermsPage() {
@@ -15,7 +15,7 @@ export default function TermsPage() {
         <section className="page-hero shell">
           <p className="eyebrow">Service terms</p>
           <h1>Useful research, with the business owner in control.</h1>
-          <p>Effective August 2, 2026 · Private-pilot operating version</p>
+          <p>Effective October 2, 2026</p>
         </section>
         <article className="sample-paper" style={{ marginBottom: 100 }}>
           <h2>Service</h2>
@@ -36,7 +36,7 @@ export default function TermsPage() {
             requirements, and the accuracy of business-specific details before
             publishing or acting on a recommendation.
           </p>
-          <h2>Account access</h2>
+          <h2>Intellectual property and endorsement</h2><p>Source links do not grant permission to reproduce protected logos, artwork, or brand assets. Obtain appropriate permission before use. The service is not endorsed by any school, municipality, event, or business mentioned in a report.</p><h2>Account access</h2>
           <p>
             The service does not require social media, email-marketing,
             advertising, banking, or storefront passwords.
@@ -49,9 +49,9 @@ export default function TermsPage() {
           </p>
           <h2>Price, cancellation, and refunds</h2>
           <p>
-            The proposed founding price is $49 per month. A customer may cancel
+            The founding price is $49 USD per month for the first ten paying founding customers. A customer may cancel
             before the next renewal date; future renewals stop and service
-            continues through the paid period. A customer may request a refund
+            stops when cancellation is recorded. Historical reports are preserved. A customer may request a refund
             if the first paid brief is more than seven days late or a material
             factual error makes a delivered brief unusable, provided the request
             is made within seven days of delivery. An accurate, on-time brief is
@@ -66,8 +66,7 @@ export default function TermsPage() {
             purchase based on it.
           </p>
           <div className="sample-disclaimer">
-            These private-pilot terms are not activated for billing and still
-            require owner and qualified legal review before public launch.
+            Questions or cancellation requests: mshipe2022@gmail.com. This service supplies marketing information, not legal or tax advice.
           </div>
         </article>
       </main>
@@ -75,3 +74,4 @@ export default function TermsPage() {
     </>
   );
 }
+

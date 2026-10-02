@@ -1,0 +1,16 @@
+# SHA-256 of exact file bytes. Distinct from the engine JSON content checksum above.
+63d2d57cb59684f572b7ebcd96a4253b2df6111fc614fe965410f132324018b4  automation/outbox/owner-test-olympia/2026-10-02/approval.json
+cc5112e90556a118bfb449faf1ef59dc1994351ebb80c23d4fb3287fa3c9393c  automation/outbox/owner-test-olympia/2026-10-02/dashboard-sync.json
+a9e13b863e8ea8019743b68d0d3ace4bb2824b968e9cfe551a44de51fa76eb70  automation/outbox/owner-test-olympia/2026-10-02/report.json
+d268c4c72a9142fe3c4a0bde810be5c8c0b8662e853dbca3e8387050682826e3  automation/outbox/owner-test-olympia/2026-10-02/research-validation.json
+90aaa7d8eca6e701cc8a9e39cea92140186035155987c57ac65e526dc6c57b99  automation/outbox/owner-test-olympia/2026-10-02/source-snapshot.json
+a02faf4a39eefb377606176ca2b9a5310648c5da08017b51996df293778e0798  automation/outbox/owner-test-olympia/2026-10-02/validation.json
+1912cde165aed136d7da1d36820c190b8af7fca4d30eda814b7c5c74a3cf4981  automation/outbox/owner-test-olympia/2026-10-02/report.md
+788060d407dc681ce1e3760158a1a9c5c1a6373fdc95ebe3d42a88d7318f9a82  automation/outbox/owner-test-olympia/2026-10-02/email-preview.txt
+7ad49b08c7f6ec9c506a738ab9c3f27cc530a46348c370a7b80a7a65d1c6a736  automation/sources/olympia-2026-10-02.json
+efdf834d0efb3cccc9b960906dea2cd1b19d7394ca6cc169d35836b304cf8e36  automation/customers/owner-test-olympia.json
+313c5d835ca780de700caceaf635df32ab9a1938a7fe6f750bbd7d43b9654859  automation/markets/olympia-wa.json
+6de845488c8f42dfe75fe865fa957b828dcd2ee829f428041cea87bceb5019dc  business/evidence/public-sample-olympia-2026-10-02.json
+d90f7fd845c746b679dd3980b9c6ef2aa74b79026a1587524c4e13138619840f  business/evidence/OLYMPIA_OWNER_TEST_2026-10-02.validation.json
+a6e4490431185042b0d53125c495f7b2bff1a25a4e026155108dea22d428e023  business/evidence/OLYMPIA_OWNER_TEST_2026-10-02.md
+7d9bbf551db0be24be9ab528a651d87be5ae14836d0086c98abb75797d9675c1  output/pdf/Olympia-October-2026-Owner-Test-Review.pdf
