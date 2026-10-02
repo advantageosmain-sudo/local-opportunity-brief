@@ -19,7 +19,7 @@ export function Footer() {
           <a href="/intake">Apply</a>
           <a href="/privacy">Privacy</a>
           <a href="/terms">Terms</a>
-          <a href="/dashboard">Owner access</a>
+          <a href="/cancellation">Cancellation & refunds</a><a href="/contact">Contact</a><a href="https://local-opportunity-owner.mshipe2022.chatgpt.site">Owner access</a>
         </nav>
         <div className="footer-bottom">
           <span>© 2026 Local Opportunity Brief</span>
@@ -31,3 +31,4 @@ export function Footer() {
     </footer>
   );
 }
+

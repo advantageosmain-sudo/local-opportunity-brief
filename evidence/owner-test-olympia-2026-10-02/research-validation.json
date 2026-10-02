@@ -1,0 +1,20 @@
+{
+  "customer": {
+    "passed": true,
+    "errors": [],
+    "warnings": [
+      "Owner-review-only customer: live delivery is prohibited."
+    ]
+  },
+  "sources": [
+    {
+      "sourceFile": "olympia-2026-10-02.json",
+      "passed": true,
+      "errors": [],
+      "warnings": [],
+      "excludedCount": 0
+    }
+  ],
+  "passed": true,
+  "checkedAt": "2026-10-02T05:34:47.568Z"
+}

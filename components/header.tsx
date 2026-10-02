@@ -9,7 +9,7 @@ export function Header() {
           <span>Local Opportunity Brief</span>
         </a>
         <nav className="site-nav" aria-label="Main navigation">
-          <a href="/sample">Sample brief</a>
+          <a href="/#how-it-works">How it works</a><a href="/sample">Sample brief</a>
           <a href="/#pricing">Pricing</a>
           <a className="button button-primary button-small" href="/intake">
             Founding membership
@@ -19,3 +19,4 @@ export function Header() {
     </header>
   );
 }
+

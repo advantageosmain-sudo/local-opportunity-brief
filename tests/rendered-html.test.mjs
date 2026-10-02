@@ -61,10 +61,14 @@ test("renders the complete five-opportunity sample", async () => {
   );
   assert.equal(response.status, 200);
   const html = await response.text();
-  assert.match(html, /Your five best local opportunities/);
-  assert.match(html, /Week of August 3, 2026/);
+  assert.match(html, /Five local moments/);
+  assert.match(html, /2026-10-02/);
+  assert.match(html, /Fact confidence/);
+  assert.match(html, /Source publication date: not displayed/);
+  assert.match(html, /street-address listings conflict/);
   assert.equal((html.match(/class="opportunity-card"/g) ?? []).length, 5);
-  assert.match(html, /DEMONSTRATION DATA ONLY|demonstration uses fictional/i);
+  assert.match(html, /real research, illustrative customer/i);
+  assert.match(html, /https:\/\/www.artswalkoly.com\/events\/2026\/arts-walk-activity-area/);
 });
 
 test("renders the membership request and health endpoint", async () => {
@@ -90,7 +94,7 @@ test("renders the membership request and health endpoint", async () => {
     status: "ok",
     liveDelivery: false,
     paymentsMode: "disabled",
-    version: "0.2.0",
+    version: "0.5.0",
   });
 });
 
@@ -118,3 +122,4 @@ test("protected business endpoints fail closed without their secrets", async () 
   );
   assert.equal(paymentWebhook.status, 503);
 });
+

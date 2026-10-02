@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-10-02T05:34:10.252Z",
+  "repository": "advantageosmain-sudo/local-opportunity-brief",
+  "main": "49a841cedbbc99d71cf77d339d709de6163367b6",
+  "tree": "8ab803b38ee0c620ddafd159fee878b217f813ff",
+  "openPullRequests": [
+    2
+  ],
+  "secretNames": [
+    "REPORT_SYNC_SECRET",
+    "REPORT_SYNC_SIWC_TOKEN"
+  ],
+  "variableNames": [
+    "REPORT_SYNC_URL"
+  ],
+  "environmentNames": [
+    "copilot"
+  ],
+  "classicBranchProtection": "none (browser verified)",
+  "workflowToken": "read contents/packages",
+  "providerVerification": "blocked on authentication; no live eligibility verified",
+  "sourcePacks": "historical Olympia August 3 and unmerged September DeWitt"
+}

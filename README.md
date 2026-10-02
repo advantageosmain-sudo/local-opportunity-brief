@@ -17,6 +17,10 @@ It includes:
 - Lemon Squeezy checkout and signed-webhook handling restricted to test mode
 - Locked launch, spending, payment, email, research, and approval rules
 
+## October 2 operational finish
+
+See `docs/OPERATIONAL_FINISH_2026-10-02.md` and `evidence/e2e-2026-10-02.json` for current scoped implementation, exact tests and unresolved provider launch gates. Public checkout and delivery remain disabled until real provider verification. The fresh Olympia owner test is preserved under `evidence/owner-test-olympia-2026-10-02/`; historical examples below are not current research.
+
 ## Safe default state
 
 The checked-in system cannot charge a customer, send a live email, purchase
@@ -88,9 +92,7 @@ business/evidence/OLYMPIA_OWNER_PILOT_2026-08-03.md
 node automation/run-all.mjs --as-of 2026-08-03
 ```
 
-The scheduled command processes only profiles with `status: active`. It does
-not include demo or pilot profiles and it never delivers automatically. Every
-packet stops at owner review.
+The scheduled command processes only profiles with `status: active`. It excludes demo, unpaid, canceled, paused and incomplete profiles. First-customer/market reports stop for owner review; progressive delivery also requires verified first delivery, source checks and configured owner policy.
 
 For a private pilot rehearsal:
 
@@ -122,7 +124,7 @@ Important values:
 
 - `OWNER_EMAIL` — owner dashboard allowlist
 - `REPORT_SYNC_URL` and `REPORT_SYNC_SECRET` — exact report-to-dashboard link
-- `PAYMENTS_MODE=disabled|test` — no live option exists in this version
+- `PAYMENTS_MODE=disabled|test|live` — live additionally requires verified provider configuration and `LIVE_CHECKOUT_VERIFIED=1`
 - `LEMON_SQUEEZY_CHECKOUT_URL` and `LEMON_SQUEEZY_WEBHOOK_SECRET` — test mode only
 - `RESEND_API_KEY`, `DELIVERY_FROM_EMAIL`, and `LIVE_DELIVERY` — protected delivery only
 
@@ -141,3 +143,4 @@ for public launch. See:
 Provider tests, retailer feedback, owner configuration, legal review, and public
 launch approval remain outside gates. No passing code test can silently satisfy
 those decisions.
+

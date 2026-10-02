@@ -7,6 +7,7 @@ export async function GET() {
     status: "ok",
     liveDelivery: false,
     paymentsMode,
-    version: "0.2.0",
+    version: "0.5.0",
   });
 }
+

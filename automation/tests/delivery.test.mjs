@@ -5,10 +5,14 @@ import path from "node:path";
 import test from "node:test";
 import { generateReport, renderMarkdown, validateReport } from "../lib/engine.mjs";
 import {
-  deliverApprovedReport,
+  deliverApprovedReport as transportDeliver,
   DeliveryError,
   deliveryIdempotencyKey,
 } from "../lib/delivery.mjs";
+
+// Every provider response in this suite is mocked. No real provider E2E evidence.
+const authorize = async (report) => ({ allowed: true, reportId: report.reportId, checksum: report.checksum, customer: { status: "active", subscriptionStatus: "active", paymentStatus: "active", intakeComplete: true, deliveryMode: "customer", deliveryEmail: report.customer.deliveryEmail } });
+const deliverApprovedReport = (options) => transportDeliver({ authorizeDelivery: authorize, ...options });
 
 function opportunity(index) {
   return {
@@ -93,7 +97,7 @@ test("an atomic claim and provider idempotency allow only one concurrent send", 
   const receipt = JSON.parse(
     await readFile(path.join(packet.directory, "delivery-receipt.json"), "utf8"),
   );
-  assert.equal(receipt.status, "DELIVERED");
+  assert.equal(receipt.status, "ACCEPTED");
 });
 
 test("provider failures create a diagnostic record for the owner alert", async (t) => {
@@ -105,34 +109,34 @@ test("provider failures create a diagnostic record for the owner alert", async (
       env: liveEnv,
       fetchImpl: async () => new Response("provider unavailable", { status: 503 }),
     }),
-    (error) => error instanceof DeliveryError && error.code === "EMAIL_PROVIDER_FAILED_503",
+    (error) => error instanceof DeliveryError && error.code === "EMAIL_PROVIDER_OUTCOME_UNCERTAIN",
   );
   const failure = JSON.parse(
-    await readFile(path.join(packet.directory, "delivery-failure.json"), "utf8"),
+    await readFile(path.join(packet.directory, "delivery-uncertain.json"), "utf8"),
   );
-  assert.equal(failure.status, "DELIVERY_FAILED");
-  assert.equal(failure.providerStatus, 503);
+  assert.equal(failure.status, "DELIVERY_OUTCOME_UNCERTAIN");
 });
 
-test("a confirmed provider failure can be retried without leaving a stale claim", async (t) => {
+test("a rate-limit rejection retries only after bounded backoff", async (t) => {
   const packet = await createPacket();
   t.after(() => rm(packet.directory, { recursive: true, force: true }));
   let attempts = 0;
   const fetchImpl = async () => {
     attempts += 1;
     return attempts === 1
-      ? new Response("provider unavailable", { status: 503 })
+      ? new Response("rate limit", { status: 429 })
       : Response.json({ id: "provider-message-after-retry" });
   };
 
   await assert.rejects(
     deliverApprovedReport({ reportPath: packet.reportPath, env: liveEnv, fetchImpl }),
-    (error) => error instanceof DeliveryError && error.code === "EMAIL_PROVIDER_FAILED_503",
+    (error) => error instanceof DeliveryError && error.code === "EMAIL_PROVIDER_FAILED_429",
   );
   const receipt = await deliverApprovedReport({
     reportPath: packet.reportPath,
     env: liveEnv,
     fetchImpl,
+    now: () => new Date(Date.now() + 61_000),
   });
   assert.equal(receipt.providerMessageId, "provider-message-after-retry");
   assert.equal(attempts, 2);
@@ -174,4 +178,40 @@ test("owner-only pilot reports cannot reach the email provider", async (t) => {
       error.code === "REPORT_NOT_ELIGIBLE_FOR_CUSTOMER_DELIVERY",
   );
   assert.equal(called, false);
+});
+
+
+
+test("editable local approval is insufficient without durable authorization", async (t) => {
+  const packet = await createPacket();
+  t.after(() => rm(packet.directory, { recursive: true, force: true }));
+  await assert.rejects(transportDeliver({ reportPath: packet.reportPath, env: liveEnv, fetchImpl: () => assert.fail("No network") }), { code: "DURABLE_AUTHORIZATION_REQUIRED" });
+});
+
+test("canceled or suppressed customers cannot send even with an earlier approval", async (t) => {
+  const packet = await createPacket();
+  t.after(() => rm(packet.directory, { recursive: true, force: true }));
+  await assert.rejects(deliverApprovedReport({ reportPath: packet.reportPath, env: liveEnv, authorizeDelivery: async (report) => ({ ...await authorize(report), customer: { ...(await authorize(report)).customer, status: "canceled" } }), fetchImpl: () => assert.fail("No network") }), { code: "CUSTOMER_NO_LONGER_ELIGIBLE" });
+});
+
+test("an unknown send remains locked and creates only one owner alert", async (t) => {
+  const packet = await createPacket();
+  t.after(() => rm(packet.directory, { recursive: true, force: true }));
+  let calls = 0;
+  const options = { reportPath: packet.reportPath, env: liveEnv, fetchImpl: async () => { calls++; throw new Error("timeout"); } };
+  await assert.rejects(deliverApprovedReport(options), { code: "EMAIL_PROVIDER_OUTCOME_UNCERTAIN" });
+  const alert = await readFile(path.join(packet.directory, "owner-alert.json"), "utf8");
+  await assert.rejects(deliverApprovedReport(options), { code: "PREVIOUS_DELIVERY_OUTCOME_IS_UNCERTAIN" });
+  assert.equal(await readFile(path.join(packet.directory, "owner-alert.json"), "utf8"), alert);
+  assert.equal(calls, 1);
+});
+
+test("invalid-recipient rejection suppresses retry and acceptance never asserts delivery", async (t) => {
+  const packet = await createPacket();
+  t.after(() => rm(packet.directory, { recursive: true, force: true }));
+  let calls = 0;
+  const options = { reportPath: packet.reportPath, env: liveEnv, fetchImpl: async () => { calls++; return new Response("invalid recipient", { status: 422 }); } };
+  await assert.rejects(deliverApprovedReport(options), { code: "EMAIL_PROVIDER_FAILED_422" });
+  await assert.rejects(deliverApprovedReport(options), { code: "RECIPIENT_SUPPRESSED" });
+  assert.equal(calls, 1);
 });

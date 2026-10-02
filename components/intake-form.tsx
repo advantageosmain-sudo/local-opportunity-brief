@@ -11,22 +11,30 @@ type FormState =
 export function IntakeForm() {
   const [state, setState] = useState<FormState>({ kind: "idle", message: "" });
 
+  const [checkout, setCheckout] = useState<{customerId:string;checkoutToken:string}|null>(null);
+  function restoreCheckout(){try{const raw=sessionStorage.getItem("lob-checkout");if(raw){const saved=JSON.parse(raw);if(typeof saved.customerId==="string"&&typeof saved.checkoutToken==="string"){setCheckout(saved);return;}}setState({kind:"error",message:"No checkout request is saved in this browser tab. Submit your business details below or contact support."});}catch{setState({kind:"error",message:"Saved checkout could not be restored. Contact support."});}}
+  async function continueCheckout(){
+    if(!checkout)return;
+    setState({kind:"sending",message:"Checking coverage and checkout availability…"});
+    try{const response=await fetch("/api/checkout",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(checkout)});const result=await response.json();if(!response.ok)throw new Error(result.error||"Checkout is not available yet.");if(typeof result.url!=="string")throw new Error("No checkout link is available yet.");const url=new URL(result.url);if(url.protocol!=="https:")throw new Error("Checkout address is invalid.");window.location.assign(url.href);}catch(error){setState({kind:"error",message:error instanceof Error?error.message:"Checkout is unavailable. Nothing was charged."});}
+  }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     setState({ kind: "sending", message: "Saving your business profile…" });
 
-    const payload = Object.fromEntries(new FormData(form).entries());
+    const payload = { ...Object.fromEntries(new FormData(form).entries()), submissionId: crypto.randomUUID() };
     try {
       const response = await fetch("/api/intake", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const result = (await response.json()) as { error?: string; message?: string };
+      const result = (await response.json()) as { error?: string; message?: string; customerId?:string; checkoutToken?:string };
       if (!response.ok) {
         throw new Error(result.error ?? "We could not save your information.");
       }
+      if(result.customerId&&result.checkoutToken){const capability={customerId:result.customerId,checkoutToken:result.checkoutToken};setCheckout(capability);try{sessionStorage.setItem("lob-checkout",JSON.stringify(capability));}catch{}}
       form.reset();
       setState({
         kind: "success",
@@ -47,6 +55,8 @@ export function IntakeForm() {
 
   return (
     <form className="intake-form" onSubmit={submit}>
+      {!checkout&&<button type="button" className="button button-secondary" onClick={restoreCheckout}>Resume a saved request in this tab</button>}
+      {checkout&&<div className="form-section"><h2>Your saved request</h2><p>Continue when local coverage is confirmed. Checkout remains blocked until the service and payment provider are ready.</p><button type="button" className="button button-secondary" disabled={state.kind==="sending"} onClick={continueCheckout}>Continue to checkout</button></div>}
       <div className="form-section">
         <h2>Contact details</h2>
         <p>We use this information only to review and respond to your request.</p>
@@ -56,9 +66,10 @@ export function IntakeForm() {
             <input id="contactName" name="contactName" required maxLength={100} />
           </div>
           <div className="field">
-            <label htmlFor="email">Business email</label>
+            <label htmlFor="email">Report delivery email</label>
             <input id="email" name="email" type="email" required maxLength={180} />
           </div>
+          <div className="field"><label htmlFor="billingEmail">Billing email (if different)</label><input id="billingEmail" name="billingEmail" type="email" maxLength={180}/></div>
           <div className="field field-full honeypot" aria-hidden="true">
             <label htmlFor="companyFax">Company fax</label>
             <input id="companyFax" name="companyFax" tabIndex={-1} autoComplete="off" />
@@ -101,6 +112,7 @@ export function IntakeForm() {
             />
           </div>
           <div className="field">
+            <label htmlFor="zip">ZIP code</label><input id="zip" name="zip" required pattern="[0-9]{5}(-[0-9]{4})?" maxLength={10}/></div><div className="field">
             <label htmlFor="category">Business type</label>
             <select id="category" name="category" required defaultValue="">
               <option value="" disabled>
@@ -168,13 +180,21 @@ export function IntakeForm() {
             />
           </div>
           <div className="field field-full">
-            <label htmlFor="notes">Anything else we should know?</label>
+            <label htmlFor="publicLinks">Public social links (one per line)</label><textarea id="publicLinks" name="publicLinks" maxLength={3000}/></div>
+          <div className="field field-full"><label htmlFor="institutions">Local institutions or communities that matter</label><textarea id="institutions" name="institutions" maxLength={1500}/></div>
+          <div className="field field-full"><label htmlFor="currentPromotions">Current promotions</label><textarea id="currentPromotions" name="currentPromotions" maxLength={1500}/></div>
+          <div className="field"><label htmlFor="deliveryDay">Preferred delivery day</label><select id="deliveryDay" name="deliveryDay" defaultValue="monday"><option value="monday">Monday</option></select></div>
+          <div className="field"><label htmlFor="deliveryPreferences">Delivery preferences</label><input id="deliveryPreferences" name="deliveryPreferences" maxLength={500} placeholder="Email, readable on my phone"/></div>
+          <div className="field field-full"><label htmlFor="notes">Anything else we should know?</label>
             <textarea id="notes" name="notes" maxLength={1500} />
           </div>
         </div>
       </div>
 
       <div className="form-actions">
+        <label className="consent"><input type="checkbox" name="deliveryConsent" value="yes" required/> I consent to receive purchased reports and essential service emails.</label>
+        <label className="consent"><input type="checkbox" name="termsAccepted" value="yes" required/> <span>I accept the <a href="/terms">service terms</a>, including cancellation and refunds.</span></label>
+        <label className="consent"><input type="checkbox" name="noGuaranteeAccepted" value="yes" required/> I understand sales and customer traffic are not guaranteed.</label>
         <label
           style={{
             display: "flex",
@@ -225,3 +245,4 @@ export function IntakeForm() {
     </form>
   );
 }
+

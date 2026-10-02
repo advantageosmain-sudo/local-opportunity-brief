@@ -13,6 +13,16 @@ export type IntakePayload = {
   state: string;
   voice: string;
   website: string;
+  zip: string;
+  institutions: string;
+  currentPromotions: string;
+  deliveryDay: string;
+  deliveryPreferences: string;
+  billingEmail: string;
+  publicLinks: string[];
+  deliveryConsent: true;
+  termsAccepted: true;
+  noGuaranteeAccepted: true;
 };
 
 const allowedCategories = new Set([
@@ -34,6 +44,7 @@ export function validateIntake(input: unknown):
   }
 
   const payload = input as Record<string, unknown>;
+  if (Array.isArray(input)) return { ok: false, error: "Invalid form." };
   const companyFax = value(payload.companyFax, 300);
   if (companyFax) {
     return { ok: false, error: "We could not accept this request." };
@@ -52,6 +63,13 @@ export function validateIntake(input: unknown):
   const exclusions = value(payload.exclusions, 500);
   const notes = value(payload.notes, 1500);
   const localRadius = Number(value(payload.localRadius, 3) || "35");
+  const zip = value(payload.zip, 10);
+  const billingEmail = value(payload.billingEmail, 180).toLowerCase() || email;
+  const publicLinks = value(payload.publicLinks, 6000).split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+  if (!/^\d{5}(?:-\d{4})?$/.test(zip)) return { ok: false, error: "Enter a valid US ZIP code." };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(billingEmail)) return { ok: false, error: "Enter a valid billing email." };
+  if (publicLinks.length > 15 || publicLinks.some(x => { try { return new URL(x).protocol !== "https:"; } catch { return true; } })) return { ok: false, error: "Use up to 15 HTTPS social links." };
+  if ([payload.deliveryConsent, payload.termsAccepted, payload.noGuaranteeAccepted].some(x => x !== "yes" && x !== true)) return { ok: false, error: "Accept report delivery, terms and the no-guarantee notice." };
   const consent = value(payload.consent, 8);
 
   if (!contactName || !businessName || !city || !products || !customers || !voice) {
@@ -60,7 +78,7 @@ export function validateIntake(input: unknown):
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { ok: false, error: "Enter a valid business email address." };
   }
-  if (!/^[A-Z]{2}$/.test(state)) {
+  if (!new Set("AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY DC".split(" ")).has(state)) {
     return { ok: false, error: "Enter the two-letter state abbreviation." };
   }
   if (!allowedCategories.has(category)) {
@@ -97,7 +115,9 @@ export function validateIntake(input: unknown):
       products,
       state,
       voice,
-      website,
+      institutions: value(payload.institutions, 1500), currentPromotions: value(payload.currentPromotions, 1500), deliveryDay: "Monday", deliveryPreferences: value(payload.deliveryPreferences, 500),
+      website, zip, billingEmail, publicLinks, deliveryConsent: true, termsAccepted: true, noGuaranteeAccepted: true,
     },
   };
 }
+

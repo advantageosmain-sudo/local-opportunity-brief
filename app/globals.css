@@ -1342,3 +1342,6 @@ textarea:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+.consent{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;font-size:14px;line-height:1.6}.consent input{width:18px;min-height:18px;margin-top:4px;flex-shrink:0}.consent a,.policy-body a{text-decoration:underline}.policy-body h2{margin-top:32px}.policy-body p{line-height:1.75}a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #9b5c09;outline-offset:4px}@media(max-width:600px){.site-header-inner{flex-wrap:wrap;padding:14px 0;gap:14px}.site-nav{flex-wrap:wrap;gap:12px}.site-nav .button{padding:9px 12px}.brand{font-size:14px}}

@@ -1,0 +1,57 @@
+name: Reconcile email delivery receipts
+
+on:
+  schedule:
+    - cron: "43 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: receipt-reconciliation
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    # Default off until the owner/provider launch gates are verified. A manual
+    # dispatch does not bypass this gate or enable the provider.
+    if: vars.LIVE_DELIVERY == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Reconcile accepted and recent delivered messages
+        env:
+          LIVE_DELIVERY: ${{ vars.LIVE_DELIVERY }}
+          REPORT_SYNC_URL: ${{ vars.REPORT_SYNC_URL }}
+          REPORT_SYNC_SECRET: ${{ secrets.REPORT_SYNC_SECRET }}
+        run: node automation/reconcile-delivery.mjs
+      - name: Preserve safe reconciliation summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: receipt-reconciliation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: automation/outbox/receipt-reconciliation.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Alert the owner once per unresolved reconciliation failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = "<!-- lob-receipt-reconciliation -->";
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo, state: "open", per_page: 100
+            });
+            if (!issues.some(issue => !issue.pull_request && issue.body?.includes(marker))) {
+              await github.rest.issues.create({
+                ...context.repo,
+                title: "Email delivery receipt reconciliation needs attention",
+                body: `${marker}\nThe hourly provider-receipt check stopped. Inspect the safe diagnostic artifact and owner dashboard. Accepted emails are not confirmed delivered; do not clear uncertain-send locks or enable later automatic reports without verified provider receipts. No customer or provider secrets are included here.\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+              });
+            }
