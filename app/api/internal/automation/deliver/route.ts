@@ -29,7 +29,8 @@ export async function POST(request: Request) {
  if(('expectedRecipient' in input || env.LIVE_DELIVERY!=='1')&&(!ownerTest||!ownerRehearsalIdentityMatches(env,input))) return Response.json({error:'Owner rehearsal identity blocked.'},{status:409});
  const subject=await db.prepare('SELECT * FROM customers WHERE id=?').bind(r.customer.slug).first<Record<string,unknown>>();
  if(isQaCustomer(subject)||subject?.status==='test'||String(r.customer.slug).startsWith('qa-')||r.customer.isTest===true) return Response.json({error:'QA delivery blocked.'},{status:409});
- let recipient=env.OWNER_EMAIL;
+ // Explicit rehearsals use only the validated recipient pin; legacy live owner sends retain OWNER_EMAIL.
+ let recipient=('expectedRecipient' in input || env.LIVE_DELIVERY!=='1') ? env.OWNER_REHEARSAL_RECIPIENT : env.OWNER_EMAIL;
  if(ownerTest) { if(!decision) return Response.json({error:'Owner test report needs exact review'},{status:409}); }
  else {
  const customer=await db.prepare('SELECT c.*,m.first_approved_at FROM customers c LEFT JOIN markets m ON c.market_id=m.id WHERE c.id=?').bind(r.customer.slug).first<Record<string,unknown>>();
