@@ -17,13 +17,13 @@ const hash=r=>{delete r.checksum;r.checksum=createHash('sha256').update(JSON.str
 function setup(t){
  const db=new D1();t.after(()=>db.db.close());
  const env={DB:db,ASSETS:{fetch:async()=>new Response('',{status:404})},OWNER_EMAIL:'owner@example.com',REPORT_SYNC_SECRET:'SYNTHETIC',LIVE_DELIVERY:'0',RESEND_API_KEY:'SYNTHETIC',DELIVERY_FROM_EMAIL:'sender@example.com',OWNER_REHEARSAL_ENABLED:'1'};
- const state={calls:[],event:'delivered',receiptId:'synthetic-message',providerFail:false};
+ const state={calls:[],event:'delivered',receiptId:'synthetic-message',providerFail:false,expectedTo:'owner@example.com'};
  const noNetwork=()=>{throw Error('Independent test guard: real network prohibited');};
  t.mock.method(net.Socket.prototype,'connect',noNetwork);t.mock.method(tls,'connect',noNetwork);t.mock.method(http,'request',noNetwork);t.mock.method(https,'request',noNetwork);
  t.mock.method(globalThis,'fetch',async(url,options={})=>{
   state.calls.push({url:String(url),options});
   if(options.method==='POST'){
-   assert.equal(String(url),'https://api.resend.com/emails');assert.deepEqual(JSON.parse(options.body).to,['owner@example.com']);
+   assert.equal(String(url),'https://api.resend.com/emails');assert.deepEqual(JSON.parse(options.body).to,[state.expectedTo]);
    if(state.providerFail)throw Error('Synthetic uncertain result');
    return Response.json({id:'synthetic-message'});
   }
@@ -108,3 +108,27 @@ for (const event of ['bounced','complained','failed','suppressed','canceled']) t
  assert.equal(s.db.db.prepare('SELECT first_approved_at FROM markets').get().first_approved_at,null);
  assert.equal(s.db.db.prepare('SELECT delivery_status FROM customers').get().delivery_status,'pending');
 });
+
+
+test('approved alternate rehearsal recipient leaves login ownership unchanged',async t=>{
+ const s=setup(t);await s.seed();
+ const alternate='approved-destination@example.com';
+ s.env.OWNER_REHEARSAL_RECIPIENT=alternate;s.state.expectedTo=alternate;
+ const payload={...s.payload(),expectedRecipient:alternate};
+ assert.equal((await s.call('deliver',s.payload())).status,409,'Login address cannot replace the approved destination');
+ assert.equal((await s.call('deliver',payload)).status,200);
+ assert.equal(s.db.db.prepare('SELECT recipient FROM delivery_attempts').get().recipient,alternate);
+ assert.equal((await s.call('deliver',payload)).status,409,'Pinned alternate send remains deduplicated');
+ s.env.OWNER_REHEARSAL_ENABLED='0';
+ const receipt=await s.call('reconcile-delivery',payload);assert.equal(receipt.status,200);assert.equal((await receipt.json()).deliveryStatus,'delivered');
+ assert.equal((await s.call('reconcile-delivery',s.payload())).status,409,'Receipt must match durable approved destination');
+ assert.equal(s.env.OWNER_EMAIL,'owner@example.com');assert.equal(s.env.LIVE_DELIVERY,'0');
+ assert.equal(s.db.db.prepare('SELECT first_delivered_at FROM customers').get().first_delivered_at,null);
+ assert.equal(s.db.db.prepare('SELECT first_approved_at FROM markets').get().first_approved_at,null);
+ const {REJECTED_CHECKOUT}=await import('../lib/stripe-checkout-recovery.mjs');
+ const authCheck=email=>worker.fetch(new Request(REJECTED_CHECKOUT.origin+'/api/owner/stripe-checkout-recovery',{method:'POST',headers:{'content-type':'application/json',origin:REJECTED_CHECKOUT.origin,'oai-authenticated-user-email':email},body:'{}'}),s.env,{waitUntil(){},passThroughOnException(){}});
+ assert.equal((await authCheck(alternate)).status,403,'Recipient pin grants no owner access');
+ assert.equal((await authCheck('owner@example.com')).status,400,'Original owner remains authenticated; invalid recovery payload fails before work');
+ assert.equal(s.state.calls.length,2,'Only the mocked send and exact receipt were called');
+});
+for(const recipient of ['', 'invalid', 'Name <person@example.com>', 'person@example.com\n'])test('malformed alternate recipient pin fails closed: '+JSON.stringify(recipient),async t=>{const s=setup(t);await s.seed();s.env.OWNER_REHEARSAL_RECIPIENT=recipient;const p={...s.payload(),expectedRecipient:recipient};assert.equal((await s.call('deliver',p)).status,409);assert.equal((await s.call('reconcile-delivery',p)).status,409);assert.equal(s.state.calls.length,0);});

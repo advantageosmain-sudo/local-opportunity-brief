@@ -13,7 +13,7 @@ calls the Site; it does not use a Resend key.
 Required in the **Site's private server-side runtime settings**:
 
 - DB: the existing application database binding.
-- OWNER_EMAIL: the verified owner login email and owner-only report destination.
+- OWNER_EMAIL: the verified owner login email. Keep this unchanged when approving a different rehearsal destination.
 - REPORT_SYNC_SECRET: the existing shared automation secret, matching GitHub.
 - RESEND_API_KEY: a privately configured provider key. The current implementation
   uses this one key both to send and to retrieve sent-message status.
@@ -23,7 +23,7 @@ Required in the **Site's private server-side runtime settings**:
 - OWNER_REHEARSAL_ENABLED: defaults to 0. An authorized exact owner-only rehearsal
   can set 1 while keeping LIVE_DELIVERY=0.
 - OWNER_REHEARSAL_REPORT_ID and OWNER_REHEARSAL_CHECKSUM: pin the exact approved
-  report. OWNER_REHEARSAL_RECIPIENT must exactly equal OWNER_EMAIL. All three pins
+  report. OWNER_REHEARSAL_RECIPIENT is the separately approved exact email destination. All three pins
   and request expectedRecipient must match; there is no recipient override.
 
 POST /api/internal/automation/deliver with {reportId,checksum,expectedRecipient}
@@ -96,7 +96,7 @@ This is a real provider request and, if addressed to the owner, a real email.
 Minimum evidence and prerequisites:
 1. Verify the Resend account and the permitted sender. Resend's default
    onboarding@resend.dev sender is restricted to the account's own email address;
-   OWNER_EMAIL must match that permitted recipient, or use an appropriately
+   The approved OWNER_REHEARSAL_RECIPIENT must match that permitted recipient, or use an appropriately
    verified sender domain.
 2. Use a current source-validated report with deliveryMode owner_review_only.
    Synchronize it to the Site and have the authenticated owner approve its exact
@@ -104,7 +104,7 @@ Minimum evidence and prerequisites:
 3. Configure the authorized Site values through the secure settings flow. Keep
    LIVE_DELIVERY=0, the existing payment mode, and scheduled customer delivery off.
 4. Obtain explicit approval for the exact owner send. Pin OWNER_REHEARSAL_REPORT_ID,
-   OWNER_REHEARSAL_CHECKSUM and OWNER_REHEARSAL_RECIPIENT (exactly OWNER_EMAIL),
+   OWNER_REHEARSAL_CHECKSUM and the explicitly approved OWNER_REHEARSAL_RECIPIENT,
    then temporarily set OWNER_REHEARSAL_ENABLED=1. Never enable customer delivery
    to perform this owner rehearsal. Configuration changes remain a separate gate.
 5. Request hosted delivery of only {reportId,checksum,expectedRecipient}. Record
@@ -127,8 +127,8 @@ active customer merely to test email.
 
 Resend also offers delivered@resend.dev, bounced@resend.dev,
 complained@resend.dev and suppressed@resend.dev for synthetic provider events.
-These simulate events, not a human inbox. The current owner-only route always
-targets OWNER_EMAIL; it does not provide a sandbox-address override. Do not
+These simulate events, not a human inbox. Explicit owner rehearsals target only the exact approved OWNER_REHEARSAL_RECIPIENT
+pin; a request cannot override it. Legacy live owner sends retain OWNER_EMAIL. Do not
 change the owner login allowlist to a synthetic address or use a real customer
 record to work around that isolation.
 

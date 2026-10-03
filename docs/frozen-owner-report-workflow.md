@@ -27,7 +27,7 @@ For an explicitly authorized owner send, the Site implementation must already be
 - `OWNER_REHEARSAL_ENABLED=1` temporarily enables the owner-only send gate.
 - `OWNER_REHEARSAL_REPORT_ID` equals the requested report ID.
 - `OWNER_REHEARSAL_CHECKSUM` equals the requested checksum.
-- `OWNER_REHEARSAL_RECIPIENT` equals the requested recipient and existing `OWNER_EMAIL`.
+- `OWNER_REHEARSAL_RECIPIENT` equals the separately approved exact destination and the requested recipient. Keep `OWNER_EMAIL` unchanged: it controls owner login authorization, not the explicit rehearsal destination.
 - Existing provider credentials and a permitted sender are securely configured through the separate approved setup.
 
 Do not set `LIVE_DELIVERY=1` for this rehearsal. Missing/mismatched pins or owner approval must fail closed. These settings are not created or changed by the workflow.
