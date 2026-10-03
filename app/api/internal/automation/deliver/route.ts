@@ -3,12 +3,15 @@ import { ensureDatabase, getRuntimeEnv } from "@/db/runtime";
 import { isAutomationRequest } from "@/lib/internal-auth";
 import { validateCurrentReportPacket } from "@/lib/report-sync.mjs";
 import { customerDeliveryGate } from "@/lib/customer-lifecycle.mjs";
+import { ownerRehearsalIdentityMatches } from '@/lib/owner-rehearsal';
+import { isQaCustomer } from '@/lib/dashboard-policy.mjs';
 export async function POST(request: Request) {
  if (!isAutomationRequest(request)) return Response.json({error:'Unauthorized'},{status:401});
  const env=getRuntimeEnv();
- if(env.LIVE_DELIVERY!=='1'||!env.RESEND_API_KEY||!env.DELIVERY_FROM_EMAIL) return Response.json({error:'Delivery provider not enabled.'},{status:503});
+ if((env.LIVE_DELIVERY!=='1'&&env.OWNER_REHEARSAL_ENABLED!=='1')||!env.RESEND_API_KEY||!env.DELIVERY_FROM_EMAIL) return Response.json({error:'Delivery provider not enabled.'},{status:503});
  let input;
  try {input=await request.json();} catch {return Response.json({error:'Invalid request'},{status:400});}
+ if(!input||typeof input!=='object'||Array.isArray(input)) return Response.json({error:'Invalid request'},{status:400});
  if(!/^[a-z0-9-]{1,160}$/.test(input.reportId??'')||!/^[a-f0-9]{64}$/.test(input.checksum??'')) return Response.json({error:'Invalid report identity'},{status:400});
  const db=await ensureDatabase();
  const row=await db.prepare('SELECT * FROM reports WHERE id=?').bind(input.reportId).first<Record<string,unknown>>();
@@ -16,9 +19,16 @@ export async function POST(request: Request) {
  if(!row) return Response.json({error:'Report missing'},{status:404});
  const packet=JSON.parse(String(row.report_json));
  const r=packet.report;
- if(r.checksum!==input.checksum||r.fixture||! (await validateCurrentReportPacket(packet)).passed) return Response.json({error:'Report validation failed'},{status:409});
+ if(r.reportId!==input.reportId||r.checksum!==input.checksum||r.fixture||! (await validateCurrentReportPacket(packet)).passed) return Response.json({error:'Report validation failed'},{status:409});
  const decision=await db.prepare("SELECT * FROM report_decisions WHERE report_id=? AND checksum=? AND decision='approve'").bind(r.reportId,r.checksum).first();
  const ownerTest=r.customer?.deliveryMode==='owner_review_only';
+ // The rehearsal exception is exact, owner-only and independent of customer release.
+ if(!ownerTest&&r.customer?.deliveryMode!=='customer') return Response.json({error:'Delivery mode blocked.'},{status:409});
+ if(!ownerTest&&env.LIVE_DELIVERY!=='1') return Response.json({error:'Customer delivery disabled.'},{status:503});
+ if('expectedRecipient' in input&&env.OWNER_REHEARSAL_ENABLED!=='1') return Response.json({error:'Owner rehearsal disabled.'},{status:503});
+ if(('expectedRecipient' in input || env.LIVE_DELIVERY!=='1')&&(!ownerTest||!ownerRehearsalIdentityMatches(env,input))) return Response.json({error:'Owner rehearsal identity blocked.'},{status:409});
+ const subject=await db.prepare('SELECT * FROM customers WHERE id=?').bind(r.customer.slug).first<Record<string,unknown>>();
+ if(isQaCustomer(subject)||subject?.status==='test'||String(r.customer.slug).startsWith('qa-')||r.customer.isTest===true) return Response.json({error:'QA delivery blocked.'},{status:409});
  let recipient=env.OWNER_EMAIL;
  if(ownerTest) { if(!decision) return Response.json({error:'Owner test report needs exact review'},{status:409}); }
  else {
@@ -31,9 +41,13 @@ export async function POST(request: Request) {
  SELECT ?,r.id,?,'claimed',? FROM reports r
  WHERE r.id=? AND r.status IN ('pending_approval','owner_approved')
  AND json_extract(r.report_json,'$.report.checksum')=?
+ AND r.customer_slug NOT LIKE 'qa-%'
+ AND NOT EXISTS(SELECT 1 FROM customers q WHERE q.id=r.customer_slug
+   AND (q.status='test' OR q.payment_status LIKE 'test_%' OR
+     CASE WHEN json_valid(q.profile_json) THEN COALESCE(json_extract(q.profile_json,'$.isTest'),0) ELSE 1 END=1))
  AND (
-   (?=1 AND EXISTS(SELECT 1 FROM report_decisions d WHERE d.report_id=r.id AND d.checksum=? AND d.decision='approve'))
-   OR (?=0 AND EXISTS(SELECT 1 FROM customers c LEFT JOIN markets m ON c.market_id=m.id
+   (?=1 AND json_extract(r.report_json,'$.report.customer.deliveryMode')='owner_review_only' AND EXISTS(SELECT 1 FROM report_decisions d WHERE d.report_id=r.id AND d.checksum=? AND d.decision='approve'))
+   OR (?=0 AND json_extract(r.report_json,'$.report.customer.deliveryMode')='customer' AND EXISTS(SELECT 1 FROM customers c LEFT JOIN markets m ON c.market_id=m.id
      WHERE c.id=r.customer_slug AND c.status='active' AND c.payment_status='active'
        AND c.onboarding_status='complete' AND c.delivery_status!='suppressed'
        AND json_extract(c.profile_json,'$.deliveryConsent')=1

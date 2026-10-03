@@ -15,6 +15,10 @@ type RuntimeEnv = {
   RESEND_API_KEY?: string;
   DELIVERY_FROM_EMAIL?: string;
   LIVE_DELIVERY?: string;
+  OWNER_REHEARSAL_ENABLED?: string;
+  OWNER_REHEARSAL_REPORT_ID?: string;
+  OWNER_REHEARSAL_CHECKSUM?: string;
+  OWNER_REHEARSAL_RECIPIENT?: string;
   OWNER_EMAIL?: string;
   REPORT_SYNC_SECRET?: string;
   OPERATOR_SYNC_SECRET?: string;

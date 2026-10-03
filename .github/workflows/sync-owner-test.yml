@@ -1,6 +1,28 @@
-name: Synchronize frozen owner-test report (no delivery)
+name: Frozen owner report operations (sync by default)
 on:
   workflow_dispatch:
+    inputs:
+      operation:
+        description: Sync only by default; owner sends require separate enabled Site pins and exact approval
+        type: choice
+        required: true
+        default: sync
+        options:
+          - sync
+          - owner_rehearsal_send
+          - owner_rehearsal_reconcile
+      report_id:
+        description: Exact frozen owner-test report ID from evidence (no path)
+        type: string
+        required: true
+      expected_checksum:
+        description: Exact approved report SHA-256 (64 lowercase hex characters)
+        type: string
+        required: true
+      expected_recipient:
+        description: Exact owner email, required only for explicitly requested send or receipt reconciliation
+        type: string
+        required: false
 permissions:
   contents: read
 concurrency:
@@ -15,17 +37,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify exact owner-test identity and checksum
-        run: |
-          node --input-type=module <<'NODE'
-          import {readFileSync} from 'node:fs';
-          import {createHash} from 'node:crypto';
-          const p=JSON.parse(readFileSync('evidence/owner-test-olympia-2026-10-02/dashboard-sync.json','utf8'));
-          const {checksum,...r}=p.report;
-          if(r.reportId!=='owner-test-olympia-2026-10-02'||r.customer.slug!=='owner-test-olympia'||r.customer.deliveryMode!=='owner_review_only'||checksum!=='227287886aab1c153653715f5e46d9842e988107bbdaefb854f887523c9e65da'||createHash('sha256').update(JSON.stringify(r)).digest('hex')!==checksum) throw Error('Owner-test packet identity mismatch');
-          NODE
-      - name: Synchronize the frozen owner-only packet
+      - name: Validate and perform only the selected exact owner operation
         env:
+          OWNER_REPORT_OPERATION: ${{ inputs.operation }}
+          OWNER_REPORT_RECIPIENT: ${{ inputs.expected_recipient }}
+          OWNER_REPORT_ID: ${{ inputs.report_id }}
+          OWNER_REPORT_CHECKSUM: ${{ inputs.expected_checksum }}
           REPORT_SYNC_URL: ${{ vars.REPORT_SYNC_URL }}
           REPORT_SYNC_SECRET: ${{ secrets.REPORT_SYNC_SECRET }}
-        run: node automation/sync-dashboard.mjs --packet evidence/owner-test-olympia-2026-10-02/dashboard-sync.json
+        run: node automation/sync-frozen-owner-test.mjs

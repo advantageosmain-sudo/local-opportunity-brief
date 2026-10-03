@@ -1,6 +1,8 @@
 import { ensureDatabase, getRuntimeEnv } from '@/db/runtime';
 import { isAutomationRequest } from '@/lib/internal-auth';
 
+import { ownerRehearsalIdentityMatches } from '@/lib/owner-rehearsal';
+
 const deliveredEvents = new Set(['delivered', 'opened', 'clicked']);
 const failedEvents = new Set(['bounced', 'complained', 'failed', 'suppressed']);
 const pendingEvents = new Set(['queued', 'scheduled', 'sent', 'delivery_delayed']);
@@ -51,11 +53,31 @@ export async function POST(request: Request) {
   if (!isAutomationRequest(request)) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   const env = getRuntimeEnv();
   if (!env.RESEND_API_KEY) return Response.json({ error: 'Provider unavailable' }, { status: 503 });
+  let exact: {reportId?: unknown; checksum?: unknown; expectedRecipient?: unknown} | undefined;
+  const raw = await request.text();
+  if (raw.trim()) {
+    let input;
+    try { input = JSON.parse(raw); } catch { return Response.json({error:'Invalid request'},{status:400}); }
+    // Existing callers send no body or {}; any supplied selector fails closed.
+    if (!input || typeof input !== 'object' || Array.isArray(input)) return Response.json({error:'Invalid request'},{status:400});
+    if (Object.keys(input).length) {
+      if (!ownerRehearsalIdentityMatches(env,input)) return Response.json({error:'Owner receipt identity blocked.'},{status:409});
+      exact = input;
+    }
+  }
   // Receipt readback must remain possible after LIVE_DELIVERY stops new sends.
   const db = await ensureDatabase();
   // Order by last check across both statuses. Prioritizing all accepted rows
   // would let permanent failures monopolize the batch and hide later bounces.
-  const rows = (await db.prepare(`SELECT * FROM delivery_attempts WHERE status IN ('accepted','delivered') AND created_at >= datetime('now','-30 days') ORDER BY julianday(updated_at) ASC, CASE status WHEN 'accepted' THEN 0 ELSE 1 END, id ASC LIMIT ${receiptBatchSize}`).all()).results as Record<string, string>[];
+  const rows = exact ? (await db.prepare(`SELECT a.* FROM delivery_attempts a JOIN reports r ON r.id=a.report_id
+    WHERE a.report_id=? AND a.checksum=? AND a.recipient=? AND a.status IN ('accepted','delivered')
+    AND json_extract(r.report_json,'$.report.reportId')=a.report_id
+    AND json_extract(r.report_json,'$.report.checksum')=a.checksum
+    AND json_extract(r.report_json,'$.report.customer.deliveryMode')='owner_review_only'
+    AND EXISTS(SELECT 1 FROM report_decisions d WHERE d.report_id=a.report_id AND d.checksum=a.checksum AND d.decision='approve')
+    LIMIT 1`).bind(exact.reportId,exact.checksum,exact.expectedRecipient).all()).results as Record<string,string>[] : (await db.prepare(`SELECT * FROM delivery_attempts WHERE status IN ('accepted','delivered') AND created_at >= datetime('now','-30 days') ORDER BY julianday(updated_at) ASC, CASE status WHEN 'accepted' THEN 0 ELSE 1 END, id ASC LIMIT ${receiptBatchSize}`).all()).results as Record<string, string>[];
+  if (exact && rows.length !== 1) return Response.json({error:'Exact owner delivery attempt unavailable.'},{status:409});
+  let receiptEvent: string | undefined;
   let checked = 0;
   let confirmed = 0;
   let failed = 0;
@@ -99,6 +121,7 @@ export async function POST(request: Request) {
       continue;
     }
 
+    receiptEvent = event;
     const now = new Date().toISOString();
     if (deliveredEvents.has(event)) {
       await db.batch([
@@ -128,5 +151,9 @@ export async function POST(request: Request) {
   // Partial progress is durable, but any unverified receipt still fails the run
   // visibly and preserves the existing safe one-row error response contract.
   if (firstFailureCode) return Response.json({ error: 'Provider receipt could not be verified.', code: firstFailureCode, checked, confirmed, failed }, { status: 502 });
+  if (exact) {
+    const durable = await db.prepare('SELECT status FROM delivery_attempts WHERE id=?').bind(rows[0].id).first<{status:string}>();
+    return Response.json({checked,confirmed,failed,reportId:exact.reportId,checksum:exact.checksum,deliveryStatus:durable?.status,receiptEvent});
+  }
   return Response.json({ checked, confirmed, failed });
 }

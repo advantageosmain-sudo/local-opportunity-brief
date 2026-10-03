@@ -9,6 +9,9 @@ import ts from 'typescript';
 
 const routeSource = readFileSync(new URL('../app/api/internal/automation/reconcile-delivery/route.ts', import.meta.url), 'utf8');
 const routeCode = ts.transpileModule(routeSource, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+const identityExports = {};
+const identitySource = readFileSync(new URL('../lib/owner-rehearsal.ts', import.meta.url), 'utf8');
+new Function('exports', ts.transpileModule(identitySource, {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText)(identityExports);
 const mockKey = 'unit-test-not-a-real-provider-key';
 
 function harness(t, { deliveryMode = 'customer', liveDelivery = '0', apiKey = mockKey } = {}) {
@@ -45,6 +48,7 @@ function harness(t, { deliveryMode = 'customer', liveDelivery = '0', apiKey = mo
   const require = (name) => {
     if (name === '@/db/runtime') return { ensureDatabase: async () => { databaseReads++; return db; }, getRuntimeEnv: () => ({ RESEND_API_KEY: apiKey, LIVE_DELIVERY: liveDelivery }) };
     if (name === '@/lib/internal-auth') return { isAutomationRequest: (request) => request.headers.get('authorization') === 'Bearer unit-sync-secret' };
+    if (name === '@/lib/owner-rehearsal') return identityExports;
     throw new Error(`Unexpected test import: ${name}`);
   };
   new Function('exports', 'require', routeCode)(exports, require);

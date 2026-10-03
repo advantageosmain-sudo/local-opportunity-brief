@@ -7,6 +7,10 @@ interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
   DB: D1Database;
   OWNER_EMAIL?: string;
+  OWNER_REHEARSAL_ENABLED?: string;
+  OWNER_REHEARSAL_REPORT_ID?: string;
+  OWNER_REHEARSAL_CHECKSUM?: string;
+  OWNER_REHEARSAL_RECIPIENT?: string;
   REPORT_SYNC_SECRET?: string;
   REPORT_SYNC_URL?: string;
   PAYMENTS_MODE?: "disabled" | "test";

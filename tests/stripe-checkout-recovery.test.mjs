@@ -16,6 +16,9 @@ const env={OWNER_EMAIL:'owner@example.com',PAYMENTS_PROVIDER:'stripe',PAYMENTS_M
 const customerFixture={id:CUSTOMER,lead_id:'synthetic-lead',email:'owner@example.com',business_name:'Synthetic recovery QA',profile_json:'{ "isTest": true, "deliveryConsent": false, "termsAccepted": false, "note": "preserve bytes" }',market_id:'synthetic-market',payment_customer_id:null,subscription_id:null,payment_status:'test_qa',onboarding_status:'complete',status:'test',delivery_status:'pending',require_every_review:1,first_delivered_at:null,payment_updated_at:null,created_at:'2026-10-02 20:00:00',updated_at:'2026-10-02 20:00:00'};
 const reservationFixture={customer_id:CUSTOMER,mode:'test',state:'reserved',expires_at:'9999-12-31T23:59:59.999Z',created_at:'2026-10-02T20:27:59.452Z'};
 const plain=value=>JSON.parse(JSON.stringify(value));
+const independentSnapshotDigest=detail=>createHash('sha256').update(JSON.stringify(Object.fromEntries(
+ ['attempt','customerBefore','reservationBefore'].map(name=>[name,Object.fromEntries(Object.keys(detail[name]).sort().map(key=>[key,detail[name][key]]))])
+))).digest('hex');
 class D1 {
  constructor(){this.db=new DatabaseSync(':memory:');this.beforeRun=null;this.beforeBatch=null;}
  prepare(sql){let args=[];const run=()=>{this.beforeRun?.(sql);const r=this.db.prepare(sql).run(...args);return {meta:{changes:Number(r.changes)}};};const q={bind(...v){args=v;return q;},run:async()=>run(),_run:run,first:async()=>this.db.prepare(sql).get(...args)??null,all:async()=>({results:this.db.prepare(sql).all(...args)})};return q;}
@@ -47,7 +50,8 @@ test('successful recovery atomically archives every original byte and only remov
  const before=s.snapshot();const result=await s.recover();assert.deepEqual(result,{status:'recovered',attemptId:ATTEMPT});
  assert.deepEqual(s.rows('customers'),before.customers);assert.deepEqual(s.rows('founding_reservations'),before.founding_reservations);assert.deepEqual(s.rows('stripe_checkouts'),before.stripe_checkouts.filter(a=>a.attempt_id!==ATTEMPT));
  const [audit]=s.rows('audit_events');assert.equal(audit.id,auditId);assert.equal(audit.event_type,'stripe_test_rejected_checkout_retired');assert.equal(audit.subject_id,CUSTOMER);assert.equal(audit.actor_email,'owner@example.com');
- const detail=JSON.parse(audit.detail_json);assert.equal(detail.version,1);assert.deepEqual(detail.attempt,attemptFixture);assert.equal(Buffer.compare(Buffer.from(detail.attempt.request_json),Buffer.from(attemptFixture.request_json)),0);assert.deepEqual(detail.customerBefore,customerFixture);assert.deepEqual(detail.reservationBefore,reservationFixture);
+ const detail=JSON.parse(audit.detail_json);assert.equal(detail.version,2);assert.deepEqual(detail.attempt,attemptFixture);assert.equal(Buffer.compare(Buffer.from(detail.attempt.request_json),Buffer.from(attemptFixture.request_json)),0);assert.deepEqual(detail.customerBefore,customerFixture);assert.deepEqual(detail.reservationBefore,reservationFixture);
+ assert.equal(detail.snapshotSha256,independentSnapshotDigest({attempt:attemptFixture,customerBefore:customerFixture,reservationBefore:reservationFixture}));
  assert.deepEqual({...detail.providerEvidence.sessionCheck,checkedAt:undefined},{checkedAt:undefined,pages:1,sessionsInspected:0,complete:true,matchingSessions:0});assert.ok(Number.isFinite(Date.parse(detail.providerEvidence.sessionCheck.checkedAt)));
  assert.deepEqual({...detail.providerEvidence,sessionCheck:undefined},{accountId:REJECTED_CHECKOUT.accountId,accountBinding:'pinned_sandbox_price_same_client',priceId:REJECTED_CHECKOUT.priceId,livemode:false,requestId:REJECTED_CHECKOUT.requestId,requestTime:REJECTED_CHECKOUT.requestTime,httpStatus:403,errorCode:'more_permissions_required',idempotencyKey:'lob-checkout-'+ATTEMPT,sessionCheck:undefined});
  assert.deepEqual(s.state.priceCalls,[[REJECTED_CHECKOUT.priceId]]);assert.deepEqual(s.state.lists,[[{limit:100}]]);assert.equal(s.state.creates.length,0);assert.deepEqual(s.rows('stripe_locks'),[]);
@@ -131,7 +135,7 @@ test('provider session with explicit null customer reference and metadata is val
 test('the reviewed request cannot be retired before its original expiry',async t=>{const s=setup(t),before=s.snapshot();t.mock.method(Date,'now',()=>Date.parse(attemptFixture.expires_at)-1);await assert.rejects(s.recover());assertRetained(s,before);assert.equal(s.state.priceCalls.length,0);});
 
 for(const [name,mutate] of [
- ['future check',d=>d.providerEvidence.sessionCheck.checkedAt='2099-01-01T00:00:00Z'],['non-scalar snapshot',d=>d.customerBefore.email={}], ['empty non-final scan pages',d=>d.providerEvidence.sessionCheck.pages=2], ['version',d=>d.version=2],['missing customer snapshot',d=>delete d.customerBefore],['missing reservation snapshot',d=>delete d.reservationBefore],
+ ['future check',d=>d.providerEvidence.sessionCheck.checkedAt='2099-01-01T00:00:00Z'],['non-scalar snapshot',d=>d.customerBefore.email={}], ['empty non-final scan pages',d=>d.providerEvidence.sessionCheck.pages=2], ['version',d=>d.version=3],['missing customer snapshot',d=>delete d.customerBefore],['missing reservation snapshot',d=>delete d.reservationBefore],
  ['incomplete customer snapshot',d=>delete d.customerBefore.email],['incomplete reservation snapshot',d=>delete d.reservationBefore.created_at],['incomplete attempt',d=>delete d.attempt.session_id],
  ['non-null archived session',d=>d.attempt.session_id='cs_test_existing'],['archived attempt state',d=>d.attempt.state='complete'],['archived expiry',d=>d.attempt.expires_at='2099-01-01T00:00:00Z'],
  ['archived customer identity',d=>d.customerBefore.id='qa-other'],['archived customer status',d=>d.customerBefore.status='active'],['archived payment status',d=>d.customerBefore.payment_status='test_active'],['archived subscription',d=>d.customerBefore.subscription_id='sub_existing'],['archived billing customer',d=>d.customerBefore.payment_customer_id='cus_existing'],['malformed archived profile',d=>d.customerBefore.profile_json='{'],['non-QA archived profile',d=>d.customerBefore.profile_json='{}'],['consenting archived profile',d=>d.customerBefore.profile_json='{"isTest":true,"deliveryConsent":true}'],
@@ -143,4 +147,46 @@ for(const [name,mutate] of [
 });
 test('valid archived snapshots remain authoritative after later QA subscription changes',async t=>{
  const s=setup(t);await s.recover();s.update('customers','payment_status','test_canceled');s.update('customers','subscription_id','sub_later');s.update('customers','payment_customer_id','cus_later');s.update('founding_reservations','state','paid');const before=s.snapshot();assert.equal((await s.recover()).status,'already_recovered');assertRetained(s,before);
+});
+
+for(const [name,fixture] of [['attempt',attemptFixture],['customerBefore',customerFixture],['reservationBefore',reservationFixture]])for(const [column,value] of Object.entries(fixture))test(`snapshot checksum rejects changed ${name}.${column}`,async t=>{
+ const s=setup(t);await s.recover();const detail=JSON.parse(s.rows('audit_events')[0].detail_json);
+ detail[name][column]=typeof value==='number'?value+1:value===null?'changed-null':value+'-changed';
+ s.update('audit_events','detail_json',JSON.stringify(detail));const before=s.snapshot();
+ await assert.rejects(s.recover());assertRetained(s,before);assert.equal(s.state.priceCalls.length,1);assert.equal(s.state.lists.length,1);
+});
+for(const [name,change] of [
+ ['missing checksum',d=>delete d.snapshotSha256],['wrong checksum',d=>d.snapshotSha256='0'.repeat(64)],
+ ['extra customer field',d=>d.customerBefore.unreviewed='extra'],['wrong customer field type',d=>d.customerBefore.email=42],
+ ['null required field',d=>d.customerBefore.business_name=null],['fractional integer',d=>d.customerBefore.require_every_review=0.5],
+ ['numeric reservation timestamp',d=>d.reservationBefore.created_at=123],['non-scalar field',d=>d.customerBefore.email={value:'owner@example.com'}],
+])test('snapshot format fails closed: '+name,async t=>{
+ const s=setup(t);await s.recover();const detail=JSON.parse(s.rows('audit_events')[0].detail_json);change(detail);
+ // Recompute after schema mutations to isolate exact keys/types from digest checks.
+ if(name!=='missing checksum'&&name!=='wrong checksum')detail.snapshotSha256=independentSnapshotDigest(detail);
+ s.update('audit_events','detail_json',JSON.stringify(detail));const before=s.snapshot();await assert.rejects(s.recover());assertRetained(s,before);
+});
+test('snapshot checksum preserves exact profile JSON bytes rather than only parsed meaning',async t=>{
+ const s=setup(t);await s.recover();const detail=JSON.parse(s.rows('audit_events')[0].detail_json);
+ detail.customerBefore.profile_json=JSON.stringify(JSON.parse(detail.customerBefore.profile_json));
+ s.update('audit_events','detail_json',JSON.stringify(detail));const before=s.snapshot();await assert.rejects(s.recover());assertRetained(s,before);
+});
+test('canonical snapshot checksum is independent of stored object key order',async t=>{
+ const s=setup(t);await s.recover();const detail=JSON.parse(s.rows('audit_events')[0].detail_json);
+ for(const name of ['attempt','customerBefore','reservationBefore'])detail[name]=Object.fromEntries(Object.entries(detail[name]).reverse());
+ s.update('audit_events','detail_json',JSON.stringify(detail));const before=s.snapshot();assert.equal((await s.recover()).status,'already_recovered');assertRetained(s,before);
+});
+test('legacy version 1 is explicitly unverified and never rehashed, rewritten, or compared with newer rows',async t=>{
+ const s=setup(t);await s.recover();const detail=JSON.parse(s.rows('audit_events')[0].detail_json);detail.version=1;delete detail.snapshotSha256;
+ s.update('audit_events','detail_json',JSON.stringify(detail));
+ s.update('customers','email','later@example.com');s.update('customers','business_name','Later business');s.update('customers','updated_at','2026-10-03 01:00:00');s.update('founding_reservations','state','paid');
+ s.insert('stripe_checkouts',{...attemptFixture,attempt_id:'later-checkout',request_json:'{"later":true}',session_id:'cs_test_later',state:'open'});
+ const before=s.snapshot();await assert.rejects(s.recover(),error=>error.code==='ARCHIVE_INTEGRITY_UNVERIFIED'&&error.status===409&&/historical recovery archive/.test(error.message));
+ assertRetained(s,before);assert.equal(s.state.priceCalls.length,1);assert.equal(s.state.lists.length,1);assert.deepEqual(s.rows('stripe_locks'),[]);
+});
+test('verified version 2 replay does not compare any newer customer or reservation values',async t=>{
+ const s=setup(t);await s.recover();
+ for(const [column,value] of Object.entries(customerFixture))if(column!=='id')s.update('customers',column,typeof value==='number'?value+1:value===null?'later':value+'-later');
+ for(const [column,value] of Object.entries(reservationFixture))if(!['customer_id','mode'].includes(column))s.update('founding_reservations',column,value+'-later');
+ const before=s.snapshot();assert.equal((await s.recover()).status,'already_recovered');assertRetained(s,before);assert.equal(s.state.priceCalls.length,1);
 });
