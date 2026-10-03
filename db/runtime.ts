@@ -1,3 +1,4 @@
+import type { D1Database } from "@/types/cloudflare-d1";
 import {stripeSchema} from '@/lib/stripe-payments.mjs';
 import {foundingSchema} from '@/lib/founding-capacity.mjs';
 type RuntimeEnv = {

@@ -58,8 +58,15 @@ test('QA intake cannot collide with public identities or inherit real legal cons
   const duplicate = await call('/api/owner/qa-intake', payload, owner);
   assert.equal(duplicate.status, 200);
   assert.equal((await duplicate.json()).duplicate, true);
+  const counts = () => ['customers', 'leads', 'markets', 'intake_limits'].map(table => db.db.prepare(`SELECT count(*) n FROM ${table}`).get().n);
+  const beforeFlags = counts();
+  // Include every required consent so ordinary validation cannot mask a missing QA guard.
   for (const flag of ['qa', 'isTest', 'syntheticAcknowledgement', 'qaAcknowledged']) {
-    assert.equal((await call('/api/intake', { ...fields, email: 'owner@example.com', [flag]: true })).status, 400);
+    const response = await call('/api/intake', { ...fields, email: 'owner@example.com',
+      consent: 'yes', deliveryConsent: 'yes', termsAccepted: 'yes', noGuaranteeAccepted: 'yes', [flag]: true });
+    assert.equal(response.status, 400, flag);
+    assert.equal((await response.json()).error, 'QA intake requires the owner-only test page.', flag);
+    assert.deepEqual(counts(), beforeFlags, `${flag} must not write intake records`);
   }
   const snapshot = await (await call('/api/internal/operations', null, { authorization: 'Bearer unit-sync' })).json();
   assert.equal(snapshot.summary.customerCount, 1);

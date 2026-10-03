@@ -131,3 +131,52 @@ test('subscription-created before async Checkout completion holds one pending sl
  const {reserveFoundingPlace,releaseUnpaidPlace}=await import('../lib/founding-capacity.mjs');await releaseUnpaidPlace(s.db,s.id,'test');assert.equal(s.db.db.prepare('SELECT state FROM founding_reservations').get().state,'pending');for(let i=1;i<10;i++)assert.ok(await reserveFoundingPlace(s.db,'remaining-'+i,'test'));assert.equal(await reserveFoundingPlace(s.db,'eleventh','test'),null);
  s.state.subscription.latest_invoice.status='paid';await s.process(s.event('invoice.paid','evt_pending_paid'));assert.equal(s.db.db.prepare('SELECT state FROM founding_reservations WHERE customer_id=?').get(s.id).state,'paid');
 });
+
+test('three simultaneous subscription events retain retryable contention and reconcile exactly once each',async t=>{
+ const s=setup(t);await s.subscribe();
+ let entered,finish;
+ const enteredPromise=new Promise(resolve=>{entered=resolve;});
+ const pending=new Promise(resolve=>{finish=resolve;});
+ const retrieve=s.client.subscriptions.retrieve;
+ s.client.subscriptions.retrieve=async()=>{entered();await pending;return retrieve();};
+ const first=s.process(s.event('invoice.paid','evt_concurrent_paid'));await enteredPromise;
+ for(const [type,id] of [['customer.subscription.created','evt_concurrent_created'],['checkout.session.completed','evt_concurrent_checkout']]) {
+  await assert.rejects(s.process(s.event(type,id)),e=>e.status===503&&e.code==='PAYMENT_LOCK_BUSY');
+ }
+ assert.equal(s.db.db.prepare('SELECT COUNT(*) n FROM payment_events').get().n,0);
+ assert.equal(s.row().payment_status,'test_qa');
+ finish();await first;s.client.subscriptions.retrieve=retrieve;
+ for(const [type,id] of [['customer.subscription.created','evt_concurrent_created'],['checkout.session.completed','evt_concurrent_checkout']]) {
+  assert.equal((await s.process(s.event(type,id))).status,'ACCEPTED');
+  assert.equal((await s.process(s.event(type,id))).status,'DUPLICATE_IGNORED');
+ }
+ assert.equal(s.db.db.prepare('SELECT COUNT(*) n FROM payment_events').get().n,3);
+ assert.equal(s.db.db.prepare('SELECT COUNT(*) n FROM founding_reservations').get().n,1);
+ assert.equal(s.db.db.prepare('SELECT state FROM founding_reservations').get().state,'paid');
+ assert.equal(s.db.db.prepare('SELECT COUNT(*) n FROM stripe_locks').get().n,0);
+ assert.equal(s.row().status,'test');assert.equal(JSON.parse(s.row().profile_json).deliveryConsent,false);
+});
+
+test('expired lease takeover fences the old holder and cannot delete replacement lease',async t=>{
+ const s=setup(t),id='subscription:sub_test';
+ const old=await acquireStripeLock(s.db,id);
+ s.db.db.prepare('UPDATE stripe_locks SET expires_at=0 WHERE id=?').run(id);
+ const current=await acquireStripeLock(s.db,id);assert.notEqual(current.token,old.token);
+ const {assertStripeLock}=await import('../lib/stripe-payments.mjs');
+ await assert.rejects(assertStripeLock(s.db,old),e=>e.code==='PAYMENT_LEASE_EXPIRED');
+ await releaseStripeLock(s.db,old);await assertStripeLock(s.db,current);
+ await releaseStripeLock(s.db,current);assert.equal(s.db.db.prepare('SELECT COUNT(*) n FROM stripe_locks').get().n,0);
+});
+
+for(const [type,status,paid,expected] of [
+ ['invoice.payment_failed','past_due',false,'test_past_due'],
+ ['invoice.payment_action_required','incomplete',false,'test_unpaid'],
+ ['customer.subscription.paused','paused',true,'test_unpaid'],
+ ['customer.subscription.resumed','active',true,'test_active'],
+ ['customer.subscription.deleted','canceled',true,'test_canceled'],
+ ['checkout.session.async_payment_failed','incomplete_expired',false,'test_expired'],
+])test('authoritative lifecycle reconciliation for '+type,async t=>{
+ const s=setup(t);await s.subscribe({status,paid});await s.process(s.event(type,'evt_lifecycle'));
+ assert.equal(s.row().payment_status,expected);assert.equal(s.row().status,'test');
+ assert.equal(JSON.parse(s.row().profile_json).deliveryConsent,false);
+});

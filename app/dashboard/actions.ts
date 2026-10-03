@@ -1,5 +1,7 @@
 "use server";
 
+import type { D1Database } from "@/types/cloudflare-d1";
+
 import { revalidatePath } from "next/cache";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { ensureDatabase, getRuntimeEnv } from "@/db/runtime";
