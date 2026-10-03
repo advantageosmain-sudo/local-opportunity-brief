@@ -72,6 +72,30 @@ test('actual hosted delivery guards concurrency, current customer state and immu
         assert.equal(late.status, 409, 'Cancellation committed before claim must prevent the send');
         assert.equal(db.db.prepare('SELECT status FROM delivery_attempts WHERE report_id=?').get(r.reportId), undefined);
         db.beforeRun = null;
+        // QA isolation must be checked both before and atomically during the claim.
+        for (const variant of [
+            { status: 'test', payment: 'test_active', profile: { isTest: true, deliveryConsent: false } },
+            { status: 'active', payment: 'active', profile: { isTest: true, deliveryConsent: true } },
+            { status: 'active', payment: 'active', profile: { deliveryConsent: false } },
+        ]) {
+            r = makeReport(); await install(r);
+            db.db.prepare('UPDATE customers SET status=?,payment_status=?,profile_json=? WHERE id=?').run(variant.status,variant.payment,JSON.stringify(variant.profile),r.customer.slug);
+            const before = sends;
+            assert.equal((await call('/api/internal/automation/deliver',payload(r))).status,409);
+            assert.equal(sends,before,'QA or unconsented records never reach even the mock provider');
+        }
+        for (const profile of [{isTest:true,deliveryConsent:true},{isTest:false,deliveryConsent:false}]) {
+            r = makeReport(); await install(r); let changed = false;
+            db.beforeRun = sql => { if (!changed && sql.includes('INSERT OR IGNORE INTO delivery_attempts')) {
+                changed = true;
+                db.db.prepare('UPDATE customers SET profile_json=? WHERE id=?').run(JSON.stringify(profile),r.customer.slug);
+            }};
+            const before = sends;
+            assert.equal((await call('/api/internal/automation/deliver',payload(r))).status,409);
+            assert.equal(sends,before,'A last-moment QA flag or consent revocation must block the atomic claim');
+            assert.equal(db.db.prepare('SELECT id FROM delivery_attempts WHERE report_id=?').get(r.reportId),undefined);
+            db.beforeRun = null;
+        }
         r = makeReport();
         r.opportunities = [null, null, null, null, null];
         delete r.checksum;

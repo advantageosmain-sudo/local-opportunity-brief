@@ -37,6 +37,7 @@ export async function POST(request: Request) {
      WHERE c.id=r.customer_slug AND c.status='active' AND c.payment_status='active'
        AND c.onboarding_status='complete' AND c.delivery_status!='suppressed'
        AND json_extract(c.profile_json,'$.deliveryConsent')=1
+       AND COALESCE(json_extract(c.profile_json,'$.isTest'),0)=0
        AND c.email=?
        AND (EXISTS(SELECT 1 FROM report_decisions d WHERE d.report_id=r.id AND d.checksum=? AND d.decision='approve')
          OR (c.require_every_review=0 AND c.first_delivered_at IS NOT NULL AND m.first_approved_at IS NOT NULL))
