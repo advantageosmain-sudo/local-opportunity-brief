@@ -12,6 +12,10 @@ const blockedNetworkAttempts=[];
 globalThis.fetch=async(input)=>{blockedNetworkAttempts.push(input instanceof Request?input.url:String(input));throw Error('Actual network is prohibited by this offline test process');};
 const workerModule=process.env.LOB_WORKER_MODULE??new URL('../dist/server/index.js',import.meta.url).href;
 const {default:worker}=await import(workerModule);
+// Node 22 emits node:sqlite's experimental warning asynchronously. Let module
+// startup warnings reach the normal console before the diagnostic spy starts.
+// Keep the spy strict: unexpected application logs must still fail JSON checks.
+await new Promise(resolve=>setImmediate(resolve));
 const origin='https://brief.example';
 const owner={'oai-authenticated-user-email':'owner@example.com',origin};
 const subId='sub_SYNTHETIC',providerCustomerId='cus_SYNTHETIC',attemptId='attempt-synthetic-lifecycle';
