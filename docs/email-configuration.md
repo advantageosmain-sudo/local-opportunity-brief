@@ -115,7 +115,7 @@ Minimum evidence and prerequisites:
    reportId/checksum, durable deliveryStatus and a whitelisted receiptEvent:
    accepted is still pending; delivered is verified; failed is not delivery.
    Do not infer receipt from checked/confirmed counts alone. A mismatching selector
-   or missing accepted/delivered attempt fails closed without a batch scan.
+   or missing accepted/delivered/failed attempt fails closed without a batch scan.
 7. If runtime readback lacks permission, use an already authorized supported
    provider read tool to observe the exact receipt separately, or request the
    owner's specific permission decision. Do not expand key permissions by default.

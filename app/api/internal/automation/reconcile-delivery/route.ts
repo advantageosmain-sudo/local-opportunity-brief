@@ -70,7 +70,7 @@ export async function POST(request: Request) {
   // Order by last check across both statuses. Prioritizing all accepted rows
   // would let permanent failures monopolize the batch and hide later bounces.
   const rows = exact ? (await db.prepare(`SELECT a.* FROM delivery_attempts a JOIN reports r ON r.id=a.report_id
-    WHERE a.report_id=? AND a.checksum=? AND a.recipient=? AND a.status IN ('accepted','delivered')
+    WHERE a.report_id=? AND a.checksum=? AND a.recipient=? AND a.status IN ('accepted','delivered','failed')
     AND json_extract(r.report_json,'$.report.reportId')=a.report_id
     AND json_extract(r.report_json,'$.report.checksum')=a.checksum
     AND json_extract(r.report_json,'$.report.customer.deliveryMode')='owner_review_only'
