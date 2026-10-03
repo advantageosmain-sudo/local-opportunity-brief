@@ -64,3 +64,19 @@ test('built route refuses a foreign-account price response and retains everythin
 test('built route refuses malformed provider session lists and retains everything',async t=>{const s=setup(t);await s.seed();const before=s.snapshot();s.state.pages=[{object:'list',data:[{id:'cs_test_malformed',livemode:false}],has_more:false}];await expectError(await s.call(),409);assert.deepEqual(s.snapshot(),before);});
 test('built route refuses an expired matching session on a later page',async t=>{const s=setup(t);await s.seed();const before=s.snapshot();s.state.pages=[{object:'list',data:[{id:'cs_test_unrelated',object:'checkout.session',livemode:false,status:'complete',client_reference_id:null,metadata:null}],has_more:true},{object:'list',data:[{id:'cs_test_found',object:'checkout.session',livemode:false,status:'expired',client_reference_id:null,metadata:{checkout_attempt:REJECTED_CHECKOUT.attemptId}}],has_more:false}];await expectError(await s.call(),409);assert.deepEqual(s.snapshot(),before);assert.equal(s.state.requests[2].query,'?limit=100&starting_after=cs_test_unrelated');});
 for(const operation of ['INSERT INTO audit_events','DELETE FROM stripe_checkouts','SELECT CASE'])test('built route '+operation+' failure rolls back before returning sanitized 503',async t=>{const s=setup(t);await s.seed();const before=s.snapshot();s.db.beforeRun=sql=>{if(sql.startsWith(operation))throw Error('SYNTHETIC_PRIVATE_DATABASE_ERROR');};const result=await expectError(await s.call(),503);assert.doesNotMatch(result.error,/SYNTHETIC_PRIVATE_DATABASE_ERROR/);assert.deepEqual(s.snapshot(),before);assert.deepEqual(s.rows('stripe_locks'),[]);});
+
+test('built route requires review for legacy unsealed archives without rewriting them or touching a newer checkout',async t=>{
+ const s=setup(t);await s.seed();assert.equal((await s.call()).status,200);
+ const detail=JSON.parse(s.rows('audit_events')[0].detail_json);detail.version=1;delete detail.snapshotSha256;
+ s.db.db.prepare('UPDATE audit_events SET detail_json=?').run(JSON.stringify(detail));
+ s.db.db.prepare("UPDATE customers SET payment_status='test_canceled',email='later@example.com'").run();
+ s.insert('stripe_checkouts',{...fixture,attempt_id:'later-legacy-attempt',request_json:'{"later":true}',session_id:'cs_test_later',state:'open'});
+ const before=s.snapshot();await expectError(await s.call(),409,/historical recovery archive has no full-snapshot integrity checksum/);
+ assert.deepEqual(s.snapshot(),before);assert.equal(s.state.requests.length,2);assert.deepEqual(s.rows('stripe_locks'),[]);
+});
+for(const [column,value] of [['email','changed@example.com'],['business_name','Changed archived business'],['updated_at','2026-10-03 00:00:00']])test('built route rejects changed archived customer '+column,async t=>{
+ const s=setup(t);await s.seed();assert.equal((await s.call()).status,200);
+ const detail=JSON.parse(s.rows('audit_events')[0].detail_json);detail.customerBefore[column]=value;
+ s.db.db.prepare('UPDATE audit_events SET detail_json=?').run(JSON.stringify(detail));const before=s.snapshot();await expectError(await s.call(),409,/needs review/);
+ assert.deepEqual(s.snapshot(),before);assert.equal(s.state.requests.length,2);
+});

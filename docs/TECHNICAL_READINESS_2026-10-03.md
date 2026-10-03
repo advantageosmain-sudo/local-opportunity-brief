@@ -1,9 +1,17 @@
 # Technical readiness — October 3, 2026
 
 This records the completion repair package and its evidence. Code readiness is
-not live-business authorization. At the 13:20 UTC external-state inspection,
-the public Site still served version 16 and the combined repair awaited review,
-exact-head approval, merge and deployment. Do not infer deployment from this file.
+not live-business authorization. PR11 was approved and merged as
+`c8141f21fc2859fcacdb14d59d6eb5d0a9de497a`; post-merge CI run 37127364979 passed.
+The existing Site reached version 17 at 13:49:54 UTC with unchanged environment
+revision 13. Its source tree matched the approved GitHub tree exactly. A cloud
+browser check confirmed the corrected canceled-sandbox label, zero real customers
+and disabled historical-report approval. No email was attempted.
+
+The follow-on owner-report workflow and separately pinned rehearsal gate are
+prepared changes, not yet deployed by that version. They need their own exact-head
+approval and verification. The report's chat approval is recorded, but hosted
+sync and the dashboard decision still await the corrected workflow.
 
 ## Implemented and testable
 
@@ -12,7 +20,7 @@ exact-head approval, merge and deployment. Do not infer deployment from this fil
   automation export, operations and customer delivery, including malformed data.
 - Stripe test Checkout, signed current-state reconciliation, event dedupe,
   subscription leases, hosted Portal and cancellation.
-- Complete archived-evidence validation for replay of the one reviewed rejected
+- Guarded archived-evidence validation for replay of the one reviewed rejected
   checkout; it never removes a newer attempt or replays a successful payment.
 - Privacy-safe webhook error categories without weakening failure retries.
 - Source-based five-opportunity reports, immutable sync and exact owner approval.
@@ -46,8 +54,9 @@ The refreshed draft is retained in
 `evidence/owner-test-olympia-future-2026-10-03/`. Its immutable report ID is
 `owner-test-olympia-future-2026-10-03`, checksum
 `0d1635457fbe814edbf4e374edffe7978a1629a968fdaedd31929889b923a408`.
-It has five future-only opportunities and remains pending owner approval, with
-delivery disabled. Prefer review before the October 7 preparation dates. The
+It has five future-only opportunities and received exact chat approval on October
+3 at 13:45 UTC. Its immutable packet remains pending until synchronized and the
+authenticated dashboard decision is recorded; delivery stays disabled. The
 current seven-day UTC validation gate expires after October 10 at 00:00 UTC;
 revalidate at the actual approval/send time and regenerate under a new identity
 if stale. The host-calendar-only evidence for Harvest Fest and SUP listing
@@ -68,16 +77,18 @@ not connected, so provider account/sender status was not established.
 
 ## Gates still requiring evidence or owner action
 
-1. Approve the tested combined source head before merge/deployment; verify the
-   resulting Site version and unchanged runtime gates afterward.
-2. Review the refreshed, current owner-only report's exact immutable checksum.
-   Validate freshness again at sync, approval and delivery, not just generation.
+1. Approve the follow-on source head for the parameterized frozen-owner workflow
+   and isolated owner rehearsal gate before its merge/deployment. Version 17
+   alone does not contain these changes.
+2. Synchronize the already approved exact owner packet and record its matching
+   authenticated dashboard decision. Validate freshness again at each step.
 3. Connect/verify the email provider and a permitted sender. Configure credentials
    only through the approved secure flow. New credentials or expanded access
    require their own confirmation; never paste keys into source or chat.
-4. Approve one exact report/recipient send rehearsal before temporarily enabling
-   its sender. Provider acceptance, delivered receipt and human inbox arrival
-   are separate verification levels. Keep scheduled customer sends off.
+4. The one exact report email to the owner is conditionally approved, with no
+   spending, only after sender verification and secure setup. Use the separate
+   pinned owner gate and keep customer LIVE_DELIVERY=0. Provider acceptance,
+   delivered receipt and human inbox arrival are separate verification levels.
 5. Before any public paid launch, separately establish customer consent and
    actual source coverage, owner business/legal/tax decisions, approved live
    provider configuration and spending/launch authority. No code test, synthetic

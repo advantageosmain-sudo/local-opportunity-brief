@@ -18,8 +18,26 @@ Required in the **Site's private server-side runtime settings**:
 - RESEND_API_KEY: a privately configured provider key. The current implementation
   uses this one key both to send and to retrieve sent-message status.
 - DELIVERY_FROM_EMAIL: a provider-permitted sender address.
-- LIVE_DELIVERY: keep 0 until an exact authorized send rehearsal or separately
-  approved customer launch. Both owner-only and customer sends require 1.
+- LIVE_DELIVERY: keep 0 during the owner-only rehearsal. Customer sends always
+  require 1 and a separately approved launch.
+- OWNER_REHEARSAL_ENABLED: defaults to 0. An authorized exact owner-only rehearsal
+  can set 1 while keeping LIVE_DELIVERY=0.
+- OWNER_REHEARSAL_REPORT_ID and OWNER_REHEARSAL_CHECKSUM: pin the exact approved
+  report. OWNER_REHEARSAL_RECIPIENT must exactly equal OWNER_EMAIL. All three pins
+  and request expectedRecipient must match; there is no recipient override.
+
+POST /api/internal/automation/deliver with {reportId,checksum,expectedRecipient}
+uses this narrow exception only for owner_review_only reports. Current packet
+validation, exact owner approval, QA isolation and atomic send deduplication still
+apply. Restore OWNER_REHEARSAL_ENABLED=0 after the authorized attempt. Acceptance
+is not delivery confirmation and uncertain results must not be automatically retried.
+
+POST /api/internal/automation/reconcile-delivery with the same exact selector
+reads only the approved matching owner attempt. Keep the pins for this readback;
+it works after the rehearsal switch is off or the report becomes stale. Invalid
+or partial selectors fail closed. The existing bodyless/empty-object batch call
+is unchanged. Verified owner receipts never establish customer or market delivery
+eligibility. No live send or provider receipt is proven by offline tests.
 
 Required in **GitHub Actions** when using the checked-in workflows:
 
@@ -43,11 +61,16 @@ and secure entry.
 
 ## Provider access: sending is different from receipt retrieval
 
-Resend's sending_access permission cannot perform GET /emails/:id. With the
-current single-key configuration, automated receipt reconciliation requires a
-full_access key. This access is broader than sending and must be an explicit
-owner-controlled decision. A send-only key may prove API acceptance, but cannot
-prove receipt reconciliation.
+Prefer the existing send-only key for sending. Resend's sending_access permission
+cannot perform GET /emails/:id. If an already authorized Resend connector supports
+readback, it may independently observe the exact message's receipt without
+expanding the Site key. Such an external observation is not runtime reconciliation
+and cannot be written into this database through an invented route.
+
+The current single-key runtime reconciliation requires provider read access
+(Resend full_access). Do not broaden access merely to finish a rehearsal: any new
+or expanded permission needs explicit owner approval and secure configuration.
+A send-only key may prove API acceptance, but cannot prove runtime reconciliation.
 
 A narrower future architecture could retain a restricted sending key and use
 signed provider webhooks for receipts. That webhook path is not implemented; do
@@ -78,21 +101,25 @@ Minimum evidence and prerequisites:
 2. Use a current source-validated report with deliveryMode owner_review_only.
    Synchronize it to the Site and have the authenticated owner approve its exact
    checksum. A synthetic QA customer record is not a substitute for this packet.
-3. Configure the Site values above through the secure settings flow. Keep
-   PAYMENTS_MODE disabled and scheduled customer delivery disabled.
-4. Obtain explicit approval for the exact owner send before temporarily enabling
-   the Site's LIVE_DELIVERY. The current code has no separate owner-only provider
-   switch: LIVE_DELIVERY=1 also enables the customer endpoint's existing
-   eligibility gates. Prefer an isolated private rehearsal backend/database;
-   otherwise verify no other eligible delivery is scheduled or in flight.
-5. Request hosted delivery of only that report ID/checksum. Record ACCEPTED and
-   the provider message ID first. Retrieve the matching provider receipt before
-   recording DELIVERED. Independently check the owner's inbox if inbox arrival
-   is part of the acceptance criteria.
-6. Restore LIVE_DELIVERY=0 after the authorized rehearsal. Receipt readback can
-   still be requested directly on the authenticated backend after new sends are
-   disabled. The checked-in hourly workflow itself remains controlled by its
-   GitHub LIVE_DELIVERY variable.
+3. Configure the authorized Site values through the secure settings flow. Keep
+   LIVE_DELIVERY=0, the existing payment mode, and scheduled customer delivery off.
+4. Obtain explicit approval for the exact owner send. Pin OWNER_REHEARSAL_REPORT_ID,
+   OWNER_REHEARSAL_CHECKSUM and OWNER_REHEARSAL_RECIPIENT (exactly OWNER_EMAIL),
+   then temporarily set OWNER_REHEARSAL_ENABLED=1. Never enable customer delivery
+   to perform this owner rehearsal. Configuration changes remain a separate gate.
+5. Request hosted delivery of only {reportId,checksum,expectedRecipient}. Record
+   ACCEPTED and the provider message ID first; acceptance is not delivery.
+6. Restore OWNER_REHEARSAL_ENABLED=0 after the authorized attempt, keeping
+   LIVE_DELIVERY=0. Preserve the identity pins for exact receipt readback through
+   /api/internal/automation/reconcile-delivery. A success response includes exact
+   reportId/checksum, durable deliveryStatus and a whitelisted receiptEvent:
+   accepted is still pending; delivered is verified; failed is not delivery.
+   Do not infer receipt from checked/confirmed counts alone. A mismatching selector
+   or missing accepted/delivered attempt fails closed without a batch scan.
+7. If runtime readback lacks permission, use an already authorized supported
+   provider read tool to observe the exact receipt separately, or request the
+   owner's specific permission decision. Do not expand key permissions by default.
+   Independently check the owner's inbox if inbox arrival is an acceptance criterion.
 
 Owner-only receipts cannot establish a customer's first-delivered timestamp or a
 market's first-approved timestamp. Do not turn a test payment/customer into an
