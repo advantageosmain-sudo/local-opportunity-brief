@@ -1,0 +1,53 @@
+{
+  "slug": "owner-test-olympia-future",
+  "status": "pilot",
+  "businessName": "TEST — Olympia Boutique & Gift Shop",
+  "contactName": "Owner review only — not a paying customer",
+  "deliveryEmail": "owner-review-only@local.invalid",
+  "deliveryMode": "owner_review_only",
+  "marketId": "olympia-wa",
+  "marketProfileFile": "olympia-owner-review-future-2026-10-03.json",
+  "location": {
+    "city": "Olympia",
+    "state": "WA",
+    "radiusMiles": 12
+  },
+  "geographyMode": "city_match",
+  "category": "gift-shop",
+  "profileNotice": "Fictional TEST product/audience profile with real primary-source event research checked October 3. Not a paying customer. Inventory, shop hours, demand and street-level radius are unverified. No legal or customer-delivery consent has been recorded. This local packet is pending exact owner review; no email is authorized.",
+  "products": [
+    "small gifts",
+    "jewelry",
+    "women's accessories",
+    "locally themed items",
+    "family gifts",
+    "art and stationery"
+  ],
+  "customers": [
+    "local women",
+    "gift buyers",
+    "families",
+    "visiting families",
+    "arts supporters",
+    "active adults"
+  ],
+  "voice": [
+    "warm",
+    "neighborly",
+    "useful"
+  ],
+  "exclusions": [
+    "politics",
+    "unverified discounts"
+  ],
+  "approvedSourceFiles": [
+    "olympia-future-2026-10-03.json"
+  ],
+  "subscriptionStatus": "unpaid",
+  "paymentStatus": "unpaid",
+  "intakeComplete": false,
+  "test": true,
+  "isTest": true,
+  "legalConsentRecorded": false,
+  "deliveryConsent": false
+}

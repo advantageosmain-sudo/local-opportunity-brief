@@ -1,0 +1,72 @@
+{
+  "checkedAt": "2026-10-03T13:33:48.123Z",
+  "reportId": "owner-test-olympia-future-2026-10-03",
+  "checksum": "0d1635457fbe814edbf4e374edffe7978a1629a968fdaedd31929889b923a408",
+  "asOf": "2026-10-03",
+  "deliveryMode": "owner_review_only",
+  "deliveryEligible": false,
+  "liveDelivery": false,
+  "ownerDecision": "PENDING",
+  "currentValidation": {
+    "passed": true,
+    "errors": []
+  },
+  "futureChecks": {
+    "tomorrow": {
+      "passed": true,
+      "errors": []
+    },
+    "october9": {
+      "passed": true,
+      "errors": []
+    },
+    "october10": {
+      "passed": false,
+      "errors": [
+        "Report is not current."
+      ]
+    }
+  },
+  "sourceValidation": {
+    "customer": {
+      "passed": true,
+      "errors": [],
+      "warnings": [
+        "Owner-review-only customer: live delivery is prohibited."
+      ]
+    },
+    "sources": [
+      {
+        "sourceFile": "olympia-future-2026-10-03.json",
+        "passed": true,
+        "errors": [],
+        "warnings": [],
+        "excludedCount": 0
+      }
+    ],
+    "passed": true,
+    "checkedAt": "2026-10-03T13:33:48.111Z"
+  },
+  "result": {
+    "status": "READY_FOR_OWNER_REVIEW",
+    "reportId": "owner-test-olympia-future-2026-10-03",
+    "customerSlug": "owner-test-olympia-future",
+    "outputDir": "evidence/owner-test-olympia-future-2026-10-03",
+    "dashboardPacket": "evidence/owner-test-olympia-future-2026-10-03/dashboard-sync.json",
+    "opportunities": 5,
+    "fixture": false,
+    "deliveryEligible": false,
+    "validation": {
+      "passed": true,
+      "errors": [],
+      "warnings": [],
+      "checkedAt": "2026-10-03T13:33:48.116Z"
+    },
+    "liveDelivery": false
+  },
+  "reviewTiming": "Prefer owner review before October 7 preparation dates. All events are October 10 or later, so no same-day dependency. Under current seven-day UTC age gate this exact asOf packet becomes stale after October 10 00:00:00 UTC; always revalidate immediately before approval/delivery and recheck source changes.",
+  "replacementRationale": "Original-organizer calendar confirms a distinct October10 Harvest Fest. It replaces Arts Walk without changing either previously frozen October2 or October3 packet. No duplicate season-transition entry was added.",
+  "sourceLimitations": "Harvest detail-page fetch resolved to a Facebook login/block page; only the separately accessible original-host calendar supports that item. Known cached-page and SUP address/time uncertainty remain explicit.",
+  "hostedSync": "NOT_PERFORMED",
+  "providerSend": "NOT_PERFORMED"
+}

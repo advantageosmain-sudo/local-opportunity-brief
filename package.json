@@ -12,6 +12,8 @@
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "npm run build && node --test tests/*.test.mjs automation/tests/*.test.mjs",
     "validate:artifact": "bash scripts/validate-artifact.sh",
+    "typecheck": "bash scripts/sites-env.sh -- tsc --noEmit --incremental false",
+    "types:generate": "bash scripts/sites-env.sh -- node scripts/generate-binding-types.mjs",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate",
     "business:demo": "node automation/run.mjs --customer demo-boutique --as-of 2026-08-03",

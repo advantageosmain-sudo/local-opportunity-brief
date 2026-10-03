@@ -1,0 +1,137 @@
+{
+  "scope": "Code and evidence repair only; isolated local synthetic tests; no deployment or provider operations",
+  "checked_at": "2026-10-02T12:15:39.127055+00:00",
+  "repository": "advantageosmain-sudo/local-opportunity-brief",
+  "original_pr": 7,
+  "original_head": "21895e2a5fe9f575648ac99a7613b45d30818fde",
+  "original_pr_disposition": {
+    "state": "MERGED_BEFORE_REQUEST",
+    "merged_at": "2026-10-02T11:50:31Z",
+    "merge_commit": "963daa5ea05798d93d87787d0ee4199815ce2c9a"
+  },
+  "repair_branch": "build/stripe-email-sandbox-20261002",
+  "findings": [
+    {
+      "finding": "Noncanonical Lemon Squeezy checkout path",
+      "disposition": "FIXED",
+      "proof": "Canonical single /checkout/buy/<target> validation; direct URL and built Worker no-reservation regressions"
+    },
+    {
+      "finding": "Damaged QA profiles counted as customers",
+      "disposition": "FIXED",
+      "proof": "Independent qa- identity, test_ payment and profile markers shared by the built dashboard, owner operations snapshot, automation export and direct delivery gate. Regression fixtures verify counts, safe redaction, export and delivery isolation with damaged/null/missing-flag and repaired unflagged profiles."
+    },
+    {
+      "finding": "Public QA flag probes lack valid consents",
+      "disposition": "FIXED",
+      "proof": "All four required consent fields supplied; exact QA guard error and zero table writes asserted; unflagged valid request is the positive control"
+    },
+    {
+      "finding": "Older deployment cited as post-deployment verification",
+      "disposition": "CORRECTED_WITH_VERIFICATION_BLOCKED",
+      "proof": "Final recorded target appgdep_6abf57d82b748191ba16f6dc92498b18 identified; earlier observation preserved as historical; exact final deployment verification unproven, stage 1 BLOCKED"
+    },
+    {
+      "finding": "Customer-created stage passes on Customers0/QA1",
+      "disposition": "CORRECTED_WITH_CUSTOMER_STAGE_BLOCKED",
+      "proof": "Stage 9 BLOCKED; historical synthetic QA creation retained separately; no intake-plus-payment customer claimed"
+    }
+  ],
+  "verification": {
+    "lint": {
+      "command": "npm run lint",
+      "status": "PASS"
+    },
+    "build": {
+      "command": "npm run build; also executed by npm test",
+      "status": "PASS"
+    },
+    "tests": {
+      "command": "npm test",
+      "status": "PASS",
+      "passed": 149,
+      "failed": 0
+    },
+    "targeted_tests": {
+      "passed": 16,
+      "failed": 0
+    },
+    "regression_reproduction": {
+      "original_code_failures": [
+        "noncanonical checkout path",
+        "dashboard QA counts and controls",
+        "structurally damaged profile crashes entire automation export"
+      ],
+      "status": "REPRODUCED_BEFORE_FIX_PASS_AFTER"
+    },
+    "business_checks": {
+      "status": "PASS",
+      "commands": [
+        "npm run business:demo",
+        "npm run business:pilot",
+        "node automation/run-all.mjs",
+        "node automation/run.mjs --customer owner-test-olympia --as-of 2026-10-02"
+      ],
+      "live_delivery": false
+    },
+    "typecheck": {
+      "command": "tsc --noEmit --incremental false",
+      "status": "FAIL_PREEXISTING_ERRORS_REDUCED",
+      "baseline_error_count": 9,
+      "repair_error_count": 6,
+      "new_errors": 0,
+      "remaining_diagnostics_match_baseline": true,
+      "resolved_baseline_errors": [
+        "app/api/internal/automation/customers/route.ts(7,35): error TS7006: Parameter 'c' implicitly has an 'any' type.",
+        "app/api/internal/operations/route.ts(12,282): error TS7006: Parameter 'c' implicitly has an 'any' type.",
+        "app/api/internal/operations/route.ts(12,416): error TS7006: Parameter 'c' implicitly has an 'any' type."
+      ],
+      "diagnostics_sha256": "3482576e499409c0c70eb91ea60d799b0eb3fc6be565521cce0a3433e983e5cf",
+      "errors": [
+        "app/dashboard/actions.ts(197,13): error TS2552: Cannot find name 'D1Database'. Did you mean 'IDBDatabase'?",
+        "db/runtime.ts(10,8): error TS2552: Cannot find name 'D1Database'. Did you mean 'IDBDatabase'?",
+        "site-surfaces/owner/worker/index.ts(6,11): error TS2304: Cannot find name 'Fetcher'.",
+        "site-surfaces/owner/worker/index.ts(10,7): error TS2552: Cannot find name 'D1Database'. Did you mean 'IDBDatabase'?",
+        "worker/index.ts(6,11): error TS2304: Cannot find name 'Fetcher'.",
+        "worker/index.ts(7,7): error TS2552: Cannot find name 'D1Database'. Did you mean 'IDBDatabase'?"
+      ]
+    },
+    "diff_check": "PASS",
+    "github_actions": "Validate business system passed on preceding repair head 38053faea072f67dd33a61620c56835b3c0c6bf1 (run 37004945505); structural-profile update awaits rerun at this local receipt. Final exact-head result is tracked in PR #8 checks."
+  },
+  "preserved_gates": {
+    "PAYMENTS_MODE": "disabled",
+    "LIVE_DELIVERY": "0",
+    "LIVE_CHECKOUT_VERIFIED": "0",
+    "PROVIDER_CAPACITY_VERIFIED": "0",
+    "provider_configuration_docs_changed": false
+  },
+  "external_actions": {
+    "provider_credentials_configured": false,
+    "deployment": false,
+    "checkout_activated": false,
+    "payment": false,
+    "email": false,
+    "spending": false,
+    "merge": false
+  },
+  "review_disposition": "Five inherited gaps and both Copilot follow-up findings repaired or truthfully reclassified; owner review required. No merge approval implied. Standalone typecheck still has six existing Cloudflare-global errors, reduced from nine baseline errors.",
+  "review_followups": [
+    {
+      "pr": 8,
+      "reviewed_head": "be2772db79bd823ff5c86dc0332a06f500e04945",
+      "thread_id": "PRRT_kwDOTpKP-c6oU9d9",
+      "finding": "Apply QA identity filtering consistently across internal API consumers",
+      "disposition": "FIXED; latest exact-head rereview is tracked in PR #8",
+      "repair": "Reuse shared QA classification; parse damaged profiles safely for the snapshot; filter QA and invalid JSON before automation mapping; honor identity in direct delivery; exercise all paths in the built Worker regression."
+    },
+    {
+      "pr": 8,
+      "reviewed_head": "38053faea072f67dd33a61620c56835b3c0c6bf1",
+      "thread_id": "PRRT_kwDOTpKP-c6oVFLF",
+      "finding": "Validate required profile fields before splitting products",
+      "disposition": "FIXED; latest exact-head rereview is tracked in PR #8",
+      "repair": "Validate consumed string fields and numeric radius, reject empty token lists, and omit invalid source-registry JSON/shape before mapping. Built Worker regression with parseable damaged profiles reproduces HTTP500 before the repair, then returns only the valid customer with HTTP200."
+    }
+  ]
+}

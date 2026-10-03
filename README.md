@@ -18,16 +18,23 @@ It includes:
 - Authenticated owner-only sandbox billing controls isolated from real delivery
 - Locked launch, spending, payment, email, research, and approval rules
 
+## Current technical readiness
+
+Start with `docs/TECHNICAL_READINESS_2026-10-03.md` for the current tested repair
+package, actual sandbox evidence, refreshed owner packet and remaining launch
+gates. `docs/sandbox-rehearsal-2026-10-03.md` records the completed test payment,
+signed webhook reconciliation, Portal and cancellation rehearsal.
+
 ## Stripe and email integration review
 
 See `docs/stripe-configuration.md` and `docs/email-configuration.md` for the current
 provider wiring, secure configuration plan and unverified launch gates. Code tests
-use synthetic provider boundaries; no provider end-to-end test, public deployment
-or live operation is implied.
+use synthetic provider boundaries; only the separately recorded sandbox rehearsal
+establishes provider-backed results. Neither proves live payments or email delivery.
 
 ## October 2 operational finish
 
-See `docs/OPERATIONAL_FINISH_2026-10-02.md` and `evidence/e2e-2026-10-02.json` for current scoped implementation, exact tests and unresolved provider launch gates. Public checkout and delivery remain disabled until real provider verification. The fresh Olympia owner test is preserved under `evidence/owner-test-olympia-2026-10-02/`; historical examples below are not current research.
+`docs/OPERATIONAL_FINISH_2026-10-02.md` and `evidence/e2e-2026-10-02.json` are historical snapshots, not the current provider status. Their original limitations and corrected deployment claims are preserved. The October 2 Olympia packet is historical and cannot be approved once its event dates expire. Public checkout and delivery remain disabled until their separate launch gates pass.
 
 ## Safe default state
 
@@ -55,9 +62,17 @@ Requirements:
 
 ```bash
 npm ci
+npm run typecheck
 npm run lint
 npm test
 ```
+
+`npm run typecheck` checks both application surfaces and their Worker entry points.
+D1 declarations are generated from the pinned Wrangler runtime into the
+module-scoped `types/cloudflare-d1.d.ts`, so Cloudflare globals do not override
+browser `Request`/`Response` types. Run `npm run types:generate` after upgrading
+Wrangler; keep `types/wrangler-types.jsonc` aligned with the build's compatibility
+date and flags. Generation is local and does not contact a database or deploy.
 
 The complete test suite builds the site and verifies research, report generation,
 dashboard packet integrity, duplicate delivery protection, failure diagnostics,
@@ -153,5 +168,4 @@ for public launch. See:
 Provider tests, retailer feedback, owner configuration, legal review, and public
 launch approval remain outside gates. No passing code test can silently satisfy
 those decisions.
-
 

@@ -1,19 +1,21 @@
 {
-  "scope": "Live Site verification after exact canonical deployment; local tests never substitute for provider evidence",
+  "scope": "Historical live/browser observations and artifact checks; final deployment binding is unverified. Local tests never substitute for provider evidence. The PR #7 repair has not been deployed.",
   "checks": [
     {
       "stage": 1,
       "name": "Public website loads",
       "method": "Signed-out HTTP GET customer root; expect200, content",
-      "status": "PASS",
-      "evidence": "Public browser home loaded before sign-in; public deployment appgdep_6abf52f82de0819192f9d95f0634f635"
+      "status": "BLOCKED",
+      "evidence": "Recorded target public deployment appgdep_6abf57d82b748191ba16f6dc92498b18; its post-deployment home-page verification is unproven. Earlier observation is retained in deployment_binding.historical_observation.",
+      "qualification": "Requires a browser/HTTP receipt bound to the exact target deployment before a post-deployment PASS."
     },
     {
       "stage": 2,
       "name": "Sample report loads",
       "method": "GET/sample; five opportunities, checked2026-10-02, restrictions",
       "status": "PASS",
-      "evidence": "Browser sample rendered five checked Olympia opportunities, date2026-10-02"
+      "evidence": "Browser sample rendered five checked Olympia opportunities, date2026-10-02",
+      "qualification": "Historical observation only; exact final deployment binding is unverified."
     },
     {
       "stage": 3,
@@ -21,14 +23,15 @@
       "method": "Owner-labeled valid test profile; inspect durable record via owner dashboard",
       "status": "PASS",
       "evidence": "Live owner-only synthetic QA record qa-7756c0b278365a5f4055dbf082a25b1cc3b3d8f0f18fce475ffc743a0ce30496 HTTP201; duplicate200 same ID; dashboard Customers0/QA1/Olympia market",
-      "qualification": "Synthetic owner QA uses shared validation/storage; no real contract, customer consent, payment, or delivery"
+      "qualification": "Synthetic owner QA uses shared validation/storage; no real contract, customer consent, payment, or delivery. Historical observation only; exact final deployment binding is unverified."
     },
     {
       "stage": 4,
       "name": "Invalid intake",
       "method": "Invalid email/ZIP/consent JSON must400; no record",
       "status": "PASS",
-      "evidence": "Browser tab67 invalid email/ZIP and missing consent rejected2026-10-02T06:53:32Z; dedicated authenticated QA server rejected ZZ state HTTP400"
+      "evidence": "Browser tab67 invalid email/ZIP and missing consent rejected2026-10-02T06:53:32Z; dedicated authenticated QA server rejected ZZ state HTTP400",
+      "qualification": "Historical observation only; exact final deployment binding is unverified."
     },
     {
       "stage": 5,
@@ -62,9 +65,9 @@
       "stage": 9,
       "name": "Customer created",
       "method": "Inspect test record after intake/payment",
-      "status": "PASS",
-      "evidence": "Live owner-only synthetic QA record qa-7756c0b278365a5f4055dbf082a25b1cc3b3d8f0f18fce475ffc743a0ce30496 HTTP201; duplicate200 same ID; dashboard Customers0/QA1/Olympia market",
-      "qualification": "Synthetic owner QA uses shared validation/storage; no real contract, customer consent, payment, or delivery"
+      "status": "BLOCKED",
+      "evidence": "Dashboard Customers0/QA1 proves only synthetic QA creation. No actual intake-plus-payment customer or provider payment/webhook receipt exists; checkout/payment stages 5-8 remain blocked.",
+      "qualification": "Synthetic QA creation is recorded separately in synthetic_qa_record and cannot satisfy this customer/payment stage."
     },
     {
       "stage": 10,
@@ -79,7 +82,7 @@
       "method": "Validated market_id and source pack",
       "status": "PASS",
       "evidence": "Live owner-only synthetic QA record qa-7756c0b278365a5f4055dbf082a25b1cc3b3d8f0f18fce475ffc743a0ce30496 HTTP201; duplicate200 same ID; dashboard Customers0/QA1/Olympia market",
-      "qualification": "Synthetic owner QA uses shared validation/storage; no real contract, customer consent, payment, or delivery"
+      "qualification": "Synthetic owner QA uses shared validation/storage; no real contract, customer consent, payment, or delivery. Historical observation only; exact final deployment binding is unverified."
     },
     {
       "stage": 12,
@@ -209,7 +212,8 @@
       "name": "Sync failure",
       "method": "Controlled unauthorized request rejected; no data leak; diagnostic",
       "status": "PASS",
-      "evidence": "GitHub run36975142853 app401; owner Site displays explicit credential401 failure"
+      "evidence": "GitHub run36975142853 app401; owner Site displays explicit credential401 failure",
+      "qualification": "Historical observation only; exact final deployment binding is unverified."
     },
     {
       "stage": 30,
@@ -228,6 +232,31 @@
     "Contact/policy/navigation valid",
     "Mobile visual layout NOT VERIFIED: only desktop viewport checked; CSS breakpoints inspected"
   ],
-  "status": "Partial executed evidence; PASS labels identify scope explicitly, not live business completion",
-  "checked_at": "2026-10-02T07:07:45Z"
+  "status": "Partial historical/artifact evidence; final deployment and intake-plus-payment customer remain BLOCKED. No current repair deployment or live business completion claimed.",
+  "checked_at": "2026-10-02T07:07:45Z",
+  "deployment_binding": {
+    "evidence_record": "evidence/sites-deployment-2026-10-02.json",
+    "target_deployment_id": "appgdep_6abf57d82b748191ba16f6dc92498b18",
+    "target_version_id": "appgprj_6a6c611d9f3c8191a2c415eb3fd40585~appgver_1b237eeb982c819189ad1fd816489082",
+    "target_source_commit": "1da24fc8fb5aa13d6489c3de21c5e5c2e40a957b",
+    "status": "UNVERIFIED",
+    "reason": "The home-page observation cites an older deployment. No exact-deployment post-deployment receipt proves the recorded final public version; no deployment or live recheck was performed for this repair.",
+    "historical_observation": {
+      "deployment_id": "appgdep_6abf52f82de0819192f9d95f0634f635",
+      "stage": 1,
+      "evidence": "Public browser home loaded before sign-in; public deployment appgdep_6abf52f82de0819192f9d95f0634f635",
+      "qualification": "Historical observation only; not verification of the target deployment."
+    }
+  },
+  "synthetic_qa_record": {
+    "status": "PASS",
+    "scope": "Historical owner-authenticated synthetic intake creation only; no intake-plus-payment customer exists; exact final deployment binding is unverified.",
+    "evidence": "Live owner-only synthetic QA record qa-7756c0b278365a5f4055dbf082a25b1cc3b3d8f0f18fce475ffc743a0ce30496 HTTP201; duplicate200 same ID; dashboard Customers0/QA1/Olympia market",
+    "source_record": "evidence/sites-deployment-2026-10-02.json#qa_intake",
+    "customer_count": 0,
+    "qa_records": 1,
+    "purchase": false,
+    "legal_consent_created": false,
+    "delivery": false
+  }
 }

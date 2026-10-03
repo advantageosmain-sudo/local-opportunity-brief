@@ -25,8 +25,12 @@ migration, runtime setting, key, provider object, or sharing change is involved.
 The archive ID is `stripe-checkout-recovery-71bb3487-c303-4a48-bc7f-9ea91a2f6488`.
 It retains the byte-exact request JSON and all original checkout columns for an
 explicitly approved restoration if needed. The archive must remain in place.
-A repeat returns `already_recovered` only with the matching archive; it never
-removes a newer attempt. A restored original attempt stops for further review.
+A repeat returns `already_recovered` only with a complete, internally consistent
+archive: pinned creating/session-null attempt and request bytes, original unpaid
+QA/customer/reservation snapshots, the recorded 403 evidence, and a complete
+zero-match session scan. It checks the archived snapshots rather than current
+customer state, so later legitimate billing does not invalidate the evidence.
+It never removes a newer attempt. A restored original attempt stops for review.
 
 After the recovery is verified and the owner confirms the key permission was
 saved, the separately authorized QA checkout action can create a fresh attempt
