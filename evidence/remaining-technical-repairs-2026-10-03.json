@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-03T04:40:00Z",
+  "business": "Local Opportunity Brief",
+  "baseCommit": "104777e317fb24294a24dee1ad792aa40336c4ec",
+  "scope": "Checkout recovery retained-evidence replay repair and explicit TypeScript validation only.",
+  "changes": [
+    "Reject incomplete or contradictory retained recovery archives before reporting already_recovered.",
+    "Validate archived attempt, original QA/customer/founding reservation snapshots and complete zero-match sandbox provider evidence; preserve later current billing, capacity and checkout changes.",
+    "Import official D1 types pinned to the locked workerd date; use the Vinext-compatible asset fetch contract without Cloudflare/DOM Request casts.",
+    "Add npm run typecheck and enforce it in GitHub Actions."
+  ],
+  "validation": {
+    "standalone": {
+      "lint": "PASS",
+      "typecheck": "PASS",
+      "typeErrorsBefore": 9,
+      "typeErrorsAfter": 0,
+      "productionBuild": "PASS",
+      "tests": {
+        "passed": 432,
+        "failed": 0
+      },
+      "businessDemo": "PASS",
+      "historicalPilot": "PASS",
+      "activeCustomerDryRun": "PASS: NO_ELIGIBLE_CUSTOMERS",
+      "frozenOctoberOwnerReport": "PASS: READY_FOR_OWNER_REVIEW; deliveryEligible=false",
+      "diffCheck": "PASS"
+    },
+    "combined": {
+      "purpose": "Offline integration test only; no remote merges or deployments",
+      "existingPullRequests": [
+        {
+          "number": 8,
+          "head": "7457adff063f15b5f85448d2a6d77acba3b8186b"
+        },
+        {
+          "number": 11,
+          "head": "6ae7c637a423970d1b1afd7559aeb398de454040"
+        }
+      ],
+      "lint": "PASS",
+      "typecheck": "PASS",
+      "productionBuild": "PASS",
+      "tests": {
+        "passed": 457,
+        "failed": 0
+      },
+      "businessDemo": "PASS",
+      "historicalPilot": "PASS",
+      "activeCustomerDryRun": "PASS: NO_ELIGIBLE_CUSTOMERS",
+      "frozenOctoberOwnerReport": "PASS: READY_FOR_OWNER_REVIEW; deliveryEligible=false"
+    },
+    "regressionProof": {
+      "originalSource": "104777e317fb24294a24dee1ad792aa40336c4ec/lib/stripe-checkout-recovery.mjs",
+      "cases": [
+        "missing customer snapshot",
+        "missing reservation snapshot",
+        "attempt already has session",
+        "incomplete provider session scan"
+      ],
+      "allFourFailOriginalCode": true,
+      "failure": "Missing expected rejection",
+      "repairedFocusedTests": {
+        "passed": 225,
+        "failed": 0
+      }
+    },
+    "independentReview": {
+      "disposition": "APPROVED",
+      "blockingFindings": 0,
+      "reviewer": "separate read-only agent",
+      "formalGitHubReview": false
+    },
+    "externalProviderCalls": 0
+  },
+  "currentHostedObservation": {
+    "projectId": "appgprj_6a6c611d9f3c8191a2c415eb3fd40585",
+    "siteVersion": 16,
+    "paymentsMode": "test",
+    "liveDelivery": "0",
+    "liveCheckoutVerified": "0",
+    "providerCapacityVerified": "0",
+    "realCustomers": 0,
+    "qaCustomers": 1,
+    "qaPaymentStatus": "test_canceled",
+    "deliveryAttempts": 0,
+    "reportDecisions": 0,
+    "octoberOwnerReportStatus": "pending_approval",
+    "emailSenderEntriesListed": false,
+    "note": "Secret values are redacted by Sites and not evidence of missing configuration. Read-only observations; report JSON was truncated by the bounded table viewer."
+  },
+  "boundaries": {
+    "remoteMerge": false,
+    "productionDeployment": false,
+    "providerSettingsChanged": false,
+    "emailSent": false,
+    "liveCheckoutActivated": false,
+    "customerCharge": false,
+    "spending": false,
+    "launchGateClosed": false
+  },
+  "next": "Owner review of exact repair PR heads and separately approved deployment/email sender configuration and exact owner-report send. Provider inbox/renewal evidence and business launch requirements remain unresolved."
+}

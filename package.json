@@ -13,6 +13,7 @@
     "test": "npm run build && node --test tests/*.test.mjs automation/tests/*.test.mjs",
     "validate:artifact": "bash scripts/validate-artifact.sh",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
+    "typecheck": "tsc --noEmit --incremental false",
     "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate",
     "business:demo": "node automation/run.mjs --customer demo-boutique --as-of 2026-08-03",
     "business:pilot": "node automation/run.mjs --customer founder-pilot-olympia --as-of 2026-08-03",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",
+    "@cloudflare/workers-types": "4.20260515.1",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",
