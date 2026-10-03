@@ -87,3 +87,24 @@ for(const [name,edit] of [['wrong recipient',p=>p.expectedRecipient='wrong@examp
 
 for(const flag of ['0',undefined])test('explicit owner selector requires rehearsal switch even when live delivery enabled: '+flag,async t=>{const s=setup(t);await s.seed();s.env.LIVE_DELIVERY='1';s.env.OWNER_REHEARSAL_ENABLED=flag;assert.equal((await s.call('deliver',s.payload())).status,503);assert.equal(s.state.calls.length,0);});
 test('legacy owner send without selector remains permitted by live gate',async t=>{const s=setup(t);await s.seed();s.env.LIVE_DELIVERY='1';s.env.OWNER_REHEARSAL_ENABLED='0';const p=s.payload();delete p.expectedRecipient;assert.equal((await s.call('deliver',p)).status,200);assert.equal(s.state.calls.length,1);});
+
+for (const event of ['bounced','complained','failed','suppressed','canceled']) test('exact failed receipt remains readable without resend or batch admission: '+event, async t => {
+ const s=setup(t);await s.seed();assert.equal((await s.call('deliver',s.payload())).status,200);
+ s.state.event=event;
+ const expected={checked:1,confirmed:0,failed:1,reportId:s.report.reportId,checksum:s.report.checksum,deliveryStatus:'failed',receiptEvent:event};
+ for(let attempt=0;attempt<2;attempt++){
+  const response=await s.call('reconcile-delivery',s.payload());
+  assert.equal(response.status,200);assert.deepEqual(await response.json(),expected);
+ }
+ assert.equal(s.state.calls.length,3,'One send plus two exact provider reads');
+ assert.equal(s.db.db.prepare('SELECT status FROM delivery_attempts').get().status,'failed');
+ assert.equal((await s.call('deliver',s.payload())).status,409,'Failed receipt preserves the unique send lock');
+ for(const body of [undefined,{}]){
+  const response=await s.call('reconcile-delivery',body);
+  assert.equal(response.status,200);assert.deepEqual(await response.json(),{checked:0,confirmed:0,failed:0});
+ }
+ assert.equal(s.state.calls.length,3,'Failed owner attempts remain excluded from generic batch');
+ assert.equal(s.db.db.prepare('SELECT first_delivered_at FROM customers').get().first_delivered_at,null);
+ assert.equal(s.db.db.prepare('SELECT first_approved_at FROM markets').get().first_approved_at,null);
+ assert.equal(s.db.db.prepare('SELECT delivery_status FROM customers').get().delivery_status,'pending');
+});
