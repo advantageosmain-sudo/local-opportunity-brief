@@ -57,6 +57,12 @@ test('replay is deterministic, creates no second audit, skips provider reads, an
  s.insert('stripe_checkouts',{...attemptFixture,attempt_id:'newer-attempt',request_json:'{ "newer": true }',session_id:'cs_test_newer',state:'open'});const withNew=s.snapshot();
  for(let i=0;i<3;i++)assert.deepEqual(await s.recover(),{status:'already_recovered',attemptId:ATTEMPT});assert.deepEqual(s.snapshot(),withNew);assert.equal(s.state.priceCalls.length,1);assert.equal(s.state.lists.length,1);
 });
+test('replay validates archived snapshots after a newer checkout advances customer billing and capacity',async t=>{
+ const s=setup(t);await s.recover();s.insert('stripe_checkouts',{...attemptFixture,attempt_id:'newer-paid-attempt',session_id:'cs_test_paid',state:'complete'});
+ s.update('customers','payment_status','test_canceled');s.update('customers','subscription_id','sub_test_newer');s.update('customers','payment_customer_id','cus_test_newer');s.update('founding_reservations','state','paid');
+ const before=s.snapshot();s.state.onPrice=()=>{throw Error('replay must not read provider');};s.state.onList=s.state.onPrice;
+ assert.deepEqual(await s.recover(),{status:'already_recovered',attemptId:ATTEMPT});assertRetained(s,before);assert.equal(s.state.priceCalls.length,1);assert.equal(s.state.lists.length,1);assert.deepEqual(s.rows('stripe_locks'),[]);
+});
 test('archive replay never removes a restored copy of the retired attempt',async t=>{
  const s=setup(t);await s.recover();s.insert('stripe_checkouts',attemptFixture);const before=s.snapshot();await assert.rejects(s.recover());assertRetained(s,before);
 });
@@ -68,6 +74,24 @@ for(const [name,change] of [
  ['wrong evidence request',a=>{const d=JSON.parse(a.detail_json);d.providerEvidence.requestId='req_other';a.detail_json=JSON.stringify(d);}],
  ['changed request bytes',a=>{const d=JSON.parse(a.detail_json);d.attempt.request_json+=' ';a.detail_json=JSON.stringify(d);}]
 ])test('replay rejects '+name,async t=>{const s=setup(t);await s.recover();const a=s.rows('audit_events')[0];change(a);for(const k of ['event_type','subject_id','detail_json'])s.update('audit_events',k,a[k]);const before=s.snapshot();await assert.rejects(s.recover());assertRetained(s,before);});
+
+for(const [name,change] of [
+ ['unknown archive version',d=>d.version=2],['missing attempt snapshot',d=>delete d.attempt],['missing customer snapshot',d=>delete d.customerBefore],['missing reservation snapshot',d=>delete d.reservationBefore],
+ ['non-object customer snapshot',d=>d.customerBefore=[]],['non-object reservation snapshot',d=>d.reservationBefore='reserved'],['non-string customer field',d=>d.customerBefore.email={}],['non-integer review policy',d=>d.customerBefore.require_every_review='1'],
+ ['attempt already has session',d=>d.attempt.session_id='cs_test_known'],['attempt no longer creating',d=>d.attempt.state='complete'],['changed attempt expiry',d=>d.attempt.expires_at='2026-10-02T20:58:59.451Z'],
+ ['customer snapshot wrong identity',d=>d.customerBefore.id='qa-other'],['customer snapshot malformed profile',d=>d.customerBefore.profile_json='{'],['customer snapshot non-object profile',d=>d.customerBefore.profile_json='[]'],['customer snapshot not QA',d=>d.customerBefore.profile_json='{"isTest":false}'],['customer snapshot permits delivery',d=>d.customerBefore.profile_json='{"isTest":true,"deliveryConsent":true}'],
+ ['customer snapshot real service',d=>d.customerBefore.status='active'],['customer snapshot already paid',d=>d.customerBefore.payment_status='test_active'],['customer snapshot has subscription',d=>d.customerBefore.subscription_id='sub_existing'],['customer snapshot has provider customer',d=>d.customerBefore.payment_customer_id='cus_existing'],
+ ['reservation snapshot wrong identity',d=>d.reservationBefore.customer_id='qa-other'],['reservation snapshot live mode',d=>d.reservationBefore.mode='live'],['reservation snapshot already paid',d=>d.reservationBefore.state='paid'],['reservation snapshot expires',d=>d.reservationBefore.expires_at='2099-01-01T00:00:00Z'],
+ ['missing provider evidence',d=>delete d.providerEvidence],['wrong provider account',d=>d.providerEvidence.accountId='acct_other'],['wrong provider account binding',d=>d.providerEvidence.accountBinding='unverified'],['wrong provider price',d=>d.providerEvidence.priceId='price_other'],['live provider evidence',d=>d.providerEvidence.livemode=true],['wrong provider request time',d=>d.providerEvidence.requestTime='2026-10-02T20:27:58Z'],['successful provider request',d=>d.providerEvidence.httpStatus=200],['wrong provider rejection',d=>d.providerEvidence.errorCode='different_error'],['wrong provider idempotency key',d=>d.providerEvidence.idempotencyKey='lob-checkout-newer'],
+ ['missing provider session scan',d=>delete d.providerEvidence.sessionCheck],['incomplete provider session scan',d=>d.providerEvidence.sessionCheck.complete=false],['provider matching session',d=>d.providerEvidence.sessionCheck.matchingSessions=1],['missing provider match count',d=>delete d.providerEvidence.sessionCheck.matchingSessions],['missing provider completion',d=>delete d.providerEvidence.sessionCheck.complete],['zero scan pages',d=>d.providerEvidence.sessionCheck.pages=0],['excess scan pages',d=>d.providerEvidence.sessionCheck.pages=21],['fractional scan pages',d=>d.providerEvidence.sessionCheck.pages=1.5],['negative inspected count',d=>d.providerEvidence.sessionCheck.sessionsInspected=-1],['fractional inspected count',d=>d.providerEvidence.sessionCheck.sessionsInspected=0.5],['impossible inspected count',d=>d.providerEvidence.sessionCheck.sessionsInspected=101],['inconsistent pagination counts',d=>d.providerEvidence.sessionCheck.pages=2],['invalid scan time',d=>d.providerEvidence.sessionCheck.checkedAt='not-a-date'],['scan in the future',d=>d.providerEvidence.sessionCheck.checkedAt=new Date(Date.now()+60000).toISOString()],['scan before original expiry',d=>d.providerEvidence.sessionCheck.checkedAt='2026-10-02T20:58:58.000Z']
+])test('replay rejects retained archive '+name+' without provider reads or checkout writes',async t=>{
+ const s=setup(t);await s.recover();const detail=JSON.parse(s.rows('audit_events')[0].detail_json);change(detail);s.update('audit_events','detail_json',JSON.stringify(detail));
+ const before=s.snapshot();await assert.rejects(s.recover(),/needs review/);assertRetained(s,before);assert.equal(s.state.priceCalls.length,1);assert.equal(s.state.lists.length,1);assert.deepEqual(s.rows('stripe_locks'),[]);
+});
+for(const [snapshotName,fixture] of [['attempt',attemptFixture],['customerBefore',customerFixture],['reservationBefore',reservationFixture]])for(const column of Object.keys(fixture))test(`replay rejects retained archive missing ${snapshotName}.${column}`,async t=>{
+ const s=setup(t);await s.recover();const detail=JSON.parse(s.rows('audit_events')[0].detail_json);delete detail[snapshotName][column];s.update('audit_events','detail_json',JSON.stringify(detail));
+ const before=s.snapshot();await assert.rejects(s.recover(),/needs review/);assertRetained(s,before);assert.equal(s.state.priceCalls.length,1);assert.equal(s.state.lists.length,1);
+});
 
 for(const [name,input,config] of [
  ['wrong customer',{customerId:'qa-other'},{}],['wrong attempt',{attemptId:'other'},{}],['wrong actor',{actorEmail:'intruder@example.com'},{}],['missing actor',{actorEmail:''},{}],['missing owner',{}, {OWNER_EMAIL:undefined}],
