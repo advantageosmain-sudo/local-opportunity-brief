@@ -72,9 +72,11 @@ The current single-key runtime reconciliation requires provider read access
 or expanded permission needs explicit owner approval and secure configuration.
 A send-only key may prove API acceptance, but cannot prove runtime reconciliation.
 
-A narrower future architecture could retain a restricted sending key and use
-signed provider webhooks for receipts. That webhook path is not implemented; do
-not describe it as available or enable new access silently.
+The default-off signed webhook and separate external owner-evidence paths are
+described in [Signed email receipts](signed-email-receipts.md). They retain the
+send-only key. Their code and offline tests do not establish deployed setup;
+webhook registration, signing credentials and historical recording require
+separate approval. Do not enable new access silently.
 
 Official references:
 - [API key permissions](https://resend.com/docs/api-reference/api-keys/create-api-key)

@@ -41,6 +41,7 @@ test('actual workerd receipt reads accept signal, reject HTTP failures, and neve
     });
   };
   const runtime = new Miniflare({
+    cf: false, // Never fetch workers.cloudflare.com/cf.json during local tests.
     modules: true, compatibilityDate: '2026-05-15', compatibilityFlags: ['nodejs_compat'],
     outboundService, script,
   });

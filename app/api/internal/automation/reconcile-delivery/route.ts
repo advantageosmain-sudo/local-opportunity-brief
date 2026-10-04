@@ -153,12 +153,12 @@ export async function POST(request: Request) {
     const now = new Date().toISOString();
     if (deliveredEvents.has(event)) {
       await db.batch([
-        db.prepare("UPDATE delivery_attempts SET status='delivered',updated_at=? WHERE id=?").bind(now, row.id),
-        db.prepare("UPDATE reports SET status='delivered',delivered_at=COALESCE(delivered_at,?) WHERE id=?").bind(now, row.report_id),
-        db.prepare("UPDATE customers SET first_delivered_at=COALESCE(first_delivered_at,?) WHERE id=(SELECT customer_slug FROM reports WHERE id=? AND json_extract(report_json,'$.report.customer.deliveryMode')='customer') AND email=?").bind(now, row.report_id, row.recipient),
-        db.prepare("UPDATE markets SET first_approved_at=COALESCE(first_approved_at,?) WHERE id=(SELECT market_id FROM customers WHERE id=(SELECT customer_slug FROM reports WHERE id=? AND json_extract(report_json,'$.report.customer.deliveryMode')='customer') AND email=?)").bind(now, row.report_id, row.recipient),
+        db.prepare("UPDATE delivery_attempts SET status='delivered',updated_at=? WHERE id=? AND status!='failed'").bind(now, row.id),
+        db.prepare("UPDATE reports SET status='delivered',delivered_at=COALESCE(delivered_at,?) WHERE id=? AND EXISTS(SELECT 1 FROM delivery_attempts a WHERE a.report_id=reports.id AND a.status='delivered')").bind(now, row.report_id),
+        db.prepare("UPDATE customers SET first_delivered_at=COALESCE(first_delivered_at,?) WHERE id=(SELECT customer_slug FROM reports WHERE id=? AND json_extract(report_json,'$.report.customer.deliveryMode')='customer' AND EXISTS(SELECT 1 FROM delivery_attempts a WHERE a.report_id=reports.id AND a.status='delivered')) AND email=?").bind(now, row.report_id, row.recipient),
+        db.prepare("UPDATE markets SET first_approved_at=COALESCE(first_approved_at,?) WHERE id=(SELECT market_id FROM customers WHERE id=(SELECT customer_slug FROM reports WHERE id=? AND json_extract(report_json,'$.report.customer.deliveryMode')='customer' AND EXISTS(SELECT 1 FROM delivery_attempts a WHERE a.report_id=reports.id AND a.status='delivered')) AND email=?)").bind(now, row.report_id, row.recipient),
       ]);
-      if (row.status === 'accepted') confirmed++;
+      if (row.status === 'accepted') { const current = await db.prepare('SELECT status FROM delivery_attempts WHERE id=?').bind(row.id).first<{status:string}>(); if(current?.status==='delivered') confirmed++; }
     } else if (failedEvents.has(event) || event === 'canceled') {
       const statements = [
         db.prepare("UPDATE delivery_attempts SET status='failed',updated_at=? WHERE id=?").bind(now, row.id),

@@ -91,8 +91,11 @@ Evidence expires at the start of UTC day `sourceCheckedAt + 14 days`; exactly
 fourteen days is expired in source, report and hosted delivery validation alike.
 The last valid complete UTC day is `sourceCheckedAt + 13 days`.
 
-Expired approved sources produce `MARKET_SOURCE_FRESHNESS_EXPIRED`; other
-currently invalid approved evidence produces `MARKET_SOURCE_INVALID`. They
+Expiration as the sole evidence defect produces `MARKET_SOURCE_FRESHNESS_EXPIRED`.
+Other defects, including expired evidence with an invalid authority or URL, produce
+`MARKET_SOURCE_INVALID`. The owner assessment preserves fixed validation reasons
+for each defect; raw error messages and source-provided values never become
+protocol reason codes. Blocked customers
 remain excluded from generation while the existing blocked-source summary,
 diagnostics and failure alert retain the service problem visibly. Assessment
 never changes saved approval, source-check dates, registry bytes or delivered

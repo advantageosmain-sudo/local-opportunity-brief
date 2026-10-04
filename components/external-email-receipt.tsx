@@ -1,0 +1,13 @@
+'use client';
+import {useState,type FormEvent} from 'react';
+export function ExternalEmailReceiptForm({reportId,checksum,recipient,providerMessageId}:{reportId:string;checksum:string;recipient:string;providerMessageId:string}){
+ const [busy,setBusy]=useState(false),[recorded,setRecorded]=useState(false),[message,setMessage]=useState('');
+ async function submit(event:FormEvent<HTMLFormElement>){
+  event.preventDefault();if(busy||recorded)return;const form=new FormData(event.currentTarget);setBusy(true);setMessage('');
+  try{const response=await fetch('/api/owner/email-receipt',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({reportId,checksum,expectedRecipient:recipient,providerMessageId,receiptEvent:'delivered',observedAt:form.get('observedAt'),evidenceChecksum:form.get('evidenceChecksum'),evidenceReference:form.get('evidenceReference'),confirmation:form.get('attestation')==='on'?'record-external-owner-verified-delivery':''})});const result=await response.json();
+   if(!response.ok){setMessage('Receipt was not recorded. Check the exact evidence, approval and recording gate.');return;}
+   setRecorded(true);setMessage(result.deliveryStatus==='failed'?'Evidence retained; the existing delivery failure remains blocked.':'Recorded as external owner-verified evidence. No email was sent.');
+  }catch{setMessage('Recording could not be confirmed. Check the receipt history before retrying.');}finally{setBusy(false);}
+ }
+ return <form onSubmit={submit}><p>Report: {reportId}</p><p style={{overflowWrap:'anywhere'}}>Report checksum: {checksum}</p><p>Recipient: {recipient}</p><p>Provider message: {providerMessageId}</p><label>Provider evidence reference <input name="evidenceReference" type="url" required readOnly value={'https://resend.com/emails/'+providerMessageId} style={{display:'block',width:'100%'}}/></label><label>Evidence SHA-256 <input name="evidenceChecksum" required pattern="[a-f0-9]{64}" maxLength={64} style={{display:'block',width:'100%'}}/></label><label>Observed at (ISO timestamp with timezone) <input name="observedAt" required placeholder="2026-10-04T02:00:00Z" style={{display:'block',width:'100%'}}/></label><label><input name="attestation" type="checkbox" required/> I reviewed this exact provider message and recipient, verified its delivered status, retained the evidence matching this hash, and approve recording it as external owner-verified evidence.</label><p><button disabled={busy||recorded}>{busy?'Recording…':recorded?'Evidence recorded':'Record exact external receipt'}</button></p><p role="status">{message}</p></form>;
+}
