@@ -18,6 +18,15 @@ It includes:
 - Authenticated owner-only sandbox billing controls isolated from real delivery
 - Locked launch, spending, payment, email, research, and approval rules
 
+## Reusable skills and agents
+
+The prioritized repo-local skills and Codex agent profiles for Product Readiness,
+Digital Product Production, and Business Records are cataloged in
+`docs/CAPABILITY_CATALOG.md`; the dated task/decision record is
+`docs/agent-capability-build-2026-10-04.md`. These reuse the existing business,
+report, approval, and records architecture and do not add a scheduler or worker.
+Run `npm run capabilities:check` to validate the instruction and agent files.
+
 ## Current technical readiness
 
 Start with `docs/TECHNICAL_READINESS_2026-10-03.md` for the current tested repair

@@ -22,7 +22,8 @@
     "business:weekly": "node automation/run.mjs",
     "business:validate": "node automation/validate.mjs",
     "business:deliver": "node automation/deliver.mjs",
-    "business:check": "node --test automation/tests/*.test.mjs"
+    "business:check": "node --test automation/tests/*.test.mjs",
+    "capabilities:check": "node scripts/validate-capabilities.mjs"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
