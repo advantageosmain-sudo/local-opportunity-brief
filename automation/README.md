@@ -23,8 +23,8 @@ resolved `sourcePacks`, keeping customer PII out of source control. Packs and
 opportunities carry the same `marketId` as the customer.
 
 Live opportunities require an official government, school, organizer, destination
-office, or customer-first-party source, opened/verified status and a check no more
-than 14 days before the report date. Events must be in the next 30 days and still
+office, or customer-first-party source, opened/verified status and a check fewer
+than 14 UTC days before the report date. Events must be in the next 30 days and still
 have a usable preparation date. Selection filters the customer's products,
 audiences and exclusions. Duplicate event evidence cannot count twice. Anything
 other than exactly five validated opportunities yields a blocked diagnostic;

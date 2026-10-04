@@ -81,3 +81,19 @@ failure. The existing diagnostic synchronization and deduplicated weekly failure
 alert can then identify an unfulfilled paid-service obligation. Empty accounts
 and QA-only accounts remain normal empty successes. This patch neither runs the
 workflow nor sends an alert.
+
+## Current evidence at export
+
+A saved `verified` status records the owner decision; it is not perpetual source
+eligibility. Each hosted export assesses the stored registry against one current
+UTC date, including its market geography, preparation window and source age.
+Evidence expires at the start of UTC day `sourceCheckedAt + 14 days`; exactly
+fourteen days is expired in source, report and hosted delivery validation alike.
+The last valid complete UTC day is `sourceCheckedAt + 13 days`.
+
+Expired approved sources produce `MARKET_SOURCE_FRESHNESS_EXPIRED`; other
+currently invalid approved evidence produces `MARKET_SOURCE_INVALID`. They
+remain excluded from generation while the existing blocked-source summary,
+diagnostics and failure alert retain the service problem visibly. Assessment
+never changes saved approval, source-check dates, registry bytes or delivered
+history. QA identities remain excluded from both customers and diagnostics.

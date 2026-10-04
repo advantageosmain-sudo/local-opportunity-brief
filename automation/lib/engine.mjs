@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 export const LOOKAHEAD_DAYS = 30;
+// Exclusive maximum: checkedAt + 14 UTC days is already expired.
 export const MAX_SOURCE_AGE_DAYS = 14;
 export const APPROVED_SOURCE_AUTHORITIES = new Set([
   "official-government",
@@ -279,7 +280,7 @@ export function validateReport(report) {
       const sourceAge = dayDifference(checkedAt, asOfDate);
       if (sourceAge < 0) {
         errors.push(`Source check is dated in the future: ${opportunity.id}`);
-      } else if (sourceAge > MAX_SOURCE_AGE_DAYS) {
+      } else if (sourceAge >= MAX_SOURCE_AGE_DAYS) {
         errors.push(`Stale source check: ${opportunity.id}`);
       }
     }

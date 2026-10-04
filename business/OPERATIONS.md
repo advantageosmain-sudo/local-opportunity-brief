@@ -23,7 +23,7 @@
 
 1. Use only approved source types in `SOURCE_POLICY.md`.
 2. Record the exact HTTPS page, source authority, checked date, and verified-access status.
-3. Reject placeholder URLs, sources older than 14 days, and events more than 30 days after the report date.
+3. Reject placeholder URLs, sources checked 14 or more UTC days ago, and events more than 30 days after the report date.
 4. Never mix demo evidence and live evidence in one report.
 5. Recheck every source before reusing a prior week’s packet.
 
