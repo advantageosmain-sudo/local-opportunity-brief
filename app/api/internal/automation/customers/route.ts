@@ -10,7 +10,12 @@ export async function GET(request: Request) {
  // Assess one UTC date for this whole export without mutating the registry.
  const asOf=currentReportDateKey();
  const assessed=rows.filter(c=>!isQaCustomer(c)).map(c=>({customer:c,assessment:assessMarketSources({id:c.market_id,city:c.market_city,state:c.market_state,status:c.market_status,source_registry_json:c.source_registry_json},{asOf})}));
- const blockedSources=assessed.filter(({assessment})=>!assessment.approved).map(({customer:c,assessment})=>({customerSlug:c.id,marketId:c.market_id,code:c.market_status==null?'MARKET_SOURCE_MISSING':assessment.reasons.includes('SOURCE_FRESHNESS_EXPIRED')?'MARKET_SOURCE_FRESHNESS_EXPIRED':!assessment.sourceValid?'MARKET_SOURCE_INVALID':'MARKET_SOURCE_APPROVAL_REQUIRED'}));
+ const blockedSources=assessed.filter(({assessment})=>!assessment.approved).map(({customer:c,assessment})=>{
+  // Freshness is actionable alone only when no other evidence defect remains.
+  // The aggregate validation marker and pending owner decision are not defects.
+  const freshnessOnly=assessment.reasons.includes('SOURCE_FRESHNESS_EXPIRED')&&assessment.reasons.every(reason=>['SOURCE_VALIDATION_FAILED','SOURCE_FRESHNESS_EXPIRED','OWNER_SOURCE_APPROVAL_REQUIRED'].includes(reason));
+  return {customerSlug:c.id,marketId:c.market_id,code:c.market_status==null?'MARKET_SOURCE_MISSING':freshnessOnly?'MARKET_SOURCE_FRESHNESS_EXPIRED':!assessment.sourceValid?'MARKET_SOURCE_INVALID':'MARKET_SOURCE_APPROVAL_REQUIRED'};
+ });
  const customers=assessed.flatMap(({customer:c,assessment})=>{
   if(!assessment.approved) return [];
   const p=readCustomerProfile(c);

@@ -8,6 +8,19 @@ import {validateCurrentReportPacket} from '../lib/report-sync.mjs';
 
 const profile={slug:'synthetic-freshness',businessName:'SYNTHETIC ONLY',deliveryEmail:'owner@example.com',deliveryMode:'owner_review_only',marketId:'synthetic-market',location:{city:'Olympia',state:'WA',radiusMiles:35},products:['gifts'],customers:['adults'],voice:['factual'],exclusions:[]};
 const asOf='2026-10-18';
+for (const [label, mutate, reason] of [
+ ['unapproved authority', p => p[0].opportunities[0].sourceAuthority='unapproved', 'SOURCE_AUTHORITY_UNAPPROVED'],
+ ['unsafe evidence URL', p => p[0].opportunities[0].sourceUrl='http://localhost/private', 'SOURCE_URL_INVALID'],
+ ['missing product tags', p => p[0].opportunities[0].productTags=[], 'SOURCE_FIELDS_MISSING'],
+]) test('mixed stale and '+label+' evidence retains both validation reasons',()=>{
+ const packs=sourcePacks(profile.marketId,{asOf,checkedAt:'2026-10-04'});mutate(packs);
+ const before=JSON.stringify(packs);
+ const result=assessMarketSources({id:profile.marketId,city:'Olympia',state:'WA',status:'verified',source_registry_json:before},{asOf});
+ assert.equal(result.approved,false);assert.equal(result.canApprove,false);
+ assert.ok(result.reasons.includes('SOURCE_FRESHNESS_EXPIRED'));
+ assert.ok(result.reasons.includes(reason),JSON.stringify(result));
+ assert.equal(JSON.stringify(packs),before);
+});
 for(const age of [13,14,15])test(`source queue, source validator and report validators agree at age ${age}`,async()=>{
  const checkedAt=new Date(Date.parse(asOf)-age*86400000).toISOString().slice(0,10),packs=sourcePacks(profile.marketId,{asOf,checkedAt});
  const expected=age<14;

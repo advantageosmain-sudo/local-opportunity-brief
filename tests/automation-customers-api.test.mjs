@@ -208,3 +208,22 @@ for(const marker of ['slug','profile','payment'])test('expired sources do not le
   if(marker==='payment')s.db.db.prepare("UPDATE customers SET payment_status='test_active'").run();
   assert.deepEqual(await (await s.call()).json(),{customers:[]});
 });
+
+for (const [label, mutate] of [
+ ['unapproved authority', packs => packs[0].opportunities[0].sourceAuthority='unapproved'],
+ ['unsafe evidence URL', packs => packs[0].opportunities[0].sourceUrl='http://localhost/private'],
+ ['missing product tags', packs => packs[0].opportunities[0].productTags=[]],
+ ['wrong market', packs => packs[0].marketId='other-market'],
+ ['invalid preparation', packs => packs[0].opportunities[0].prepareBy='2026-10-17'],
+ ['malformed second pack', packs => packs.push(null)],
+]) test('mixed stale and '+label+' evidence exports invalid rather than freshness-only diagnostics',async t=>{
+ t.mock.timers.enable({apis:['Date'],now:Date.parse('2026-10-18T12:00:00.000Z')});
+ const s=setup(t);await s.initialize();
+ s.seed('valid');
+ const packs=sourcePacks('market-mixed',{asOf:'2026-10-18',checkedAt:'2026-10-04'});mutate(packs);
+ s.seed('mixed',JSON.stringify(packs));const before=s.snapshot();
+ const body=await (await s.call()).json();
+ assert.deepEqual(body,{customers:[expectedCustomer('valid')],blockedSourceCount:1,blockedSources:[{customerSlug:'mixed',marketId:'market-mixed',code:'MARKET_SOURCE_INVALID'}]});
+ assert.equal(s.snapshot(),before);
+ assert.doesNotMatch(JSON.stringify(body.blockedSources),/email|profile|Synthetic|sourcePacks|sourceAuthority/);
+});

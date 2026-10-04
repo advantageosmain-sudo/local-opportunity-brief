@@ -91,9 +91,63 @@ Evidence expires at the start of UTC day `sourceCheckedAt + 14 days`; exactly
 fourteen days is expired in source, report and hosted delivery validation alike.
 The last valid complete UTC day is `sourceCheckedAt + 13 days`.
 
-Expired approved sources produce `MARKET_SOURCE_FRESHNESS_EXPIRED`; other
-currently invalid approved evidence produces `MARKET_SOURCE_INVALID`. They
+Expired approved sources produce `MARKET_SOURCE_FRESHNESS_EXPIRED` only when
+expiration is the sole evidence defect. Concurrent defects, such as an
+unapproved authority, unsafe evidence URL, missing fields or invalid preparation
+window, produce `MARKET_SOURCE_INVALID`. The read-only owner assessment retains
+fixed validation reason codes for every detected defect; refreshing dates alone
+cannot hide the remaining problems. Pending owner approval is recorded separately.
+Other currently invalid approved evidence also produces `MARKET_SOURCE_INVALID`. They
 remain excluded from generation while the existing blocked-source summary,
 diagnostics and failure alert retain the service problem visibly. Assessment
 never changes saved approval, source-check dates, registry bytes or delivered
 history. QA identities remain excluded from both customers and diagnostics.
+
+## Bounded operations checkpoint — October 4, 2026 UTC
+
+- Run/finding ID: `lob-source-diagnostic-discussion_r4175795996`.
+- Scope: `advantageosmain-sudo/local-opportunity-brief`; source main
+  `7ff0c646fda443d764c456b37bf3a9b0fa72e00e` (all 223 source blobs verified).
+- Source finding: PR17 review `discussion_r4175795996`, posted after merge.
+  A stale source with an unapproved authority, unsafe URL or missing required
+  tags lost the concurrent defect in assessment and exported a freshness-only
+  diagnostic. Three new regressions failed on unchanged main and passed after
+  the repair. The existing excluded/eligible decisions remain unchanged.
+- Prior checkpoint: no continuous-operations receipt or repository lock found.
+  Writes are serialized, with fresh source/approval/ref reads; there is no
+  cross-run lease. No matching open PR or repair branch existed at inspection.
+- Prepared branch: `ops/source-diagnostic-4175795996`. Exact remote head and
+  persistence verification are reported by the task result; this checkpoint
+  does not claim its own future commit has already been persisted.
+- Completed local work: fixed allowlisted source-validation reason codes,
+  retained concurrent assessment reasons, freshness-only classification only
+  when no other evidence defect remains, and nine behavioral regressions.
+- Verified: 79/79 focused offline tests, clean typecheck and lint, fresh local
+  build and artifact validation, business demo/pilot/frozen October2 validation,
+  and active-customer dry run (zero eligible local profiles, no hosted export).
+  Local runtime: Node24.19.0; GitHub validation uses Node22. No live readiness
+  conclusion follows from these checks.
+- Attempted full suite: execution was rejected by automatic approval review
+  because it attempted `workers.cloudflare.com` access outside this task's
+  GitHub-only scope. No completed full-suite PASS is claimed. No retry or
+  indirect full-suite execution is authorized by this record.
+- Review status: `PROGRESS`, with full-suite validation blocked. PR opening is
+  withheld because the existing pull-request workflow automatically runs that
+  suite. Branch pushes have no automatic deployment or validation trigger in
+  the four inspected repository workflows. No workflow is changed here.
+- Reconciled existing work: open PR8 and draft PR12 have unchanged heads and
+  no unresolved review threads; their repairs are already included through
+  merged PR11. They are left untouched. Current-main validation run
+  `37170359225` passed. Owner receipt-reconciliation run `37170582979` failed
+  HTTP502; provider-backed durable receipt remains unverified through GitHub.
+  No retry, provider call or send was performed in this cycle.
+- Blocker signature: `FULL_SUITE_SCOPE_WORKERS_CLOUDFLARE_COM`; separate
+  unresolved receipt signature `37170582979:owner_rehearsal_reconcile:HTTP502`.
+- Next step: review this exact branch, then obtain a permitted full-suite
+  verification path before opening/approving a merge PR. Continue the existing
+  receipt investigation separately without resend. Reuse this stable finding
+  and branch; do not create another repair or append unchanged hourly receipts.
+- Preserved: test billing, customer email off, owner report approval, live
+  checkout and all provider/production/spending gates. No main write, merge,
+  deployment, settings/secrets/permissions change, eligibility change, email,
+  billing action or alteration of the weekly opportunity automation.

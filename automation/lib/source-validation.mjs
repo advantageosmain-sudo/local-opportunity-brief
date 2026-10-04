@@ -46,63 +46,66 @@ export function validateCustomerProfile(customer) {
 export function validateSourcePack(source, { asOf }) {
   const errors = [];
   const warnings = [];
+  // Fixed codes preserve concurrent defects without parsing messages or IDs.
+  const codes = new Set();
+  const fail = (code, message) => { codes.add(code); errors.push(message); };
   const ids = new Set();
 
   if (!source || typeof source !== "object") {
-    return { passed: false, errors: ["Source pack must be an object."], warnings };
+    return { passed: false, errors: ["Source pack must be an object."], warnings, codes: ['SOURCE_REGISTRY_INVALID'] };
   }
   if (typeof source.fixture !== "boolean") {
-    errors.push("Source pack must explicitly declare fixture true or false.");
+    fail('SOURCE_VERIFICATION_REQUIRED', "Source pack must explicitly declare fixture true or false.");
   }
   if (!Array.isArray(source.opportunities) || source.opportunities.length === 0) {
-    errors.push("Source pack must contain at least one opportunity.");
+    fail('SOURCE_REGISTRY_INVALID', "Source pack must contain at least one opportunity.");
   }
 
   for (const opportunity of source.opportunities ?? []) {
     const id = opportunity.id ?? "unknown";
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) {
-      errors.push(`Unsafe opportunity id: ${id}`);
+      fail('SOURCE_ID_INVALID', `Unsafe opportunity id: ${id}`);
     }
-    if (ids.has(id)) errors.push(`Duplicate source opportunity: ${id}`);
+    if (ids.has(id)) fail('SOURCE_ID_DUPLICATE', `Duplicate source opportunity: ${id}`);
     ids.add(id);
 
     for (const field of ["title", "eventDate", "prepareBy", "city", "state", "sourceName", "sourceUrl", "sourceCheckedAt", "offerType"]) {
-      if (!opportunity[field]) errors.push(`Missing ${field}: ${id}`);
+      if (!opportunity[field]) fail('SOURCE_FIELDS_MISSING', `Missing ${field}: ${id}`);
     }
     for (const field of ["customerTags", "productTags"]) {
       if (!Array.isArray(opportunity[field]) || opportunity[field].length === 0) {
-        errors.push(`Missing ${field}: ${id}`);
+        fail('SOURCE_FIELDS_MISSING', `Missing ${field}: ${id}`);
       }
     }
     if (opportunity.geographyMode !== "city_match" && (!Number.isFinite(opportunity.distanceMiles) || opportunity.distanceMiles < 0)) {
-      errors.push(`Invalid distance: ${id}`);
+      fail('SOURCE_DISTANCE_INVALID', `Invalid distance: ${id}`);
     }
     if (!Number.isInteger(opportunity.sourceQuality) || opportunity.sourceQuality < 1 || opportunity.sourceQuality > 5) {
-      errors.push(`Invalid source quality: ${id}`);
+      fail('SOURCE_QUALITY_INVALID', `Invalid source quality: ${id}`);
     }
     for (const field of ["urgency", "preparationEase"]) {
-      if (!Number.isInteger(opportunity[field]) || opportunity[field] < 1 || opportunity[field] > 5) errors.push(`Invalid ${field}: ${id}`);
+      if (!Number.isInteger(opportunity[field]) || opportunity[field] < 1 || opportunity[field] > 5) fail('SOURCE_SCORE_INVALID', `Invalid ${field}: ${id}`);
     }
     if (!isDate(opportunity.eventDate) || !isDate(opportunity.prepareBy)) {
-      errors.push(`Invalid event or preparation date: ${id}`);
+      fail('SOURCE_EVENT_DATE_INVALID', `Invalid event or preparation date: ${id}`);
     }
     if (!isDate(opportunity.sourceCheckedAt)) {
-      errors.push(`Invalid source-check date: ${id}`);
+      fail('SOURCE_CHECK_DATE_REQUIRED', `Invalid source-check date: ${id}`);
     } else if (isDate(asOf)) {
       const sourceAge = daysBetween(opportunity.sourceCheckedAt, asOf);
-      if (sourceAge < 0) errors.push(`Future source-check date: ${id}`);
-      if (sourceAge >= MAX_SOURCE_AGE_DAYS) errors.push(`Stale source-check date: ${id}`);
+      if (sourceAge < 0) fail('SOURCE_CHECK_DATE_IN_FUTURE', `Future source-check date: ${id}`);
+      if (sourceAge >= MAX_SOURCE_AGE_DAYS) fail('SOURCE_FRESHNESS_EXPIRED', `Stale source-check date: ${id}`);
     }
 
     if (!source.fixture) {
       if (!isRealHttpsUrl(opportunity.sourceUrl)) {
-        errors.push(`Non-live evidence URL: ${id}`);
+        fail('SOURCE_URL_INVALID', `Non-live evidence URL: ${id}`);
       }
       if (!APPROVED_SOURCE_AUTHORITIES.has(opportunity.sourceAuthority)) {
-        errors.push(`Unapproved source authority: ${id}`);
+        fail('SOURCE_AUTHORITY_UNAPPROVED', `Unapproved source authority: ${id}`);
       }
       if (opportunity.sourceAccessStatus !== "verified") {
-        errors.push(`Source was not opened and verified: ${id}`);
+        fail('SOURCE_VERIFICATION_REQUIRED', `Source was not opened and verified: ${id}`);
       }
     }
   }
@@ -110,7 +113,7 @@ export function validateSourcePack(source, { asOf }) {
   if (source.fixture) {
     warnings.push("Fixture source pack: demonstration only.");
   }
-  return { passed: errors.length === 0, errors, warnings };
+  return { passed: errors.length === 0, errors, warnings, codes: [...codes] };
 }
 
 function isDate(value) {
@@ -143,4 +146,3 @@ function isRealHttpsUrl(value) {
     return false;
   }
 }
-
