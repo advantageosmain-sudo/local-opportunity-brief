@@ -66,6 +66,10 @@ for(const sql of ["DELETE FROM report_decisions","UPDATE reports SET report_json
  test('atomic owner claim rechecks '+sql,async t=>{const s=setup(t);await s.seed();s.db.beforeRun=q=>{if(q.includes('INSERT OR IGNORE INTO delivery_attempts'))s.db.db.exec(sql);};assert.equal((await s.call('deliver',s.payload())).status,409);assert.equal(s.state.calls.length,0);});
 test('exact owner success dedupes; receipt after gate off never activates customer',async t=>{
  const s=setup(t);await s.seed();const response=await s.call('deliver',s.payload());assert.equal(response.status,200);assert.deepEqual(await response.json(),{status:'ACCEPTED',reportId:s.report.reportId,checksum:s.report.checksum,providerMessageId:'synthetic-message',ownerTest:true});
+ const outgoing=JSON.parse(s.state.calls[0].options.body).text;
+ assert.match(outgoing,/Exact owner approval recorded/);assert.match(outgoing,/Email prepared/);
+ assert.doesNotMatch(outgoing,/PENDING_APPROVAL|Live delivery remains disabled until owner approval|owner@example.com/);
+ assert.equal(JSON.parse(s.db.db.prepare('SELECT report_json FROM reports').get().report_json).report.status,'PENDING_APPROVAL','Delivery rendering never changes the frozen snapshot');
  assert.equal((await s.call('deliver',s.payload())).status,409);assert.equal(s.state.calls.length,1);
  s.env.OWNER_REHEARSAL_ENABLED='0';
  // Receipt eligibility does not depend on the packet's date or attempt age.
@@ -132,3 +136,43 @@ test('approved alternate rehearsal recipient leaves login ownership unchanged',a
  assert.equal(s.state.calls.length,2,'Only the mocked send and exact receipt were called');
 });
 for(const recipient of ['', 'invalid', 'Name <person@example.com>', 'person@example.com\n'])test('malformed alternate recipient pin fails closed: '+JSON.stringify(recipient),async t=>{const s=setup(t);await s.seed();s.env.OWNER_REHEARSAL_RECIPIENT=recipient;const p={...s.payload(),expectedRecipient:recipient};assert.equal((await s.call('deliver',p)).status,409);assert.equal((await s.call('reconcile-delivery',p)).status,409);assert.equal(s.state.calls.length,0);});
+
+
+test('invalid approval timestamp blocks presentation before send claim or provider access',async t=>{
+ const s=setup(t);await s.seed();s.db.db.exec("UPDATE report_decisions SET decided_at='invalid'");
+ assert.equal((await s.call('deliver',s.payload())).status,409);assert.equal(s.state.calls.length,0);
+ assert.equal(s.db.db.prepare('SELECT count(*) n FROM delivery_attempts').get().n,0);
+});
+
+test('returning customer progressive review sends without inventing a fresh owner approval',async t=>{
+ const s=setup(t);s.report.customer.deliveryMode='customer';s.report.deliveryEligible=true;hash(s.report);await s.seed({approved:false});
+ s.env.LIVE_DELIVERY='1';s.env.OWNER_REHEARSAL_ENABLED='0';
+ s.db.db.exec("UPDATE customers SET first_delivered_at='2026-01-01',require_every_review=0; UPDATE markets SET first_approved_at='2026-01-01',status='verified'");
+ const response=await s.call('deliver',{reportId:s.report.reportId,checksum:s.report.checksum});assert.equal(response.status,200);
+ const outgoing=JSON.parse(s.state.calls[0].options.body).text;
+ assert.match(outgoing,/Released under the saved customer review policy; no new exact owner approval is claimed/);
+ assert.doesNotMatch(outgoing,/Exact owner approval recorded|PENDING_APPROVAL|Owner-only rehearsal/);
+ assert.equal(s.db.db.prepare('SELECT count(*) n FROM report_decisions').get().n,0);
+ assert.equal(s.state.calls.length,1);
+});
+
+for (const length of [254,255]) test(`alternate recipient maximum length ${length} is checked before claim`,async t=>{
+ const s=setup(t);await s.seed();
+ const recipient='a'.repeat(64)+'@'+'b'.repeat(63)+'.'+'c'.repeat(63)+'.'+'d'.repeat(length-193);
+ assert.equal(recipient.length,length);s.env.OWNER_REHEARSAL_RECIPIENT=recipient;s.state.expectedTo=recipient;
+ const p={...s.payload(),expectedRecipient:recipient};
+ const response=await s.call('deliver',p);assert.equal(response.status,length===254?200:409);
+ assert.equal(s.state.calls.length,length===254?1:0);
+ assert.equal(s.db.db.prepare('SELECT count(*) AS n FROM delivery_attempts').get().n,length===254?1:0);
+ if(length>254) assert.equal((await s.call('reconcile-delivery',p)).status,409);
+});
+
+for(const decision of ['reopen','revise']) for(const duringClaim of [false,true]) test(`progressive policy cannot bypass ${decision} ${duringClaim?'during claim':'before rendering'}`,async t=>{
+ const s=setup(t);s.report.customer.deliveryMode='customer';s.report.deliveryEligible=true;hash(s.report);await s.seed({approved:false});
+ s.env.LIVE_DELIVERY='1';s.env.OWNER_REHEARSAL_ENABLED='0';
+ s.db.db.exec("UPDATE customers SET first_delivered_at='2026-01-01',require_every_review=0; UPDATE markets SET first_approved_at='2026-01-01',status='verified'");
+ const block=()=>s.db.db.prepare("INSERT OR REPLACE INTO report_decisions VALUES(?, ?, ?, 'owner@example.com', ?, 'Synthetic owner hold')").run(s.report.reportId,s.report.checksum,decision,new Date().toISOString());
+ if(duringClaim)s.db.beforeRun=sql=>{if(sql.includes('INSERT OR IGNORE INTO delivery_attempts')){s.db.beforeRun=null;block();}};else block();
+ assert.equal((await s.call('deliver',{reportId:s.report.reportId,checksum:s.report.checksum})).status,409);
+ assert.equal(s.state.calls.length,0);assert.equal(s.db.db.prepare('SELECT count(*) n FROM delivery_attempts').get().n,0);
+});

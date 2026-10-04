@@ -15,9 +15,32 @@ const receiptSpacingMs = 600;
 
 type ReceiptReadback = { result: { id?: unknown; last_event?: unknown } | null; code?: never } | { code: string; result?: never };
 
+const transportErrorCodes = new Set([
+  'ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'EAI_AGAIN', 'ENOTFOUND',
+  'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_HEADERS_TIMEOUT', 'UND_ERR_BODY_TIMEOUT', 'UND_ERR_SOCKET',
+]);
+
+function receiptFailureCode(error: unknown, readingBody: boolean, timedOut: boolean): string {
+  const stage = readingBody ? 'BODY' : 'REQUEST';
+  if (timedOut) return `PROVIDER_RECEIPT_${stage}_TIMEOUT`;
+  const failure = error && typeof error === 'object' ? error as { name?: unknown; code?: unknown; cause?: unknown } : {};
+  const cause = failure.cause && typeof failure.cause === 'object' ? failure.cause as { code?: unknown } : {};
+  const codes = [failure.code, cause.code];
+  if (readingBody && failure.name === 'SyntaxError') return 'PROVIDER_RECEIPT_INVALID_JSON';
+  if (codes.some(code => typeof code === 'string' && transportErrorCodes.has(code))) return `PROVIDER_RECEIPT_${stage}_TRANSPORT_ERROR`;
+  if (failure.name === 'AbortError' || codes.includes('UND_ERR_ABORTED')) return `PROVIDER_RECEIPT_${stage}_ABORTED`;
+  if (failure.name === 'NotSupportedError' || codes.includes('UND_ERR_NOT_SUPPORTED')) return `PROVIDER_RECEIPT_${stage}_RUNTIME_UNSUPPORTED`;
+  // Fetch uses TypeError for several unrelated failures, including rejected
+  // redirects, transport errors and runtime API misuse. It is not a diagnosis.
+  // Only fixed allowlisted classifications escape; never messages or bodies.
+  if (failure.name === 'TypeError') return `PROVIDER_RECEIPT_${stage}_TYPE_ERROR`;
+  return readingBody ? 'PROVIDER_RECEIPT_BODY_READ_FAILED' : 'PROVIDER_RECEIPT_REQUEST_FAILED';
+}
+
 async function readProviderReceipt(messageId: string, apiKey: string): Promise<ReceiptReadback> {
   const controller = new AbortController();
   let readingBody = false;
+  let timedOut = false;
   let timeout: ReturnType<typeof setTimeout> | undefined;
   try {
     // Race the whole operation, not just headers. A stalled body (or a fetch
@@ -29,20 +52,23 @@ async function readProviderReceipt(messageId: string, apiKey: string): Promise<R
           signal: controller.signal,
           redirect: 'error',
         });
-        controller.signal.throwIfAborted();
+        // Avoid depending on throwIfAborted, which is not present in every
+        // fetch runtime. The deadline owns this controller's cancellation.
+        if (controller.signal.aborted) return { code: 'PROVIDER_RECEIPT_REQUEST_TIMEOUT' };
         if (!response.ok) return { code: `PROVIDER_RECEIPT_HTTP_${response.status}` };
         readingBody = true;
         return { result: await response.json() };
       })(),
       new Promise<never>((_, reject) => {
         timeout = setTimeout(() => {
+          timedOut = true;
           reject(new Error('Provider receipt deadline exceeded'));
           controller.abort();
         }, receiptTimeoutMs);
       }),
     ]);
-  } catch {
-    return { code: readingBody ? 'PROVIDER_RECEIPT_INVALID_JSON' : 'PROVIDER_RECEIPT_REQUEST_FAILED' };
+  } catch (error) {
+    return { code: receiptFailureCode(error, readingBody, timedOut) };
   } finally {
     clearTimeout(timeout);
     controller.abort();

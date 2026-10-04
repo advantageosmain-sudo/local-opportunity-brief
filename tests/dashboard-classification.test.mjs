@@ -25,6 +25,7 @@ test('dashboard excludes damaged QA identities and test payment states from cust
   const env = { DB: db, ASSETS: { fetch: async () => new Response('', { status: 404 }) }, OWNER_EMAIL: 'owner@example.com', REPORT_SYNC_SECRET: 'unit-only', PAYMENTS_MODE: 'disabled' };
   const ctx = { waitUntil() {}, passThroughOnException() {} };
   await worker.fetch(new Request('https://localhost/api/internal/operations', { headers: { authorization: 'Bearer unit-only' } }), env, ctx);
+  db.db.prepare("INSERT INTO markets(id,city,state,zip,status) VALUES('unit-market','Olympia','WA','98501','verified')").run();
   const realId = 'a'.repeat(64);
   const realProfile = JSON.stringify({ isTest: false, checkoutToken: 'unit-secret-capability', deliveryConsent: true,
     city: 'Olympia', state: 'WA', localRadius: 35, products: 'gifts', customers: 'adults', voice: 'factual', exclusions: '' });
@@ -78,6 +79,7 @@ test('automation export omits structurally damaged profiles and retains a valid 
   const valid = { city: 'Olympia', state: 'WA', products: 'gifts', customers: 'adults', voice: 'factual', exclusions: '', localRadius: 35 };
   const damaged = [{}, { ...valid, products: 42 }, { ...valid, customers: [] }, { ...valid, city: null },
     { ...valid, voice: {} }, { ...valid, localRadius: '35' }, null, []];
+  db.db.prepare("INSERT INTO markets(id,city,state,zip,status) VALUES('unit-market','Olympia','WA','98501','verified')").run();
   const realId = 'a'.repeat(64);
   for (const [index, profile] of [valid, ...damaged].entries()) {
     const id = index === 0 ? realId : index.toString(16).padStart(64, '0');

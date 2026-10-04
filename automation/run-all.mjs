@@ -4,7 +4,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { runCustomer } from "./lib/run-customer.mjs";
 import { customerEligibility } from "./lib/customer-policy.mjs";
-import { readHostedCustomers } from "./lib/hosted-client.mjs";
+import { readHostedCustomers, blockedSourceResults } from "./lib/hosted-client.mjs";
 import { chicagoDate } from "./lib/schedule.mjs";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
@@ -18,16 +18,18 @@ const includePilot = process.argv.includes("--include-pilot");
 const includeDemo = process.argv.includes("--include-demo");
 const profiles = [];
 let hostedSources = [];
+let sourceBlocks = [];
 if (hosted) {
   const payload = await readHostedCustomers();
   profiles.push(...payload.customers);
   hostedSources = payload.sourcePacks ?? [];
+  sourceBlocks = blockedSourceResults(payload, selectedCustomer);
 } else {
   for (const filename of (await readdir(path.join(root, "customers"))).sort()) {
     if (filename.endsWith(".json")) profiles.push(JSON.parse(await readFile(path.join(root, "customers", filename), "utf8")));
   }
 }
-const results = [];
+const results = [...sourceBlocks];
 const skipped = [];
 for (const profile of profiles) {
   if (selectedCustomer !== "all" && profile.slug !== selectedCustomer) continue;
@@ -41,6 +43,7 @@ const blocked = results.filter((result) => result.status === "BLOCKED");
 const summary = {
   status: blocked.length ? "BLOCKED" : results.length ? "READY_FOR_OWNER_REVIEW" : "NO_ELIGIBLE_CUSTOMERS",
   asOf, hosted, customerCount: results.length, readyCount: results.length - blocked.length, blockedCount: blocked.length,
+  blockedSourceCount: sourceBlocks.length,
   skippedCount: skipped.length, skipped, liveDelivery: false,
   dashboardPackets: results.filter((result) => result.dashboardPacket).map((result) => path.relative(process.cwd(), result.dashboardPacket)), results,
 };

@@ -1,4 +1,4 @@
-import { renderMarkdown } from "@/automation/lib/engine.mjs";
+import { renderDeliveryMarkdown } from "@/lib/delivery-presentation.mjs";
 import { ensureDatabase, getRuntimeEnv } from "@/db/runtime";
 import { isAutomationRequest } from "@/lib/internal-auth";
 import { validateCurrentReportPacket } from "@/lib/report-sync.mjs";
@@ -20,7 +20,8 @@ export async function POST(request: Request) {
  const packet=JSON.parse(String(row.report_json));
  const r=packet.report;
  if(r.reportId!==input.reportId||r.checksum!==input.checksum||r.fixture||! (await validateCurrentReportPacket(packet)).passed) return Response.json({error:'Report validation failed'},{status:409});
- const decision=await db.prepare("SELECT * FROM report_decisions WHERE report_id=? AND checksum=? AND decision='approve'").bind(r.reportId,r.checksum).first();
+ const decision=await db.prepare("SELECT * FROM report_decisions WHERE report_id=? AND checksum=?").bind(r.reportId,r.checksum).first();
+ if(decision && decision.decision!=='approve') return Response.json({error:'Owner decision blocks delivery.'},{status:409});
  const ownerTest=r.customer?.deliveryMode==='owner_review_only';
  // The rehearsal exception is exact, owner-only and independent of customer release.
  if(!ownerTest&&r.customer?.deliveryMode!=='customer') return Response.json({error:'Delivery mode blocked.'},{status:409});
@@ -33,11 +34,17 @@ export async function POST(request: Request) {
  let recipient=('expectedRecipient' in input || env.LIVE_DELIVERY!=='1') ? env.OWNER_REHEARSAL_RECIPIENT : env.OWNER_EMAIL;
  if(ownerTest) { if(!decision) return Response.json({error:'Owner test report needs exact review'},{status:409}); }
  else {
- const customer=await db.prepare('SELECT c.*,m.first_approved_at FROM customers c LEFT JOIN markets m ON c.market_id=m.id WHERE c.id=?').bind(r.customer.slug).first<Record<string,unknown>>();
- if(!customer||!customerDeliveryGate(customer,{marketApproved:Boolean(customer.first_approved_at),reportApproved:Boolean(decision),reportValid:true}).allowed) return Response.json({error:'Customer delivery gate blocked'},{status:409});
+ const customer=await db.prepare('SELECT c.*,m.first_approved_at,m.status AS market_status FROM customers c LEFT JOIN markets m ON c.market_id=m.id WHERE c.id=?').bind(r.customer.slug).first<Record<string,unknown>>();
+ if(!customer||customer.market_status!=='verified'||!customerDeliveryGate(customer,{marketApproved:Boolean(customer.first_approved_at),reportApproved:Boolean(decision),reportValid:true}).allowed) return Response.json({error:'Customer delivery gate blocked'},{status:409});
  recipient=String(customer.email);
  }
  if(!recipient||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) return Response.json({error:'Recipient invalid'},{status:409});
+ let deliveryText;
+ try {
+  // Presentation uses the separate exact decision, never the immutable snapshot status.
+  // Render before claiming so a malformed context cannot create an uncertain-send lock.
+  deliveryText=renderDeliveryMarkdown(r,packet.validation,{decision,policyAuthorized:!ownerTest&&!decision});
+ } catch { return Response.json({error:'Delivery presentation context is invalid.'},{status:409}); }
  const claimed=await db.prepare(`INSERT OR IGNORE INTO delivery_attempts(id,report_id,checksum,status,recipient)
  SELECT ?,r.id,?,'claimed',? FROM reports r
  WHERE r.id=? AND r.status IN ('pending_approval','owner_approved')
@@ -50,17 +57,18 @@ export async function POST(request: Request) {
    (?=1 AND json_extract(r.report_json,'$.report.customer.deliveryMode')='owner_review_only' AND EXISTS(SELECT 1 FROM report_decisions d WHERE d.report_id=r.id AND d.checksum=? AND d.decision='approve'))
    OR (?=0 AND json_extract(r.report_json,'$.report.customer.deliveryMode')='customer' AND EXISTS(SELECT 1 FROM customers c LEFT JOIN markets m ON c.market_id=m.id
      WHERE c.id=r.customer_slug AND c.status='active' AND c.payment_status='active'
-       AND c.onboarding_status='complete' AND c.delivery_status!='suppressed'
+       AND m.status='verified' AND c.onboarding_status='complete' AND c.delivery_status!='suppressed'
        AND json_extract(c.profile_json,'$.deliveryConsent')=1
        AND COALESCE(json_extract(c.profile_json,'$.isTest'),0)=0
        AND c.email=?
        AND (EXISTS(SELECT 1 FROM report_decisions d WHERE d.report_id=r.id AND d.checksum=? AND d.decision='approve')
-         OR (c.require_every_review=0 AND c.first_delivered_at IS NOT NULL AND m.first_approved_at IS NOT NULL))
+         OR (c.require_every_review=0 AND c.first_delivered_at IS NOT NULL AND m.first_approved_at IS NOT NULL
+           AND NOT EXISTS(SELECT 1 FROM report_decisions blocked WHERE blocked.report_id=r.id AND blocked.checksum=json_extract(r.report_json,'$.report.checksum') AND blocked.decision!='approve')))
    ))
  )`).bind(crypto.randomUUID(),r.checksum,recipient,r.reportId,r.checksum,ownerTest?1:0,r.checksum,ownerTest?1:0,recipient,r.checksum).run();
  if(claimed.meta.changes!==1) return Response.json({error:'Delivery already claimed, accepted or uncertain; inspect provider before retrying.'},{status:409});
  try {
- const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{authorization:`Bearer ${env.RESEND_API_KEY}`,'content-type':'application/json','idempotency-key':`lob/${r.reportId}`},body:JSON.stringify({from:env.DELIVERY_FROM_EMAIL,to:[recipient],subject:`Local Opportunity Brief — ${r.customer.businessName} — ${r.weekOf}`,text:renderMarkdown(r,packet.validation)+'\n\nSales and traffic are not guaranteed.'})});
+ const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{authorization:`Bearer ${env.RESEND_API_KEY}`,'content-type':'application/json','idempotency-key':`lob/${r.reportId}`},body:JSON.stringify({from:env.DELIVERY_FROM_EMAIL,to:[recipient],subject:`Local Opportunity Brief — ${r.customer.businessName} — ${r.weekOf}`,text:deliveryText+'\n\nSales and traffic are not guaranteed.'})});
  if(!response.ok) throw new Error('Provider rejected or uncertain');
  const result=await response.json() as {id?:string};
  if(!result.id) throw new Error('Message identity missing');
