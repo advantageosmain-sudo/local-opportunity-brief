@@ -208,3 +208,26 @@ for(const marker of ['slug','profile','payment'])test('expired sources do not le
   if(marker==='payment')s.db.db.prepare("UPDATE customers SET payment_status='test_active'").run();
   assert.deepEqual(await (await s.call()).json(),{customers:[]});
 });
+
+for(const [label,expired,invalid,code] of [
+ ['stale only',true,false,'MARKET_SOURCE_FRESHNESS_EXPIRED'],
+ ['invalid only',false,true,'MARKET_SOURCE_INVALID'],
+ ['stale and invalid authority',true,true,'MARKET_SOURCE_INVALID'],
+ ['current valid',false,false,null],
+])test('source export gives truthful fixed diagnostics for '+label,async t=>{
+ t.mock.timers.enable({apis:['Date'],now:Date.parse('2026-10-18T12:00:00.000Z')});
+ const s=setup(t);await s.initialize();
+ const packs=sourcePacks('market-combined',{asOf:'2026-10-18',checkedAt:expired?'2026-10-04':'2026-10-18'});
+ if(invalid)packs[0].opportunities[0].sourceAuthority='PRIVATE_UNAPPROVED_AUTHORITY';
+ s.seed('combined',JSON.stringify(packs));const before=s.snapshot();
+ const body=await (await s.call()).json();
+ assert.deepEqual(body,code?{customers:[],blockedSourceCount:1,blockedSources:[{customerSlug:'combined',marketId:'market-combined',code}]}:{customers:[expectedCustomer('combined',packs)]});
+ assert.equal(s.snapshot(),before);assert.doesNotMatch(JSON.stringify(body),/PRIVATE_UNAPPROVED_AUTHORITY/);
+});
+
+test('mixed source defects never expose QA identities or rewrite their evidence',async t=>{
+ const s=setup(t);await s.initialize();
+ const packs=sourcePacks('market-hidden',{checkedAt:'2020-01-01'});packs[0].opportunities[0].sourceAuthority='PRIVATE_QA_DEFECT';
+ s.seed('hidden',JSON.stringify(packs),{profile_json:JSON.stringify({...profile,isTest:true})});
+ const before=s.snapshot();assert.deepEqual(await (await s.call()).json(),{customers:[]});assert.equal(s.snapshot(),before);
+});

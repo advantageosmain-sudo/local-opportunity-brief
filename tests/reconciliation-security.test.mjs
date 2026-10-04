@@ -32,6 +32,7 @@ function harness(t, { deliveryMode = 'customer', liveDelivery = '0', apiKey = mo
       let args = [];
       const statement = {
         bind(...values) { args = values; return statement; },
+        async first() { return sqlite.prepare(sql).get(...args) ?? null; },
         async all() { return { results: sqlite.prepare(sql).all(...args) }; },
         async run() { return { meta: { changes: Number(sqlite.prepare(sql).run(...args).changes) } }; },
       };

@@ -15,6 +15,13 @@
       "when": 1785488834555,
       "tag": "0001_black_the_fallen",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791080503983,
+      "tag": "0002_amusing_maelstrom",
+      "breakpoints": true
     }
   ]
 }

@@ -72,3 +72,29 @@ export const paymentEvents = sqliteTable(
     ),
   ],
 );
+
+// Additive receipt lineage; existing send attempts remain the authority for identity.
+export const emailReceiptEvents = sqliteTable('email_receipt_events', {
+  eventId: text('event_id').primaryKey(),
+  attemptId: text('attempt_id').notNull(),
+  reportId: text('report_id').notNull(),
+  checksum: text('checksum').notNull(),
+  providerMessageId: text('provider_message_id').notNull(),
+  recipient: text('recipient').notNull(),
+  source: text('source').notNull(),
+  eventType: text('event_type').notNull(),
+  eventTime: integer('event_time').notNull(),
+  rank: integer('rank').notNull(),
+  payloadHash: text('payload_hash').notNull(),
+  actor: text('actor').notNull().default(''),
+  evidenceRef: text('evidence_ref').notNull().default(''),
+  processToken: text('process_token').notNull(),
+  applied: integer('applied').notNull().default(0),
+  receivedAt: text('received_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+}, table=>[index('email_receipt_attempt_idx').on(table.attemptId)]);
+export const emailReceiptState = sqliteTable('email_receipt_state', {
+  attemptId: text('attempt_id').primaryKey(),
+  eventId: text('event_id').notNull(),
+  eventTime: integer('event_time').notNull(),
+  rank: integer('rank').notNull(),
+});

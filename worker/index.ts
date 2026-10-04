@@ -7,6 +7,9 @@ interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
   DB: D1Database;
   OWNER_EMAIL?: string;
+  RESEND_WEBHOOK_ENABLED?: string;
+  RESEND_WEBHOOK_SECRET?: string;
+  OWNER_EXTERNAL_RECEIPT_ENABLED?: string;
   OWNER_REHEARSAL_ENABLED?: string;
   OWNER_REHEARSAL_REPORT_ID?: string;
   OWNER_REHEARSAL_CHECKSUM?: string;
