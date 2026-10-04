@@ -2,6 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
+import {sourcePacks} from './fixtures/source-packs.mjs';
 
 const { default: worker } = await import('../dist/server/index.js');
 const path = '/api/internal/automation/customers';
@@ -11,11 +12,7 @@ const profile = {
   products: 'gifts, apparel', customers: 'local shoppers, visitors',
   voice: 'factual', exclusions: 'no unverified claims',
 };
-const validPacks = [{
-  sourceFile: 'synthetic-registry.json', marketId: 'synthetic-market', fixture: false,
-  opportunities: [{ id: 'synthetic-event', title: 'Synthetic event', extra: { order: [2, 1] } }],
-  extra: { retained: true, unicode: 'Café', nullValue: null },
-}, { opportunities: [], extra: 'keep pack order and empty opportunity arrays' }];
+const validPacks = sourcePacks('synthetic-market');
 
 class D1 {
   constructor() { this.db = new DatabaseSync(':memory:'); }
@@ -58,7 +55,7 @@ function setup(t) {
   const insert = (table, row) => db.db.prepare(
     `INSERT INTO ${table} (${Object.keys(row).join(',')}) VALUES (${Object.keys(row).map(() => '?').join(',')})`,
   ).run(...Object.values(row));
-  const seed = (id, sourceRegistry = JSON.stringify(validPacks), overrides = {}) => {
+  const seed = (id, sourceRegistry = JSON.stringify(sourcePacks('market-' + id)), overrides = {}) => {
     insert('markets', {
       id: 'market-' + id, city: profile.city, state: profile.state, zip: '98501',
       source_registry_json: sourceRegistry, status: 'verified', first_approved_at: '2026-10-01T00:00:00Z',
@@ -81,7 +78,7 @@ function setup(t) {
   return { db, env, call, seed, snapshot, initialize };
 }
 
-function expectedCustomer(id, sourcePacks = validPacks) {
+function expectedCustomer(id, packs = sourcePacks('market-' + id)) {
   return {
     slug: id, customerId: id, businessName: 'Synthetic ' + id,
     deliveryEmail: id + '@example.com', deliveryMode: 'customer', status: 'active',
@@ -90,7 +87,7 @@ function expectedCustomer(id, sourcePacks = validPacks) {
     location: { city: 'Olympia', state: 'WA', radiusMiles: 35 },
     products: ['gifts', 'apparel'], customers: ['local shoppers', 'visitors'],
     voice: ['factual'], exclusions: ['no unverified claims'], approvedSourceFiles: [],
-    sourcePacks, ownerApprovalRequired: false,
+    sourcePacks: packs, ownerApprovalRequired: false,
   };
 }
 
@@ -151,19 +148,23 @@ for (const [name, registry] of malformedRegistries) {
     assert.equal(response.headers.get('cache-control'), 'no-store');
     assert.equal(await response.text(), JSON.stringify({
       customers: [expectedCustomer('valid-before'), expectedCustomer('valid-after')],
+      blockedSourceCount: 1, blockedSources: [{customerSlug:'malformed',marketId:'market-malformed',code:'MARKET_SOURCE_INVALID'}],
     }));
     assert.equal(s.snapshot(), before, 'Export must not repair or mutate stored rows');
   });
 }
 
-test('shape validation preserves empty registries and leaves opportunity semantics to report validation', async t => {
+test('current assessment blocks empty or invalid evidence even with saved approval', async t => {
   const s = setup(t);
   await s.initialize();
   const packs = [{ opportunities: [{ arbitrary: true }] }, { opportunities: [] }];
   s.seed('empty', '[]');
   s.seed('shape-only', JSON.stringify(packs));
   assert.equal(await (await s.call()).text(), JSON.stringify({
-    customers: [expectedCustomer('empty', []), expectedCustomer('shape-only', packs)],
+    customers: [], blockedSourceCount: 2, blockedSources: [
+      {customerSlug:'empty',marketId:'market-empty',code:'MARKET_SOURCE_INVALID'},
+      {customerSlug:'shape-only',marketId:'market-shape-only',code:'MARKET_SOURCE_INVALID'},
+    ],
   }));
 });
 
@@ -185,3 +186,25 @@ for (const status of ['pending_review', 'source_discovery_required']) {
     s.db.db.prepare("UPDATE customers SET id='qa-blocked',payment_status='test_active',status='test'").run();assert.deepEqual(await (await s.call()).json(),{customers:[]});
   });
 }
+
+for (const age of [13, 14, 15]) test(`saved source approval does not override age ${age} eligibility or mutate stored state`, async t => {
+  t.mock.timers.enable({apis:['Date'],now:Date.parse('2026-10-18T12:00:00.000Z')});
+  const s=setup(t);await s.initialize();
+  const checkedAt=new Date(Date.parse('2026-10-18T00:00:00Z')-age*86400000).toISOString().slice(0,10);
+  const packs=sourcePacks('market-boundary',{asOf:'2026-10-18',checkedAt});
+  s.seed('boundary',JSON.stringify(packs));const before=s.snapshot();
+  const body=await (await s.call()).json();
+  assert.deepEqual(body,age<14?{customers:[expectedCustomer('boundary',packs)]}:{customers:[],blockedSourceCount:1,blockedSources:[{customerSlug:'boundary',marketId:'market-boundary',code:'MARKET_SOURCE_FRESHNESS_EXPIRED'}]});
+  assert.equal(s.snapshot(),before,'Freshness assessment cannot rewrite saved approval, checked dates or registry bytes');
+  if(age>=14)assert.doesNotMatch(JSON.stringify(body),/email|profile|Synthetic|sourcePacks|sourceCheckedAt/);
+});
+
+for(const marker of ['slug','profile','payment'])test('expired sources do not leak QA records through blocked diagnostics: '+marker,async t=>{
+  const s=setup(t);await s.initialize();
+  const asOf=new Date().toISOString().slice(0,10),checkedAt=new Date(Date.parse(asOf)-15*86400000).toISOString().slice(0,10);
+  s.seed('hidden',JSON.stringify(sourcePacks('market-hidden',{asOf,checkedAt})));
+  if(marker==='slug')s.db.db.prepare("UPDATE customers SET id='qa-hidden',profile_json='{damaged'").run();
+  if(marker==='profile')s.db.db.prepare('UPDATE customers SET profile_json=?').run(JSON.stringify({...profile,isTest:true}));
+  if(marker==='payment')s.db.db.prepare("UPDATE customers SET payment_status='test_active'").run();
+  assert.deepEqual(await (await s.call()).json(),{customers:[]});
+});

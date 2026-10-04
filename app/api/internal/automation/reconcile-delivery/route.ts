@@ -50,7 +50,9 @@ async function readProviderReceipt(messageId: string, apiKey: string): Promise<R
         const response = await fetch(`https://api.resend.com/emails/${encodeURIComponent(messageId)}`, {
           headers: { authorization: `Bearer ${apiKey}` },
           signal: controller.signal,
-          redirect: 'error',
+          // Workers supports manual/follow, not error. Never follow a redirect
+          // with provider credentials; the non-2xx check below rejects all 3xx.
+          redirect: 'manual',
         });
         // Avoid depending on throwIfAborted, which is not present in every
         // fetch runtime. The deadline owns this controller's cancellation.

@@ -37,7 +37,7 @@ Reject a finding when:
 - The finding is copied from a competitor.
 - The subject appears on the customer's exclusion list.
 - The source prohibits the intended automated use.
-- The source was last checked more than 14 days before the report date.
+- The source was last checked 14 or more UTC days before the report date.
 - The event falls outside the promised 30-day research window.
 - The URL is a placeholder, reserved example domain, or local development address.
 

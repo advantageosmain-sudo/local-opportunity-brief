@@ -93,7 +93,7 @@ test('receipt route rejects unauthorized requests and missing provider configura
   assert.equal(unconfigured.databaseReads, 0);
 });
 
-for (const status of [401, 403, 404, 429, 500, 503]) {
+for (const status of [301, 302, 303, 307, 308, 401, 403, 404, 429, 500, 503]) {
   test(`provider HTTP ${status} fails visibly without retrying, leaking or clearing the delivery lock`, async (t) => {
     const h = harness(t);
     const provider = t.mock.method(globalThis, 'fetch', async () => new Response('private-provider-body', { status, headers: { 'x-private-header': 'private-header-value' } }));
@@ -192,11 +192,11 @@ for (const readingBody of [false, true]) {
   }
 }
 
-test('fetch redirect rejection represented only as TypeError remains explicitly ambiguous', async (t) => {
+test('fetch rejection represented only as TypeError remains explicitly ambiguous', async (t) => {
   const h = harness(t);
   t.mock.method(globalThis, 'fetch', async (_url, options) => {
-    assert.equal(options.redirect, 'error');
-    throw new TypeError('fetch failed', { cause: new Error('unexpected redirect') });
+    assert.equal(options.redirect, 'manual');
+    throw new TypeError('fetch failed', { cause: new Error('private-unknown-cause') });
   });
   const result = await h.call();
   assert.equal(result.status, 502);
@@ -209,7 +209,7 @@ test('readback uses bounded no-redirect requests and resolves recovered read fai
   h.sqlite.prepare("INSERT INTO diagnostics(id,system,subject_id,code) VALUES('reconcile-report1','email','report1','PROVIDER_RECEIPT_HTTP_401')").run();
   t.mock.method(globalThis, 'fetch', async (url, options) => {
     assert.equal(url, 'https://api.resend.com/emails/message1');
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     assert.ok(options.signal instanceof AbortSignal);
     assert.equal(options.headers.authorization, `Bearer ${mockKey}`);
     assert.ok(!options.method || options.method === 'GET');

@@ -91,7 +91,7 @@ export function validateSourcePack(source, { asOf }) {
     } else if (isDate(asOf)) {
       const sourceAge = daysBetween(opportunity.sourceCheckedAt, asOf);
       if (sourceAge < 0) errors.push(`Future source-check date: ${id}`);
-      if (sourceAge > MAX_SOURCE_AGE_DAYS) errors.push(`Stale source-check date: ${id}`);
+      if (sourceAge >= MAX_SOURCE_AGE_DAYS) errors.push(`Stale source-check date: ${id}`);
     }
 
     if (!source.fixture) {

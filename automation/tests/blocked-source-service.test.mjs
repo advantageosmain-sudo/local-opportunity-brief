@@ -37,12 +37,13 @@ process.on('exit',()=>writeFileSync(process.env.OFFLINE_CAPTURE,JSON.stringify(r
  return {temp,run,capture,summary:path.join(automation,'outbox/run-summary-2026-10-05.json')};
 }
 
-test('paid blocked market becomes a BLOCKED weekly run and a safe existing-protocol diagnostic without generating a report',async t=>{
- const h=await harness(t,payload),run=h.run('run-all.mjs',['--hosted','--as-of','2026-10-05']);
+for(const code of ['MARKET_SOURCE_APPROVAL_REQUIRED','MARKET_SOURCE_FRESHNESS_EXPIRED','MARKET_SOURCE_INVALID']) test('paid blocked market produces weekly diagnostics without generating a report: '+code,async t=>{
+ const currentPayload={...payload,blockedSources:[{...blocked,code}]};
+ const h=await harness(t,currentPayload),run=h.run('run-all.mjs',['--hosted','--as-of','2026-10-05']);
  assert.equal(run.status,1,run.stderr);const summary=JSON.parse(await readFile(h.summary,'utf8'));
- assert.equal(summary.status,'BLOCKED');assert.equal(summary.blockedSourceCount,1);assert.equal(summary.blockedCount,1);assert.equal(summary.readyCount,0);assert.deepEqual(summary.dashboardPackets,[]);assert.deepEqual(summary.results,blockedSourceResults(payload));
+ assert.equal(summary.status,'BLOCKED');assert.equal(summary.blockedSourceCount,1);assert.equal(summary.blockedCount,1);assert.equal(summary.readyCount,0);assert.deepEqual(summary.dashboardPackets,[]);assert.deepEqual(summary.results,blockedSourceResults(currentPayload));
  const sync=h.run('sync-dashboard.mjs',['--summary',h.summary]);assert.equal(sync.status,0,sync.stderr);
- const requests=JSON.parse(await readFile(h.capture,'utf8'));assert.equal(requests.length,1);assert.equal(requests[0].path,'/api/internal/diagnostics');assert.equal(requests[0].body.code,blocked.code);assert.equal(requests[0].body.subjectId,blocked.customerSlug);assert.doesNotMatch(JSON.stringify(requests),/PRIVATE|email|profile/);
+ const requests=JSON.parse(await readFile(h.capture,'utf8'));assert.equal(requests.length,1);assert.equal(requests[0].path,'/api/internal/diagnostics');assert.equal(requests[0].body.code,code);assert.equal(requests[0].body.subjectId,blocked.customerSlug);assert.doesNotMatch(JSON.stringify(requests),/PRIVATE|email|profile/);
  const workflow=await readFile(path.join(root,'.github/workflows/weekly-brief.yml'),'utf8');assert.match(workflow,/if: always\(\).*steps\.clock\.outputs\.enabled/);assert.match(workflow,/if: failure\(\).*steps\.clock\.outputs\.enabled/);assert.match(workflow,/github\.rest\.issues\.create/);
 });
 

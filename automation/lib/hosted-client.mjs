@@ -25,7 +25,7 @@ export function blockedSourceResults(payload, selectedCustomer = 'all') {
       !payload.blockedSources.every(entry => entry && typeof entry === 'object' && !Array.isArray(entry) &&
         typeof entry.customerSlug === 'string' && entry.customerSlug.length <= 160 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(entry.customerSlug) && !entry.customerSlug.startsWith('qa-') &&
         typeof entry.marketId === 'string' && /^[a-z0-9-]{1,160}$/.test(entry.marketId) &&
-        ['MARKET_SOURCE_MISSING','MARKET_SOURCE_APPROVAL_REQUIRED'].includes(entry.code))) {
+        ['MARKET_SOURCE_MISSING','MARKET_SOURCE_APPROVAL_REQUIRED','MARKET_SOURCE_FRESHNESS_EXPIRED','MARKET_SOURCE_INVALID'].includes(entry.code))) {
     throw new Error('Customer export has invalid blocked-source diagnostics.');
   }
   return payload.blockedSources.filter(entry => selectedCustomer === 'all' || entry.customerSlug === selectedCustomer)
