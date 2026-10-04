@@ -1,0 +1,31 @@
+# Paying-customer readiness addendum — October 3, 2026
+
+This addendum distinguishes observed rehearsal evidence from release approval. Historical readiness/checklist documents retain their original evidence dates. They contain superseded references to Lemon Squeezy, missing owner-email setup, and the old outbound-delivery GitHub environment; do not use those entries as current proof of a completed or missing gate.
+
+## Established scope
+
+- The recorded sandbox rehearsal verifies a simulated $49/month Checkout, signed payment processing, matching Portal, cancellation and continued QA isolation. The retained subscription is canceled. Provider-driven renewal/failure recovery, expiry/reuse and capacity-edge scenarios are not established by that one successful flow; their existing synthetic tests remain scoped offline evidence.
+- The owner approved `owner-test-olympia-future-2026-10-03`, checksum `0d1635457fbe814edbf4e374edffe7978a1629a968fdaedd31929889b923a408`. At 23:47 UTC the application sent that exact report to the separately approved owner destination. Provider delivery and the owner's received copy are confirmed in the task evidence. The application still recorded the attempt as `accepted` at 23:51 UTC, so durable runtime reconciliation remains a separate unresolved technical gate.
+- The narrow owner send gate was restored off, customer live delivery remained off and billing remained test-only. These are scoped owner rehearsals, not evidence of customer launch readiness.
+- The existing packet's `PENDING_APPROVAL` field is its immutable generation state. The actual owner approval and delivery attempt live separately. Do not modify the packet, its hash, historical message, original approval, or send lock to correct its presentation. Do not resend it.
+- Fresh database evidence supplied to this review contains only the canceled synthetic QA customer and QA Olympia market, with an empty source registry and no first-approved timestamp. There is no verified real customer market in that evidence. The standalone owner report does not change that fact.
+
+## Next safe technical milestones
+
+1. Repair and test the application receipt-readback failure, then verify that the already accepted exact attempt reconciles without another email, recipient change, privilege expansion or customer/market activation. Provider observation and app durable state must be labeled separately until that succeeds.
+2. Use the future-only delivery presentation view: source snapshot/generation time, exact-hash approval timestamp, and email preparation time are separate. The body is prepared before provider acceptance, so it cannot claim `DELIVERED`. Preserve the existing default renderer and frozen evidence exactly. Cover unapproved/mismatched decisions, progressive-policy labeling, timestamp semantics and immutable hash in offline tests.
+3. Prove the current weekly hosted path in a no-send rehearsal, including correctly targeted sync, eligibility exclusion, stale/empty source diagnostics, exact owner review, and safe reruns. An empty real-customer export should remain empty; do not manufacture paid status, consent or source approval. An owner-only packet sync is not proof of the active-customer weekly path.
+4. Plan separately authorized provider-backed sandbox expiry/reuse, capacity limits and renewal/failure scenarios before setting checkout-verification flags. Preserve the canceled QA subscription and retained evidence. Do not recreate billing, start a test clock or enable live charges implicitly.
+5. Verify the production sender/domain setup, receipt/suppression behavior, and a documented handling path for failed or uncertain sends before customer email release. An owner inbox success does not establish delivery to arbitrary customer domains.
+
+## Specific owner facts and decisions still needed
+
+- The owner confirmed Michelle Shipe as the seller and DeWitt, Arkansas as the business location on October 3. No street address, legal entity formation or tax registration is inferred. The owner reports no owned sending domain. The old manifest's legal-entity status is historical, not a current legal conclusion.
+- Confirm the currently published support/privacy/cancellation address, `mshipe2022@gmail.com`, is the intended monitored customer contact. The separately approved rehearsal recipient does not automatically replace it.
+- The owner selected Benton, Arkansas for the first pilot and delegated choosing a suitable real retailer. Research may prepare an owner-review pilot without contacting the business. Its actual location, inventory, service radius and source coverage must be evidenced; customer delivery consent and willingness to pay remain unestablished. The owner TEST profile is fictional and does not supply those facts.
+- Confirm the promised first-brief timing, weekly cutoff/day, $49 founding-price duration and ten-place policy, cancellation timing, and refund process. Public terms say service stops when cancellation is recorded, while billing renewals stop separately. Refund wording currently refers to a first brief being more than seven days late without fully defining the public start-date calculation; the internal proposal instead refers to its scheduled Monday. Resolve the promise before charging.
+- Confirm billing/tax configuration and obtain the intended qualified review of terms/privacy and applicable obligations. This audit supplies no legal compliance conclusion and invents no operator, address, tax registration, jurisdiction or legal approval.
+- Demonstrate an operational retention/request process, manual or automated: current public policy promises up to 90 days for declined intake, 12 months after cancellation for profiles/reports and 24 months for payment/delivery records, with stated exceptions. No scheduled retention implementation was found in this code inspection. The promise needs an accountable reviewed process; absence of an automated job alone does not prove noncompliance.
+- Collect actual retailer validation, usefulness feedback and willingness-to-pay evidence against the product's existing launch criteria. No such evidence is inferred from the owner rehearsal.
+
+None of these notes authorize a merge, deployment, provider configuration, live customer charge/email, new public collection or public business launch.

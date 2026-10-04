@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { ensureDatabase, getRuntimeEnv } from "@/db/runtime";
 import { validateCurrentReportPacket } from "@/lib/report-sync.mjs";
+import { approveExactMarketSources } from '@/lib/source-review.mjs';
 import { isCurrentOwnerReport } from "@/lib/dashboard-policy.mjs";
 
 const ALLOWED_LEAD_STATUSES = new Set([
@@ -236,11 +237,7 @@ export async function approveMarketSources(formData: FormData) {
  const market=String(formData.get('marketId')??'');
  if(!isSafeId(market)) throw new Error('Invalid market.');
  const db=await ensureDatabase();
- const row=await db.prepare('SELECT source_registry_json FROM markets WHERE id=?').bind(market).first<{source_registry_json:string}>();
- if(!row) throw new Error('Market missing.');
- const packs=JSON.parse(row.source_registry_json);
- if(!Array.isArray(packs)||!packs.length||packs.some(p=>p.fixture||!Array.isArray(p.opportunities)||p.opportunities.length<5)) throw new Error('Five source-verified opportunities are required before approval.');
- await db.batch([db.prepare("UPDATE markets SET status='verified' WHERE id=?").bind(market),auditStatement(db,'market_sources_approved',market,actor,{packs:packs.map(p=>p.sourceFile)})]);
+ await approveExactMarketSources(db,{marketId:market,sourceChecksum:String(formData.get('sourceChecksum')??''),actor});
  revalidatePath('/dashboard');
 }
 

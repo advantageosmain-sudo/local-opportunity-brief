@@ -61,7 +61,7 @@ function setup(t) {
   const seed = (id, sourceRegistry = JSON.stringify(validPacks), overrides = {}) => {
     insert('markets', {
       id: 'market-' + id, city: profile.city, state: profile.state, zip: '98501',
-      source_registry_json: sourceRegistry, first_approved_at: '2026-10-01T00:00:00Z',
+      source_registry_json: sourceRegistry, status: 'verified', first_approved_at: '2026-10-01T00:00:00Z',
     });
     insert('customers', {
       id, email: id + '@example.com', business_name: 'Synthetic ' + id,
@@ -167,12 +167,21 @@ test('shape validation preserves empty registries and leaves opportunity semanti
   }));
 });
 
-test('a missing market retains the existing empty registry export', async t => {
+test('a missing market is excluded until actual source coverage is reviewed', async t => {
   const s = setup(t);
   await s.initialize();
   s.seed('missing-market');
   s.db.db.prepare('DELETE FROM markets').run();
   assert.equal(await (await s.call()).text(), JSON.stringify({
-    customers: [{ ...expectedCustomer('missing-market', []), ownerApprovalRequired: true }],
+    customers: [], blockedSourceCount: 1, blockedSources: [{ customerSlug: 'missing-market', marketId: 'market-missing-market', code: 'MARKET_SOURCE_MISSING' }],
   }));
 });
+
+for (const status of ['pending_review', 'source_discovery_required']) {
+  test('paid active customer with '+status+' market gets explicit blocked-service diagnostics, never an eligible profile', async t => {
+    const s=setup(t);await s.initialize();s.seed('blocked');s.db.db.prepare('UPDATE markets SET status=?').run(status);
+    const body=await (await s.call()).json();assert.deepEqual(body,{customers:[],blockedSourceCount:1,blockedSources:[{customerSlug:'blocked',marketId:'market-blocked',code:'MARKET_SOURCE_APPROVAL_REQUIRED'}]});
+    assert.doesNotMatch(JSON.stringify(body),/email|profile|Synthetic|sourcePacks/);
+    s.db.db.prepare("UPDATE customers SET id='qa-blocked',payment_status='test_active',status='test'").run();assert.deepEqual(await (await s.call()).json(),{customers:[]});
+  });
+}

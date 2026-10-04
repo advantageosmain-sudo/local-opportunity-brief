@@ -4,7 +4,7 @@ export function ownerRehearsalIdentityMatches(env: {
   OWNER_EMAIL?: string; OWNER_REHEARSAL_REPORT_ID?: string;
   OWNER_REHEARSAL_CHECKSUM?: string; OWNER_REHEARSAL_RECIPIENT?: string;
 }, input: {reportId?: unknown; checksum?: unknown; expectedRecipient?: unknown}) {
-  return Boolean(env.OWNER_EMAIL && !/[\s<>]/.test(env.OWNER_REHEARSAL_RECIPIENT ?? '') && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(env.OWNER_REHEARSAL_RECIPIENT ?? '') &&
+  return Boolean(env.OWNER_EMAIL && (env.OWNER_REHEARSAL_RECIPIENT?.length ?? 0) <= 254 && !/[\s<>]/.test(env.OWNER_REHEARSAL_RECIPIENT ?? '') && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(env.OWNER_REHEARSAL_RECIPIENT ?? '') &&
     /^[a-z0-9-]{1,160}$/.test(env.OWNER_REHEARSAL_REPORT_ID ?? '') &&
     /^[a-f0-9]{64}$/.test(env.OWNER_REHEARSAL_CHECKSUM ?? '') &&
     input.reportId === env.OWNER_REHEARSAL_REPORT_ID &&

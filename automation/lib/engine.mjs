@@ -335,17 +335,22 @@ export function validateReport(report) {
   };
 }
 
-export function renderMarkdown(report, validation) {
+export function renderMarkdown(report, validation, { deliveryPresentation = null } = {}) {
   const lines = [
     `# Local Opportunity Brief — ${report.customer.businessName}`,
     "",
     `**Week of:** ${report.weekOf}`,
     `**Location:** ${report.customer.location.city}, ${report.customer.location.state}`,
-    `**Status:** ${report.status}`,
+    ...(deliveryPresentation ? [
+      `**Source snapshot date:** ${report.asOf}`,
+      `**Snapshot generated:** ${report.generatedAt}`,
+      `**Email prepared:** ${deliveryPresentation.preparedAt}`,
+      `**Review:** ${deliveryPresentation.reviewSummary}`,
+    ] : [`**Status:** ${report.status}`]),
     `**Research window:** ${report.lookaheadDays} days`,
     `**Delivery mode:** ${report.customer.deliveryMode}`,
     `**Validation:** ${validation.passed ? "PASS" : "FAIL"}`,
-    `**Checksum:** \`${report.checksum}\``,
+    `**${deliveryPresentation ? "Report content checksum" : "Checksum"}:** \`${report.checksum}\``,
     "",
     report.fixture
       ? "> DEMONSTRATION DATA ONLY — DO NOT DELIVER AS LIVE RESEARCH."
@@ -395,7 +400,11 @@ export function renderMarkdown(report, validation) {
     "- No guaranteed sales claims",
     "- No customer account access",
     "- No automatic posting",
-    "- Live delivery remains disabled until owner approval",
+    deliveryPresentation
+      ? report.customer.deliveryMode === "owner_review_only"
+        ? "- Owner-only rehearsal; no customer delivery is authorized"
+        : "- Future deliveries remain subject to subscription, consent and review controls"
+      : "- Live delivery remains disabled until owner approval",
     "",
   );
   return `${lines.join("\n")}\n`;

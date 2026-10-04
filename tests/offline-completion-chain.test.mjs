@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
 import {createHmac} from 'node:crypto';
 import {pathToFileURL,fileURLToPath} from 'node:url';
+import {currentReportDateKey} from '../lib/dashboard-policy.mjs';
 const root=fileURLToPath(new URL('..',import.meta.url)).replace(/\/$/,'');
 const unexpected=[];
 const deny=async input=>{unexpected.push(String(input));throw Error('Network prohibited by offline audit');};
@@ -15,7 +16,7 @@ const {validateCurrentReportPacket}=await import(pathToFileURL(root+'/lib/report
 class D1{constructor(){this.db=new DatabaseSync(':memory:');}prepare(sql){let args=[];const q={bind(...v){args=v;return q;},_run:()=>({meta:{changes:Number(this.db.prepare(sql).run(...args).changes)}}),run:async()=>q._run(),first:async()=>this.db.prepare(sql).get(...args)??null,all:async()=>({results:this.db.prepare(sql).all(...args)})};return q;}async batch(stmts){this.db.exec('BEGIN');try{const r=stmts.map(s=>s._run());this.db.exec('COMMIT');return r;}catch(e){this.db.exec('ROLLBACK');throw e;}}}
 const origin='https://offline.example',ownerEmail='owner@example.com';
 const owner={'oai-authenticated-user-email':ownerEmail,origin};
-const today=new Date().toISOString().slice(0,10),datePlus=n=>new Date(Date.parse(today)+n*86400000).toISOString().slice(0,10);
+const today=currentReportDateKey(),datePlus=n=>new Date(Date.parse(today)+n*86400000).toISOString().slice(0,10);
 
 test('offline QA intake/payment stays isolated; separate report sync -> exact owner form approval -> disabled delivery -> weekly selection',async t=>{
  const db=new D1();t.after(()=>db.db.close());

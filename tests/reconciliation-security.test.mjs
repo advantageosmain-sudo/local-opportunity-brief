@@ -135,6 +135,75 @@ for (const [name, response, expectedCode] of [
   });
 }
 
+for (const status of [200, 403]) {
+  test(`missing AbortSignal.throwIfAborted does not mask provider HTTP ${status}`, async (t) => {
+    const descriptor = Object.getOwnPropertyDescriptor(AbortSignal.prototype, 'throwIfAborted');
+    Object.defineProperty(AbortSignal.prototype, 'throwIfAborted', { configurable: true, value: undefined });
+    t.after(() => {
+      if (descriptor) Object.defineProperty(AbortSignal.prototype, 'throwIfAborted', descriptor);
+      else delete AbortSignal.prototype.throwIfAborted;
+    });
+    const h = harness(t);
+    const response = status === 200 ? Response.json({ id: 'message1', last_event: 'delivered' }) : new Response('private-denial-body', { status });
+    const json = t.mock.method(response, 'json');
+    const provider = t.mock.method(globalThis, 'fetch', async () => response);
+    const result = await h.call();
+    const body = await result.json();
+    assert.equal(provider.mock.callCount(), 1);
+    assert.equal(result.status, status === 200 ? 200 : 502);
+    assert.equal(h.attempt().status, status === 200 ? 'delivered' : 'accepted');
+    if (status === 403) {
+      assert.equal(body.code, 'PROVIDER_RECEIPT_HTTP_403');
+      assert.equal(json.mock.callCount(), 0, 'A rejected provider response body must never be read');
+      assert.equal(h.customer().first_delivered_at, null);
+    } else assert.equal(json.mock.callCount(), 1);
+    assert.doesNotMatch(JSON.stringify(body), /private-denial|owner@example|unit-test-not-a-real/);
+  });
+}
+
+for (const readingBody of [false, true]) {
+  const stage = readingBody ? 'BODY' : 'REQUEST';
+  for (const [name, makeError, suffix] of [
+    ['known transport code', () => Object.assign(new Error('private-network-detail'), { code: 'ECONNRESET' }), 'TRANSPORT_ERROR'],
+    ['known nested transport code', () => new TypeError('private-network-detail', { cause: Object.assign(new Error('private-cause'), { code: 'UND_ERR_SOCKET' }) }), 'TRANSPORT_ERROR'],
+    ['abort', () => new DOMException('private-abort-detail', 'AbortError'), 'ABORTED'],
+    ['unsupported runtime', () => Object.assign(new Error('private-runtime-detail'), { code: 'UND_ERR_NOT_SUPPORTED' }), 'RUNTIME_UNSUPPORTED'],
+    ['ambiguous TypeError', () => new TypeError('private-runtime-network-or-redirect-detail'), 'TYPE_ERROR'],
+    ['unknown name and code', () => Object.assign(new Error('private-detail'), { name: 'private-name', code: 'private-code', cause: { code: 'private-cause' } }), readingBody ? 'READ_FAILED' : 'FAILED'],
+  ]) {
+    test(`${stage.toLowerCase()} ${name} uses only a fixed safe diagnostic`, async (t) => {
+      const h = harness(t);
+      const provider = t.mock.method(globalThis, 'fetch', async () => {
+        if (!readingBody) throw makeError();
+        return { ok: true, json: async () => { throw makeError(); } };
+      });
+      const result = await h.call();
+      const body = await result.json();
+      const expectedCode = `PROVIDER_RECEIPT_${stage}_${suffix}`;
+      assert.equal(result.status, 502);
+      assert.equal(body.code, expectedCode);
+      assert.equal(provider.mock.callCount(), 1);
+      assert.equal(h.attempt().status, 'accepted');
+      assert.equal(h.customer().first_delivered_at, null);
+      const diagnostic = h.sqlite.prepare("SELECT * FROM diagnostics WHERE id='reconcile-report1'").get();
+      assert.equal(diagnostic.code, expectedCode);
+      assert.doesNotMatch(JSON.stringify({ body, diagnostic }), /private-|owner@example|unit-test-not-a-real/);
+    });
+  }
+}
+
+test('fetch redirect rejection represented only as TypeError remains explicitly ambiguous', async (t) => {
+  const h = harness(t);
+  t.mock.method(globalThis, 'fetch', async (_url, options) => {
+    assert.equal(options.redirect, 'error');
+    throw new TypeError('fetch failed', { cause: new Error('unexpected redirect') });
+  });
+  const result = await h.call();
+  assert.equal(result.status, 502);
+  assert.equal((await result.json()).code, 'PROVIDER_RECEIPT_REQUEST_TYPE_ERROR');
+  assert.equal(h.attempt().status, 'accepted');
+});
+
 test('readback uses bounded no-redirect requests and resolves recovered read failures without enabling sends', async (t) => {
   const h = harness(t, { liveDelivery: '0' });
   h.sqlite.prepare("INSERT INTO diagnostics(id,system,subject_id,code) VALUES('reconcile-report1','email','report1','PROVIDER_RECEIPT_HTTP_401')").run();
@@ -329,7 +398,7 @@ for (const stalledStage of ['fetch', 'body', 'body after slow headers']) {
     assert.equal(settled, true, 'A stalled provider must not keep the route waiting');
     const response = await responsePromise;
     assert.equal(response.status, 502);
-    assert.deepEqual(await response.json(), { error: 'Provider receipt could not be verified.', code: stalledStage === 'fetch' ? 'PROVIDER_RECEIPT_REQUEST_FAILED' : 'PROVIDER_RECEIPT_INVALID_JSON', checked: 4, confirmed: 0, failed: 0 });
+    assert.deepEqual(await response.json(), { error: 'Provider receipt could not be verified.', code: stalledStage === 'fetch' ? 'PROVIDER_RECEIPT_REQUEST_TIMEOUT' : 'PROVIDER_RECEIPT_BODY_TIMEOUT', checked: 4, confirmed: 0, failed: 0 });
     assert.equal(Date.now() - startedAt, 21_800);
     assert.deepEqual(starts.map(start => start - startedAt), [0, 5_600, 11_200, 16_800]);
     assert.equal(provider.mock.callCount(), 4);

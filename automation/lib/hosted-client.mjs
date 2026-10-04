@@ -13,7 +13,23 @@ export async function readHostedCustomers({ env = process.env, fetchImpl = fetch
   if (!response.ok) throw new Error(`Customer export failed (${response.status}).`);
   const payload = await response.json();
   if (!Array.isArray(payload.customers)) throw new Error("Customer export is missing its customers array.");
+  blockedSourceResults(payload);
   return payload;
+}
+
+// Only opaque identities and fixed codes cross into weekly diagnostics. These
+// results never enter runCustomer or authorize source approval/delivery.
+export function blockedSourceResults(payload, selectedCustomer = 'all') {
+  if (payload.blockedSources === undefined && payload.blockedSourceCount === undefined) return [];
+  if (!Array.isArray(payload.blockedSources) || payload.blockedSourceCount !== payload.blockedSources.length ||
+      !payload.blockedSources.every(entry => entry && typeof entry === 'object' && !Array.isArray(entry) &&
+        typeof entry.customerSlug === 'string' && entry.customerSlug.length <= 160 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(entry.customerSlug) && !entry.customerSlug.startsWith('qa-') &&
+        typeof entry.marketId === 'string' && /^[a-z0-9-]{1,160}$/.test(entry.marketId) &&
+        ['MARKET_SOURCE_MISSING','MARKET_SOURCE_APPROVAL_REQUIRED'].includes(entry.code))) {
+    throw new Error('Customer export has invalid blocked-source diagnostics.');
+  }
+  return payload.blockedSources.filter(entry => selectedCustomer === 'all' || entry.customerSlug === selectedCustomer)
+    .map(entry => ({status:'BLOCKED',customerSlug:entry.customerSlug,marketId:entry.marketId,reason:entry.code,liveDelivery:false}));
 }
 
 export async function requestHostedDelivery({ report, env = process.env, fetchImpl = fetch }) {
