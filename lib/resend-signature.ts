@@ -30,3 +30,16 @@ export async function verifyResendSignature(raw:string,headers:Headers,secret:st
   throw new Error('Invalid signature');
 }
 export async function sha256(value:string){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),b=>b.toString(16).padStart(2,'0')).join('');}
+
+// Date.parse alone silently rolls impossible calendar dates into another day.
+// Validate the supplied local calendar and offset before deriving its instant.
+export function strictReceiptTimestamp(value: unknown): number {
+  if (typeof value !== 'string') return NaN;
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?(Z|([+-])(\d{2}):(\d{2}))$/.exec(value);
+  if (!m) return NaN;
+  const year=Number(m[1]),month=Number(m[2]),day=Number(m[3]);
+  const leap=year%400===0||(year%4===0&&year%100!==0);
+  const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+  if(year<1||month<1||month>12||day<1||day>days[month-1]||Number(m[4])>23||Number(m[5])>59||Number(m[6])>59||Number(m[10]??0)>23||Number(m[11]??0)>59)return NaN;
+  return Date.parse(value);
+}

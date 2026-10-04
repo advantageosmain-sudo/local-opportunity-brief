@@ -99,3 +99,7 @@ test('signature window includes exactly five minutes and rejects the next millis
  for(const offset of [-300000,300000])assert.equal(await signature.verifyResendSignature(vector.raw,new Headers(vector.headers),vector.secret,stamp+offset),vector.headers['svix-id']);
  for(const offset of [-300001,300001])await assert.rejects(signature.verifyResendSignature(vector.raw,new Headers(vector.headers),vector.secret,stamp+offset));
 });
+
+for(const value of ['2025-02-29T12:00:00Z','2026-02-30T12:00:00Z','2026-04-31T12:00:00+02:00','2026-01-01T24:00:00Z','2026-01-01T12:60:00Z','2026-01-01T12:00:60Z','2026-13-01T12:00:00Z','2026-00-01T12:00:00Z','2026-01-00T12:00:00Z','2026-01-01T12:00:00+24:00','2026-01-01T12:00:00+01:60'])test('strict receipt timestamp rejects calendar/offset overflow '+value,()=>assert.ok(Number.isNaN(signature.strictReceiptTimestamp(value))));
+for(const value of ['2024-02-29T23:59:59.123Z','2000-02-29T00:00:00-05:30','2026-03-01T00:15:00+01:00','2026-12-31T23:45:00-01:00'])test('strict receipt timestamp preserves valid offset instant '+value,()=>assert.equal(signature.strictReceiptTimestamp(value),Date.parse(value)));
+test('owner attestation rejects impossible calendar date before any receipt storage',async t=>{const s=setup(t);await s.seed();s.accept();const r=await s.external({observedAt:'2025-02-29T12:00:00Z'});assert.equal(r.status,400);assert.equal(s.db.db.prepare('SELECT COUNT(*) n FROM email_receipt_events').get().n,0);assert.equal(s.db.db.prepare('SELECT status FROM delivery_attempts').get().status,'accepted');});
